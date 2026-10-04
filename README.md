@@ -1,0 +1,131 @@
+# 8番玄関
+
+「8番出口」パロディの“異変探し”ゲーム。
+飲み会帰りのサラリーマンが玄関前で異変を見つけ、妻を怒らせる火種をすべて消してからドアを開ける。
+火種が残ったまま開けると、鬼の形相の妻が待っている。8日連続で無事に帰宅できたらクリア。
+
+* TypeScript + Vite / HTML5 Canvas + DOM（ランタイム依存なし）
+* スマホ縦画面（9:16）優先。PC ブラウザでも中央に縦長で表示
+* セーブは localStorage に最高連続記録のみ
+
+設計（ディレクトリ構成・状態遷移・データ型）は [docs/DESIGN.md](docs/DESIGN.md) を参照。
+
+## 起動方法
+
+```bash
+cd 8ban-genkan
+npm install
+npm run dev        # 開発サーバ（http://localhost:5173）
+npm test           # Vitest（シナリオ整合性テスト含む）
+npm run build      # 型チェック + 静的ビルド → dist/
+npm run preview    # ビルド結果の確認
+```
+
+`dist/` はそのまま任意の静的ホスティングに置ける（`base: './'` なのでサブディレクトリでも可）。
+
+### デバッグ
+
+* `?debug` … その日のシナリオ・未解消の原因・解答例を画面上部に表示
+* `?debug&scenario=cabaret_lipstick,garbage_forgot` … 1日目のシナリオを固定（カンマ区切りで複数合成）
+
+## 遊び方
+
+1. 玄関前のドア・廊下・窓・表札・足元をタップして調べる（初回 1 分）
+2. 持ち物（鞄 / ワイシャツ / 財布 / 名刺入れ）とスマホ（チャット / カレンダー / メモ / ポチッとマート）を確認
+3. 「引き返す」で街へ。コンビニ・ゴミ捨て場・ベンチ（通販）で対処
+4. 火種をすべて消したら「ドアを開ける」
+
+* 午前 1:00 を過ぎたら原因に関係なくゲームオーバー
+* 通販の特急便は 23:59 までの注文で翌朝着。過ぎると明後日着で意味がない
+* 関係ない謝罪チャットを送ると妻から電話で問い詰められ、8 分失う
+* 異変なしの日に引き返すと、時間だけが過ぎる
+
+## シナリオの追加方法
+
+`src/data/scenarios.ts` の `SCENARIOS` 配列に 1 件足すだけで抽選対象になる。
+
+```ts
+{
+  id: 'forgot_cat_food',
+  title: '猫のごはんを買い忘れた',
+  causes: [
+    {
+      id: 'forgot_cat_food',
+      title: '猫缶忘れ',
+      // フラグ条件式。{ all: [...] } / { any: [...] } を入れ子にできる
+      resolution: { all: ['bought:cat_food', 'chat:cat_food'] },
+      angerLines: ['タマのごはんは？', 'タマがあなたの靴で爪とぎしてるよ。'],
+      successLine: 'タマ〜、パパがごはん買ってきたよ〜',
+    },
+  ],
+  clues: [
+    { at: 'app:memo', cause: 'forgot_cat_food', text: '猫缶（まぐろ味）×3' },
+    { at: 'spot:door', cause: 'forgot_cat_food', text: 'ドアの向こうでタマが鳴いている。' },
+    { at: 'spot:floor', text: '足元に猫の毛が……いつものことだ。' }, // cause 無し = ニセ異変
+  ],
+}
+```
+
+必要に応じて以下も足す:
+
+| 追加先 | 内容 |
+|---|---|
+| `src/data/items.ts` | 新しい商品（`source: 'konbini' \| 'mail' \| 'none'`）。`useLabel` を付けると持ち物画面で「使う」ボタンが出る |
+| `src/data/chat.ts` | 新しい定型文。`requires` で送信条件（例: 注文済み）を付けられる |
+| `src/assets/manifest.ts` | 玄関前の見た目を変えるオーバーレイ（`visuals`）や手がかりのイラスト（`image`） |
+
+使える仕掛け: `startItems`（最初から持っている物）、`pickups`（玄関前で拾える物）、
+`startOrders`（キャンセルが必要な既存注文）、`hiddenWhen`（対処したら消える描写）、
+`conflictsWith`（同じ日に組み合わせないシナリオ）、`unread`（チャットの未読表示）。
+
+追加したら **`npm test`** を実行する。テストが以下を自動で確認する:
+
+* 参照しているアイテム・定型文・画像が存在するか
+* 各原因に手がかり・怒りセリフがあるか
+* 解消に必要なフラグがすべて入手可能か（解消不可能な原因が無いか）
+* 最終日のいちばん遅い開始時刻から、3 つ重なった組み合わせでも時間内に解けるか
+* 8 日間、同じ周回でシナリオを重複させずに回せるか
+
+## アセット一覧
+
+ファイル名は `src/assets/manifest.ts` で一元管理。置けば自動で使われ、無ければ代替表示になる。
+
+### 画像（`public/assets/images/`）
+
+✅ = 同梱済み（提供イラストシートから切り出し）、— = 未作成（仮の四角＋ラベルで表示）
+
+| ファイル | 用途 | 状態 |
+|---|---|---|
+| bg_door.png | 玄関前の一枚絵（224x367 基準。当たり判定は `renderer.ts` の `SPOT_RECTS`） | ✅ |
+| bg_door_dark.png | N日目の幕間 | ✅ |
+| bg_title.png | タイトル背景 | ✅ |
+| hero.png | 主人公（タイトル・幕間） | ✅ |
+| window_garland.png | 誕生日の飾り付け（窓に重ねる） | ✅ |
+| window_candle.png | 結婚記念日のキャンドル（窓に重ねる） | — |
+| garbage_bag.png | 玄関脇のゴミ袋 | — |
+| wet_floor.png | 足元の水たまり | — |
+| door / window / nameplate / floor / hallway.png | 玄関前のパーツ差し替え（任意） | — |
+| bg_town.png / bg_trash.png / bg_bench.png | 夜の街・ゴミ捨て場・公園のベンチ | — |
+| bg_konbini.png | コンビニ店内 | ✅ |
+| wife_smile.png | おかえりの妻 | ✅ |
+| wife_angry.png | 鬼の形相の妻（炎込み） | ✅ |
+| wife_dark.png | 時間切れの無言の妻 | ✅ |
+| wife_suspicious.png | ゲームオーバー画面の背景 | ✅ |
+| fire.png | 炎（wife_angry が無いときの代替演出用） | — |
+| clear.png | クリア画面 | — |
+| shirt_clean.png / shirt_lipstick.png | 替えのシャツ / 口紅つきシャツ | ✅ |
+| item_card.png / item_receipt.png | 店の名刺 / レシート | ✅ |
+| item_bouquet.png / item_shopping_bag.png | 花束 / レジ袋（牛乳・卵） | ✅ |
+
+### 音声（`public/assets/audio/`）
+
+すべて未作成。BGM は無音、SE は WebAudio のビープで代替される。
+
+| ファイル | 用途 |
+|---|---|
+| bgm_title.mp3 / bgm_door.mp3 / bgm_town.mp3 | タイトル / 玄関前 / 街（ループ） |
+| bgm_angry.mp3 / bgm_home.mp3 / bgm_clear.mp3 | 怒り / 帰宅成功 / クリア（ループ） |
+| se_tap / se_open / se_send / se_buy / se_order / se_discard .mp3 | 操作音 |
+| se_walk / se_phone_call / se_door / se_angry / se_success / se_late .mp3 | 移動・ドア・結末 |
+
+BGM は最初のタップで解禁され（自動再生制限対策）、画面切替時はフェードで差し替わる。右上の 🔊 でミュート。

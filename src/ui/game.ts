@@ -1,0 +1,771 @@
+// 画面遷移と入力の管理。ゲームのルールそのものは core/engine.ts にある。
+import { AudioManager } from '../audio/AudioManager';
+import { ImageStore } from '../assets/loader';
+import { IMAGES, ITEM_ICONS, type BgmKey, type ImageKey, type SeKey } from '../assets/manifest';
+import {
+  CANCEL_DEADLINE,
+  COST,
+  EXPRESS_DEADLINE,
+  GOAL_DAYS,
+  TRAVEL,
+  WARN_TIME,
+  formatTime,
+  startTimeFor,
+} from '../core/config';
+import {
+  advanceRun,
+  buildDay,
+  canSendChat,
+  hasUnreadChat,
+  newRun,
+  perform,
+  startDay,
+  unresolvedCauses,
+  visibleClues,
+} from '../core/engine';
+import { loadBest, saveBest } from '../core/save';
+import { solve } from '../core/solver';
+import type { Action, AppId, Cause, ItemDef, ClueLocation, DayState, Location, RunState, SlotId, SpotId } from '../core/types';
+import { APP_BASE, APP_LABEL, CHAT_HISTORY, SLOT_BASE, SLOT_LABEL, SPOT_BASE, SPOT_LABEL } from '../data/base';
+import { CHAT_TEMPLATES } from '../data/chat';
+import { ITEM_MAP, itemsAt } from '../data/items';
+import { SCENARIO_MAP } from '../data/scenarios';
+import { h, type Child } from './dom';
+import { Renderer } from './renderer';
+
+type Line = { who: 'me' | 'wife' | 'narr'; text: string };
+
+type Screen =
+  | { name: 'title' }
+  | { name: 'howto' }
+  | { name: 'intro' }
+  | { name: 'play' }
+  | { name: 'talk'; mood: 'angry' | 'home'; late?: boolean; lines: Line[]; index: number; after: () => void }
+  | { name: 'gameover'; reason: string; causes: Cause[] }
+  | { name: 'clear' };
+
+type Modal =
+  | { kind: 'spot'; spot: SpotId }
+  | { kind: 'items'; slot: SlotId }
+  | { kind: 'phone'; app: AppId | null }
+  | { kind: 'confirmDoor' };
+
+const INTRO_FLAVOR = [
+  '今日も飲み会だった……。',
+  '「もう一軒だけ」が三軒になった。',
+  '部長の武勇伝は今日も長かった。',
+  '終電に滑り込んだ。セーフ。',
+  '同期と語り合ってしまった。',
+  '取引先との会食。断れなかった。',
+  '送別会。泣いた。',
+  '今日こそ早く帰るつもりだった。',
+];
+
+const LOCATION_LABEL: Record<Location, string> = {
+  door: '自宅の玄関前',
+  town: '夜の街',
+  konbini: 'コンビニ',
+  trash: 'ゴミ捨て場',
+  bench: '公園のベンチ',
+};
+
+export class Game {
+  private ui: HTMLElement;
+  private toastLayer: HTMLElement;
+  private renderer: Renderer;
+  private images: ImageStore;
+  private audio = new AudioManager();
+  private run: RunState = newRun();
+  private day: DayState | null = null;
+  private screen: Screen = { name: 'title' };
+  private modal: Modal | null = null;
+  private best = loadBest();
+  private debug = new URLSearchParams(location.search).has('debug');
+
+  constructor(private root: HTMLElement) {
+    // 画像が届いたら Canvas を描き直し、UI 内のイラストも出すために DOM だけ作り直す
+    let pending = 0;
+    const images = new ImageStore(() => {
+      this.renderer?.redraw();
+      window.clearTimeout(pending);
+      pending = window.setTimeout(() => this.ui && this.ui.replaceChildren(h('div', { class: 'view' }, this.view())), 50);
+    });
+    this.images = images;
+    this.renderer = new Renderer(root, images, (spot) => this.onSpot(spot));
+    this.ui = h('div', { class: 'ui' });
+    this.toastLayer = h('div', { class: 'toasts' });
+    root.append(this.ui, this.toastLayer);
+    // 自動再生制限: 最初の操作で音を解禁する
+    const unlock = () => this.audio.unlock();
+    root.addEventListener('pointerdown', unlock, { once: true });
+    root.addEventListener('keydown', unlock, { once: true });
+    this.render();
+  }
+
+  // ================================================================ 遷移
+
+  private go(screen: Screen) {
+    if (screen.name !== this.screen.name) this.toastLayer.replaceChildren();
+    this.screen = screen;
+    this.modal = null;
+    this.render();
+  }
+
+  private startRun() {
+    this.run = newRun();
+    this.beginDay();
+  }
+
+  private beginDay() {
+    // ?debug&scenario=a,b で その日のシナリオを固定できる（シナリオ追加時の動作確認用）
+    const forced = this.debug ? new URLSearchParams(location.search).get('scenario') : null;
+    const scenarios = forced?.split(',').map((id) => SCENARIO_MAP[id]).filter(Boolean);
+    this.day = scenarios?.length
+      ? buildDay(this.run.day, scenarios, startTimeFor(this.run.day, Math.random()))
+      : startDay(this.run, Math.random);
+    this.go({ name: 'intro' });
+  }
+
+  private act(action: Action, se?: SeKey): boolean {
+    const day = this.day;
+    if (!day) return false;
+    const before = day.time;
+    const r = perform(day, action);
+    if (se && r.ok) this.audio.playSe(se);
+    if (action.type === 'sendChat' && r.cost > COST.sendChat) this.audio.playSe('se_phone_call');
+    if (r.messages.length || r.cost) this.toast(r.messages, day.time - before);
+
+    switch (r.outcome.kind) {
+      case 'late':
+        this.gameOver('late', []);
+        return false;
+      case 'angry':
+        this.gameOver('angry', r.outcome.causes);
+        return false;
+      case 'home':
+        this.goHome(r.outcome.lines);
+        return false;
+    }
+    this.render();
+    return r.ok;
+  }
+
+  private gameOver(kind: 'late' | 'angry', causes: Cause[]) {
+    this.audio.playSe(kind === 'late' ? 'se_late' : 'se_door');
+    window.setTimeout(() => this.audio.playSe('se_angry'), 250);
+    const lines: Line[] =
+      kind === 'late'
+        ? [
+            { who: 'narr', text: `時計の針は ${formatTime(this.day!.time)} を指していた。` },
+            { who: 'wife', text: '……今、何時だと思ってるの？' },
+            { who: 'wife', text: '午前1時、過ぎてるんだけど。' },
+            { who: 'wife', text: '言い訳は、朝ごはんの時に聞きます。' },
+          ]
+        : [
+            { who: 'narr', text: 'ガチャ……' },
+            ...causes[0].angerLines.map((text) => ({ who: 'wife' as const, text })),
+            ...(causes.length > 1
+              ? [{ who: 'narr' as const, text: `さらに${causes.length - 1}件の火種が燃え上がった……！` }]
+              : []),
+          ];
+    this.recordBest();
+    this.go({
+      name: 'talk',
+      mood: 'angry',
+      late: kind === 'late',
+      lines,
+      index: 0,
+      after: () => this.go({ name: 'gameover', reason: kind === 'late' ? '遅すぎる帰宅' : '妻の怒り', causes }),
+    });
+  }
+
+  private goHome(successLines: string[]) {
+    this.audio.playSe('se_door');
+    window.setTimeout(() => this.audio.playSe('se_success'), 300);
+    const lines: Line[] = [
+      { who: 'me', text: 'ただいま……' },
+      { who: 'wife', text: 'おかえり。' },
+      ...successLines.map((text) => ({ who: 'wife' as const, text })),
+    ];
+    const cleared = advanceRun(this.run);
+    this.recordBest();
+    this.go({
+      name: 'talk',
+      mood: 'home',
+      lines,
+      index: 0,
+      after: () => (cleared ? this.go({ name: 'clear' }) : this.beginDay()),
+    });
+  }
+
+  private recordBest() {
+    if (saveBest(this.run.streak)) this.best = this.run.streak;
+  }
+
+  // ================================================================ 入力
+
+  private onSpot(spot: SpotId) {
+    if (this.screen.name !== 'play' || this.modal || this.day?.location !== 'door') return;
+    this.audio.playSe('se_tap');
+    this.act({ type: 'inspect', spot });
+    this.modal = { kind: 'spot', spot };
+    this.render();
+  }
+
+  private openModal(modal: Modal, action?: Action) {
+    this.audio.playSe('se_open');
+    this.modal = modal;
+    if (action) this.act(action);
+    else this.render();
+  }
+
+  private closeModal() {
+    this.modal = null;
+    this.render();
+  }
+
+  private travel(to: Location) {
+    this.audio.playSe('se_walk');
+    this.modal = null;
+    this.act({ type: 'travel', to });
+  }
+
+  private toast(messages: string[], minutes: number) {
+    if (minutes > 0) {
+      // 経過時間は時計の下にポップさせる
+      const pop = h('div', { class: 'cost-pop' }, `+${minutes}分`);
+      this.root.append(pop);
+      window.setTimeout(() => pop.remove(), 1200);
+    }
+    if (messages.length === 0) return;
+    const el = h('div', { class: 'toast' }, messages.join(' '));
+    this.toastLayer.append(el);
+    window.setTimeout(() => el.classList.add('out'), 2600);
+    window.setTimeout(() => el.remove(), 3200);
+  }
+
+  // ================================================================ 描画
+
+  private render() {
+    this.syncScene();
+    this.ui.replaceChildren(h('div', { class: 'view' }, this.view()));
+  }
+
+  private syncScene() {
+    const s = this.screen;
+    const day = this.day;
+    let bgm: BgmKey = 'bgm_title';
+    if (s.name === 'title' || s.name === 'howto') {
+      this.renderer.setScene({ kind: 'title' });
+    } else if (s.name === 'talk') {
+      bgm = s.mood === 'angry' ? 'bgm_angry' : 'bgm_home';
+      if (s.index === 0) {
+        this.renderer.setScene(
+          s.mood === 'home'
+            ? { kind: 'home' }
+            : { kind: 'angry', started: performance.now(), image: s.late ? 'wife_dark' : 'wife_angry' },
+        );
+      }
+    } else if (s.name === 'gameover') {
+      bgm = 'bgm_angry';
+      this.renderer.setScene({ kind: 'bg', image: 'wife_suspicious' });
+    } else if (s.name === 'clear') {
+      bgm = 'bgm_clear';
+      this.renderer.setScene({ kind: 'clear' });
+    } else if (s.name === 'intro') {
+      bgm = 'bgm_door';
+      this.renderer.setScene({ kind: 'bg', image: 'bg_door_dark' });
+    } else if (day) {
+      const loc = day.location;
+      bgm = loc === 'door' ? 'bgm_door' : 'bgm_town';
+      if (loc === 'door') {
+        const picked = day.pickups.filter((p) => day.flags.has(`picked:${p.item}`)).map((p) => p.visual);
+        this.renderer.setScene({ kind: 'door', visuals: day.visuals.filter((v) => !picked.includes(v)) });
+      } else {
+        const bg = ({ town: 'bg_town', konbini: 'bg_konbini', trash: 'bg_trash', bench: 'bg_bench' } as const)[loc];
+        this.renderer.setScene({ kind: 'bg', image: bg });
+      }
+    }
+    this.audio.playBgm(bgm);
+  }
+
+  private view(): Child[] {
+    const s = this.screen;
+    switch (s.name) {
+      case 'title':
+        return this.viewTitle();
+      case 'howto':
+        return this.viewHowto();
+      case 'intro':
+        return this.viewIntro();
+      case 'play':
+        return this.viewPlay();
+      case 'talk':
+        return this.viewTalk(s);
+      case 'gameover':
+        return this.viewGameOver(s.reason, s.causes);
+      case 'clear':
+        return this.viewClear();
+    }
+  }
+
+  private muteButton() {
+    return h(
+      'button',
+      {
+        class: 'icon-btn',
+        'aria-label': this.audio.isMuted ? 'ミュート解除' : 'ミュート',
+        onclick: (e: Event) => {
+          e.stopPropagation();
+          this.audio.setMuted(!this.audio.isMuted);
+          this.render();
+        },
+      },
+      this.audio.isMuted ? '🔇' : '🔊',
+    );
+  }
+
+  private viewTitle(): Child[] {
+    return [
+      h('div', { class: 'hud' }, h('span'), this.muteButton()),
+      h(
+        'div',
+        { class: 'center-card title-card' },
+        h('div', { class: 'sign' }, h('span', { class: 'sign-no' }, '8'), h('span', {}, '番玄関')),
+        this.illust('hero', 'hero'),
+        h('p', { class: 'sub' }, '異変を見つけて、妻の怒りの火種をすべて消してからドアを開けろ。'),
+        h('button', { class: 'btn primary', onclick: () => this.startRun() }, 'はじめる'),
+        h('button', { class: 'btn', onclick: () => this.go({ name: 'howto' }) }, '遊び方'),
+        h('p', { class: 'best' }, `最高連続帰宅: ${this.best} / ${GOAL_DAYS} 日`),
+      ),
+    ];
+  }
+
+  private viewHowto(): Child[] {
+    return [
+      h(
+        'div',
+        { class: 'center-card howto' },
+        h('h2', {}, '遊び方'),
+        h(
+          'ul',
+          {},
+          h('li', {}, `${GOAL_DAYS}日連続で無事に帰宅できたらクリア。1度でも失敗したら1日目からやり直し。`),
+          h('li', {}, '玄関前のドア・廊下・窓・表札・足元をタップして調べよう。持ち物とスマホも要チェック。'),
+          h('li', {}, '「いつもと違う」ところが妻を怒らせる原因。引き返してコンビニ・ゴミ捨て場・通販で対処しよう。'),
+          h('li', {}, '原因が残ったままドアを開けると……鬼が出る。'),
+          h('li', {}, '異変がない日もある。紛らわしい「ニセ異変」に惑わされて引き返すと、時間だけが過ぎていく。'),
+          h('li', {}, `行動するたびに時間が進む。午前1:00を過ぎたらアウト。通販の特急便（翌朝着）は ${formatTime(EXPRESS_DEADLINE)} 締切。`),
+          h('li', {}, '6日目からは原因が2つ、最終日は3つ重なる。'),
+        ),
+        h('button', { class: 'btn primary', onclick: () => this.go({ name: 'title' }) }, '戻る'),
+      ),
+    ];
+  }
+
+  private hud(): HTMLElement {
+    const day = this.day!;
+    return h(
+      'div',
+      { class: 'hud' },
+      h('div', { class: 'hud-left' }, h('b', {}, `${day.day}日目`), h('small', {}, `連続帰宅 ${this.run.streak}/${GOAL_DAYS}`)),
+      h('div', { class: `clock${day.time >= WARN_TIME ? ' warn' : ''}` }, formatTime(day.time)),
+      this.muteButton(),
+    );
+  }
+
+  private viewIntro(): Child[] {
+    const day = this.day!;
+    return [
+      this.hud(),
+      h(
+        'div',
+        { class: 'center-card intro', onclick: () => this.go({ name: 'play' }) },
+        h('div', { class: 'sign' }, h('span', { class: 'sign-no' }, String(day.day)), h('span', {}, '日目')),
+        this.illust('hero', 'hero'),
+        h('p', {}, INTRO_FLAVOR[(day.day - 1) % INTRO_FLAVOR.length]),
+        h('p', {}, `${formatTime(day.time)}、自宅の玄関前に着いた。`),
+        h('p', { class: 'dim' }, 'タップで開始'),
+      ),
+    ];
+  }
+
+  // ---------------------------------------------------------------- プレイ中
+
+  private viewPlay(): Child[] {
+    const day = this.day!;
+    const out: Child[] = [this.hud(), h('div', { class: 'location' }, LOCATION_LABEL[day.location])];
+    if (this.debug) out.push(this.viewDebug());
+
+    out.push(this.viewBar());
+    // 店などのシートは下部バー（持ち物・スマホ）の上に出す
+    if (day.location === 'konbini') out.push(this.viewKonbini());
+    else if (day.location === 'trash') out.push(this.viewTrash());
+    else if (day.location === 'bench') out.push(this.sheet('公園のベンチ', this.viewShop(), () => this.travel('town'), '街へ戻る'));
+
+    if (this.modal) out.push(this.viewModal(this.modal));
+    return out;
+  }
+
+  private viewDebug(): HTMLElement {
+    const day = this.day!;
+    const plan = unresolvedCauses(day).length ? solve(day) : [{ type: 'openDoor' }];
+    return h(
+      'div',
+      { class: 'debug' },
+      `[debug] ${day.scenarioIds.join(' + ')}\n未解消: ${unresolvedCauses(day).map((c) => c.title).join(', ') || 'なし'}\n解答例: ${
+        plan?.map((a) => Object.values(a).join(':')).join(' → ') ?? '解なし'
+      }`,
+    );
+  }
+
+  private viewBar(): HTMLElement {
+    const day = this.day!;
+    const btn = (label: string, sub: string | null, onclick: () => void, cls = '') =>
+      h('button', { class: `bar-btn ${cls}`, onclick }, label, sub ? h('small', {}, sub) : null);
+    const common = [
+      btn('持ち物', null, () => this.openModal({ kind: 'items', slot: 'bag' }, { type: 'openSlot', slot: 'bag' })),
+      btn('スマホ', hasUnreadChat(day) ? '● 未読' : null, () => this.openModal({ kind: 'phone', app: null }), hasUnreadChat(day) ? 'badge' : ''),
+    ];
+    const cost = (to: Location) => `${TRAVEL[day.location][to]}分`;
+    if (day.location === 'door') {
+      return h(
+        'div',
+        { class: 'bar' },
+        common,
+        btn('引き返す', cost('town'), () => this.travel('town')),
+        btn('ドアを開ける', null, () => this.openModal({ kind: 'confirmDoor' }), 'danger'),
+      );
+    }
+    if (day.location === 'town') {
+      return h(
+        'div',
+        { class: 'bar town' },
+        btn('コンビニ', cost('konbini'), () => this.travel('konbini')),
+        btn('ゴミ捨て場', cost('trash'), () => this.travel('trash')),
+        btn('ベンチで通販', cost('bench'), () => this.travel('bench')),
+        btn('家に戻る', cost('door'), () => this.travel('door'), 'primary'),
+        common,
+      );
+    }
+    return h('div', { class: 'bar' }, common);
+  }
+
+  private sheet(title: string, body: Child, onClose: () => void, closeLabel = '閉じる'): HTMLElement {
+    const inTown = closeLabel !== '閉じる';
+    return h(
+      'div',
+      { class: inTown ? 'sheet above-bar' : 'sheet' },
+      h('div', { class: 'sheet-head' }, h('b', {}, title), h('button', { class: 'btn small', onclick: onClose }, closeLabel)),
+      h('div', { class: 'sheet-body' }, body),
+    );
+  }
+
+  /** 読み込めている画像だけ <img> にする（無ければ何も出さない） */
+  private illust(key: string | undefined, cls: string): Child {
+    if (!key || !(key in IMAGES)) return null;
+    const img = this.images.get(key as ImageKey);
+    return img ? h('img', { class: cls, src: img.src, alt: '' }) : null;
+  }
+
+  private clueTexts(at: ClueLocation, base: string): Child {
+    const clues = visibleClues(this.day!, at);
+    if (clues.length === 0) return base ? h('p', { class: 'desc' }, base) : null;
+    return clues.map((c) => [this.illust(c.image, 'clue-img'), h('p', { class: 'desc' }, c.text)]);
+  }
+
+  private itemRow(item: ItemDef, sub: string, action: Child): HTMLElement {
+    return h(
+      'div',
+      { class: 'item' },
+      this.illust(ITEM_ICONS[item.id], 'item-icon'),
+      h('div', { class: 'item-text' }, h('b', {}, item.name), h('small', {}, sub)),
+      action,
+    );
+  }
+
+  private viewModal(m: Modal): HTMLElement {
+    const day = this.day!;
+    switch (m.kind) {
+      case 'spot': {
+        const pickups = day.pickups.filter((p) => p.at === m.spot && !day.flags.has(`picked:${p.item}`));
+        return this.sheet(
+          SPOT_LABEL[m.spot],
+          [
+            this.clueTexts(`spot:${m.spot}`, SPOT_BASE[m.spot]),
+            pickups.map((p) =>
+              h('button', { class: 'btn', onclick: () => this.act({ type: 'pickup', item: p.item }, 'se_tap') && this.closeModal() }, `${p.label}（1分）`),
+            ),
+          ],
+          () => this.closeModal(),
+        );
+      }
+      case 'items':
+        return this.sheet('持ち物', this.viewItems(m.slot), () => this.closeModal());
+      case 'phone':
+        return this.viewPhone(m.app);
+      case 'confirmDoor':
+        return h(
+          'div',
+          { class: 'dialog-backdrop' },
+          h(
+            'div',
+            { class: 'dialog' },
+            h('p', {}, 'ドアを開ける？'),
+            h('p', { class: 'dim' }, '火種が残っていたら……'),
+            h(
+              'div',
+              { class: 'row' },
+              h('button', { class: 'btn', onclick: () => this.closeModal() }, 'やめる'),
+              h('button', { class: 'btn danger', onclick: () => this.act({ type: 'openDoor' }) }, '開ける'),
+            ),
+          ),
+        );
+    }
+  }
+
+  private viewItems(slot: SlotId): Child {
+    const day = this.day!;
+    const tabs = (Object.keys(SLOT_LABEL) as SlotId[]).map((s) =>
+      h(
+        'button',
+        {
+          class: `tab${s === slot ? ' active' : ''}`,
+          onclick: () => this.openModal({ kind: 'items', slot: s }, { type: 'openSlot', slot: s }),
+        },
+        SLOT_LABEL[s],
+      ),
+    );
+    const items = day.inventory.map((id) => ITEM_MAP[id]).filter((i) => i && i.slot === slot);
+    return [
+      h('div', { class: 'tabs' }, tabs, h('button', { class: 'tab', onclick: () => this.openModal({ kind: 'phone', app: null }) }, 'スマホ')),
+      this.clueTexts(`slot:${slot}`, SLOT_BASE[slot]),
+      items.map((item) =>
+        this.itemRow(
+          item,
+          item.desc,
+          item.useLabel
+            ? h('button', { class: 'btn small', onclick: () => this.act({ type: 'use', item: item.id }, 'se_tap') }, `${item.useLabel}（2分）`)
+            : null,
+        ),
+      ),
+    ];
+  }
+
+  // ---------------------------------------------------------------- スマホ
+
+  private viewPhone(app: AppId | null): HTMLElement {
+    const day = this.day!;
+    const back = app ? () => this.openModal({ kind: 'phone', app: null }) : () => this.closeModal();
+    let body: Child;
+    if (!app) {
+      const notices = visibleClues(day, 'notice');
+      body = [
+        h('div', { class: 'lock-time' }, formatTime(day.time)),
+        notices.map((n) => h('div', { class: 'notice' }, n.text)),
+        h(
+          'div',
+          { class: 'apps' },
+          (Object.keys(APP_LABEL) as AppId[]).map((a) =>
+            h(
+              'button',
+              { class: `app app-${a}`, onclick: () => this.openModal({ kind: 'phone', app: a }, { type: 'openApp', app: a }) },
+              h('span', { class: 'app-icon' }, { chat: '💬', calendar: '📅', memo: '📝', shop: '🛒' }[a]),
+              APP_LABEL[a],
+              a === 'chat' && hasUnreadChat(day) ? h('i', { class: 'dot' }) : null,
+            ),
+          ),
+        ),
+      ];
+    } else if (app === 'chat') body = this.viewChat();
+    else if (app === 'shop') body = this.viewShop();
+    else body = h('div', { class: `paper ${app}` }, this.clueTexts(`app:${app}`, APP_BASE[app]));
+
+    return h(
+      'div',
+      { class: 'phone' },
+      h('div', { class: 'phone-head' }, h('button', { class: 'btn small', onclick: back }, app ? '‹ 戻る' : '閉じる'), h('b', {}, app ? APP_LABEL[app] : 'スマホ'), h('span', { class: 'phone-clock' }, formatTime(day.time))),
+      h('div', { class: 'phone-body' }, body),
+    );
+  }
+
+  private viewChat(): Child {
+    const day = this.day!;
+    const bubble = (from: 'me' | 'wife', text: string, cls = '') => h('div', { class: `bubble ${from} ${cls}` }, text);
+    const ME = '（あなた）';
+    return [
+      h(
+        'div',
+        { class: 'chat-log' },
+        CHAT_HISTORY.map((m) => bubble(m.from, m.text, 'old')),
+        visibleClues(day, 'app:chat').map((c) =>
+          c.text.startsWith(ME) ? bubble('me', c.text.slice(ME.length)) : bubble('wife', c.text, c.unread ? 'unread' : ''),
+        ),
+        day.chatLog.map((m) => bubble(m.from, m.text)),
+      ),
+      h(
+        'div',
+        { class: 'compose' },
+        h('small', { class: 'dim' }, '定型文を送る（2分）'),
+        CHAT_TEMPLATES.map((t) => {
+          const sent = day.flags.has(`chat:${t.id}`);
+          return h(
+            'button',
+            {
+              class: 'template',
+              disabled: sent || !canSendChat(day, t.id),
+              onclick: () => this.act({ type: 'sendChat', template: t.id }, 'se_send'),
+            },
+            sent ? `✓ ${t.text}` : t.text,
+          );
+        }),
+      ),
+    ];
+  }
+
+  private viewShop(): Child {
+    const day = this.day!;
+    const open = day.time <= EXPRESS_DEADLINE;
+    const status = (id: string) => day.orders[id];
+    return [
+      h(
+        'div',
+        { class: `banner${open ? '' : ' closed'}` },
+        open
+          ? `⚡ 特急便: ${formatTime(EXPRESS_DEADLINE)}までのご注文で翌朝お届け（あと${EXPRESS_DEADLINE - day.time + 1}分）`
+          : '本日の特急便の受付は終了しました。今からのご注文は明後日のお届けです。',
+      ),
+      this.clueTexts('app:shop', ''),
+      itemsAt('mail').map((item) => {
+        const st = status(item.id);
+        return this.itemRow(
+          item,
+          `¥${item.price?.toLocaleString()}　${item.desc}`,
+          st === 'express'
+            ? h('span', { class: 'tag ok' }, '翌朝着')
+            : st === 'late'
+              ? h('span', { class: 'tag ng' }, '明後日着')
+              : h('button', { class: 'btn small', onclick: () => this.act({ type: 'order', item: item.id }, 'se_order') }, '注文（3分）'),
+        );
+      }),
+      Object.entries(day.orders).some(([, v]) => v === 'existing' || v === 'canceled')
+        ? h(
+            'div',
+            { class: 'history' },
+            h('b', {}, '注文履歴（発送準備中）'),
+            Object.entries(day.orders)
+              .filter(([, v]) => v === 'existing' || v === 'canceled')
+              .map(([id, v]) =>
+                h(
+                  'div',
+                  { class: 'item' },
+                  h('div', {}, h('b', {}, ITEM_MAP[id]?.name ?? id), h('small', {}, `¥${ITEM_MAP[id]?.price?.toLocaleString()}　0:00 発送処理`)),
+                  v === 'canceled'
+                    ? h('span', { class: 'tag' }, 'キャンセル済み')
+                    : h(
+                        'button',
+                        {
+                          class: 'btn small',
+                          disabled: day.time > CANCEL_DEADLINE,
+                          onclick: () => this.act({ type: 'cancelOrder', item: id }, 'se_tap'),
+                        },
+                        day.time > CANCEL_DEADLINE ? '発送済み' : 'キャンセル（2分）',
+                      ),
+                ),
+              ),
+          )
+        : null,
+    ];
+  }
+
+  // ---------------------------------------------------------------- 街
+
+  private viewKonbini(): HTMLElement {
+    return this.sheet(
+      'コンビニ',
+      [
+        h('p', { class: 'dim' }, 'いらっしゃいませー（1点 2分）'),
+        itemsAt('konbini').map((item) =>
+          this.itemRow(
+            item,
+            `¥${item.price?.toLocaleString()}　${item.desc}`,
+            h('button', { class: 'btn small', onclick: () => this.act({ type: 'buy', item: item.id }, 'se_buy') }, '買う'),
+          ),
+        ),
+      ],
+      () => this.travel('town'),
+      '店を出る',
+    );
+  }
+
+  private viewTrash(): HTMLElement {
+    const day = this.day!;
+    const items = day.inventory.map((id) => ITEM_MAP[id]).filter((i) => i?.discardable);
+    return this.sheet(
+      'ゴミ捨て場',
+      [
+        h('p', { class: 'dim' }, '集積所とコンビニ前のゴミ箱。（1点 1分）'),
+        items.length === 0 ? h('p', { class: 'desc' }, '捨てられるものは持っていない。') : null,
+        items.map((item) =>
+          this.itemRow(
+            item,
+            item.desc,
+            h('button', { class: 'btn small', onclick: () => this.act({ type: 'discard', item: item.id }, 'se_discard') }, '捨てる'),
+          ),
+        ),
+      ],
+      () => this.travel('town'),
+      '街へ戻る',
+    );
+  }
+
+  // ---------------------------------------------------------------- 結末
+
+  private viewTalk(s: Extract<Screen, { name: 'talk' }>): Child[] {
+    const line = s.lines[s.index];
+    const next = () => {
+      this.audio.playSe('se_tap');
+      if (s.index + 1 < s.lines.length) this.go({ ...s, index: s.index + 1 });
+      else s.after();
+    };
+    const who = { me: 'あなた', wife: '妻', narr: '' }[line.who];
+    return [
+      h(
+        'div',
+        { class: `talk ${s.mood}`, onclick: next },
+        h('div', { class: `speech ${line.who}` }, who ? h('b', {}, who) : null, h('p', {}, line.text), h('small', { class: 'dim' }, '▼ タップ')),
+      ),
+    ];
+  }
+
+  private viewGameOver(reason: string, causes: Cause[]): Child[] {
+    return [
+      h(
+        'div',
+        { class: 'center-card gameover' },
+        h('h2', {}, 'GAME OVER'),
+        h('p', {}, `原因: ${reason}`),
+        causes.length ? h('ul', {}, causes.map((c) => h('li', {}, c.title))) : null,
+        h('p', {}, `連続帰宅 ${this.run.streak} 日で途切れた……`),
+        h('p', { class: 'best' }, `最高記録: ${this.best} / ${GOAL_DAYS} 日`),
+        h('button', { class: 'btn primary', onclick: () => this.startRun() }, '1日目からやり直す'),
+        h('button', { class: 'btn', onclick: () => this.go({ name: 'title' }) }, 'タイトルへ'),
+      ),
+    ];
+  }
+
+  private viewClear(): Child[] {
+    return [
+      h(
+        'div',
+        { class: 'center-card clear' },
+        h('div', { class: 'sign' }, h('span', { class: 'sign-no' }, String(GOAL_DAYS)), h('span', {}, '番玄関')),
+        h('h2', {}, `${GOAL_DAYS}日連続 無事帰宅！`),
+        h('p', {}, '妻「最近、ちゃんとしてるじゃない」'),
+        h('p', {}, 'あなたは家庭の平和を守り抜いた。……来週も飲み会が5件入っている。'),
+        h('button', { class: 'btn primary', onclick: () => this.startRun() }, 'もう一度'),
+        h('button', { class: 'btn', onclick: () => this.go({ name: 'title' }) }, 'タイトルへ'),
+      ),
+    ];
+  }
+}

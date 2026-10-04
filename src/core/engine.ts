@@ -1,0 +1,266 @@
+// ゲームの純粋ロジック。DOM・音・描画には一切触らない。
+import { CHAT_MAP } from '../data/chat';
+import { ITEM_MAP } from '../data/items';
+import { SCENARIOS } from '../data/scenarios';
+import {
+  CANCEL_DEADLINE,
+  COST,
+  EXPRESS_DEADLINE,
+  GOAL_DAYS,
+  NO_ANOMALY_RATE,
+  TIME_LIMIT,
+  TRAVEL,
+  causeCountFor,
+  formatTime,
+  startTimeFor,
+} from './config';
+import { evaluate, flagsIn } from './requirement';
+import { shuffle, type Rng } from './rng';
+import type {
+  Action,
+  ActionResult,
+  Cause,
+  Clue,
+  ClueLocation,
+  DayState,
+  Outcome,
+  RunState,
+  Scenario,
+} from './types';
+
+export const newRun = (): RunState => ({ day: 1, used: [], streak: 0 });
+
+const isNormal = (s: Scenario) => s.causes.length === 0;
+
+/**
+ * その日のシナリオを選ぶ。
+ * - 1〜5日目は一定確率で「異変なし」
+ * - 原因の数は causeCountFor(day)。conflictsWith の組み合わせは避ける
+ * - 同じ周回で使ったシナリオは選ばない（足りなくなったら未使用優先で再利用）
+ */
+export const chooseScenarios = (
+  run: RunState,
+  rng: Rng,
+  pool: readonly Scenario[] = SCENARIOS,
+): Scenario[] => {
+  const unused = (list: Scenario[]) => list.filter((s) => !run.used.includes(s.id));
+  const normals = pool.filter(isNormal);
+  const abnormals = pool.filter((s) => !isNormal(s));
+
+  if (run.day <= 5 && rng() < NO_ANOMALY_RATE && unused(normals).length > 0) {
+    return [shuffle(rng, unused(normals))[0]];
+  }
+
+  const want = Math.min(causeCountFor(run.day), abnormals.length);
+  // 未使用を先に、使用済みを後ろに並べて先頭から貪欲に取る
+  const ordered = [...shuffle(rng, unused(abnormals)), ...shuffle(rng, abnormals.filter((s) => run.used.includes(s.id)))];
+  const chosen: Scenario[] = [];
+  for (const s of ordered) {
+    if (chosen.length >= want) break;
+    const clash = chosen.some((c) => c.conflictsWith?.includes(s.id) || s.conflictsWith?.includes(c.id));
+    if (!clash) chosen.push(s);
+  }
+  return chosen;
+};
+
+/** シナリオ（複数可）を合成して1日分の状態を作る */
+export const buildDay = (day: number, scenarios: Scenario[], startTime: number): DayState => {
+  const orders: DayState['orders'] = {};
+  for (const s of scenarios) for (const o of s.startOrders ?? []) orders[o] = 'existing';
+  const normal = scenarios.every(isNormal);
+  return {
+    day,
+    scenarioIds: scenarios.map((s) => s.id),
+    causes: scenarios.flatMap((s) => s.causes),
+    clues: scenarios.flatMap((s) => s.clues),
+    pickups: scenarios.flatMap((s) => s.pickups ?? []),
+    visuals: scenarios.flatMap((s) => s.visuals ?? []),
+    startTime,
+    time: startTime,
+    location: 'door',
+    flags: new Set(),
+    inventory: scenarios.flatMap((s) => (s.startItems ?? []).map((i) => i.item)),
+    orders,
+    chatLog: [],
+    successLines: normal
+      ? scenarios.map((s) => s.successLine ?? 'おかえり。今日もお疲れさま')
+      : scenarios.flatMap((s) => s.causes.map((c) => c.successLine)),
+  };
+};
+
+export const startDay = (run: RunState, rng: Rng, pool: readonly Scenario[] = SCENARIOS): DayState => {
+  const scenarios = chooseScenarios(run, rng, pool);
+  run.used.push(...scenarios.map((s) => s.id));
+  return buildDay(run.day, scenarios, startTimeFor(run.day, rng()));
+};
+
+/** 帰宅成功時に周回を進める。クリアしたら true */
+export const advanceRun = (run: RunState): boolean => {
+  run.streak += 1;
+  run.day += 1;
+  return run.streak >= GOAL_DAYS;
+};
+
+// ------------------------------------------------------------------ 参照系
+
+export const visibleClues = (state: DayState, at: ClueLocation): Clue[] =>
+  state.clues.filter((c) => c.at === at && !(c.hiddenWhen && evaluate(c.hiddenWhen, state.flags)));
+
+export const unresolvedCauses = (state: DayState): Cause[] =>
+  state.causes.filter((c) => !evaluate(c.resolution, state.flags));
+
+/** チャット定型文がその日の原因に関係あるか */
+export const isChatRelevant = (state: DayState, templateId: string): boolean =>
+  state.causes.some((c) => flagsIn(c.resolution).includes(`chat:${templateId}`));
+
+export const canSendChat = (state: DayState, templateId: string): boolean => {
+  const t = CHAT_MAP[templateId];
+  if (!t || state.flags.has(`chat:${templateId}`)) return false;
+  return !t.requires || evaluate(t.requires, state.flags);
+};
+
+export const hasUnreadChat = (state: DayState): boolean =>
+  !state.flags.has('read:chat') && visibleClues(state, 'app:chat').some((c) => c.unread);
+
+// ------------------------------------------------------------------ 行動
+
+const result = (ok: boolean, messages: string[], cost = 0, outcome: Outcome = { kind: 'continue' }): ActionResult => ({
+  ok,
+  messages,
+  cost,
+  outcome,
+});
+
+/** 初回だけ時間がかかる「見る」系の行動 */
+const look = (state: DayState, key: string, cost: number): ActionResult => {
+  const flag = `seen:${key}`;
+  if (state.flags.has(flag)) return result(true, []);
+  state.flags.add(flag);
+  return result(true, [], cost);
+};
+
+const act = (state: DayState, action: Action): ActionResult => {
+  switch (action.type) {
+    case 'inspect':
+      if (state.location !== 'door') return result(false, ['家の前にいないと調べられない。']);
+      return look(state, `spot:${action.spot}`, COST.inspect);
+
+    case 'openSlot':
+      return look(state, `slot:${action.slot}`, COST.openSlot);
+
+    case 'openApp': {
+      // ベンチは通販アプリを開くための場所なので、ベンチで開く通販はタダ
+      const cost = action.app === 'shop' && state.location === 'bench' ? 0 : COST.openApp;
+      const r = look(state, `app:${action.app}`, cost);
+      if (action.app === 'chat') state.flags.add('read:chat');
+      return r;
+    }
+
+    case 'sendChat': {
+      const t = CHAT_MAP[action.template];
+      if (!t) return result(false, ['そんなメッセージは無い。']);
+      if (state.flags.has(`chat:${t.id}`)) return result(false, ['それはもう送った。']);
+      if (t.requires && !evaluate(t.requires, state.flags)) return result(false, ['まだそれを言える状況じゃない。']);
+      state.flags.add(`chat:${t.id}`);
+      state.chatLog.push({ from: 'me', text: t.text });
+      const relevant = isChatRelevant(state, t.id);
+      const reply = relevant ? t.replyRelevant : t.replyIrrelevant;
+      if (reply) state.chatLog.push({ from: 'wife', text: reply });
+      if (relevant || t.neutral) return result(true, ['送信した。'], COST.sendChat);
+      return result(
+        true,
+        ['妻から電話がかかってきた……。', `しどろもどろの言い訳で ${COST.chatPenalty} 分を失った。`],
+        COST.sendChat + COST.chatPenalty,
+      );
+    }
+
+    case 'order': {
+      const item = ITEM_MAP[action.item];
+      if (!item || item.source !== 'mail') return result(false, ['その商品は通販にない。']);
+      if (state.orders[item.id] && state.orders[item.id] !== 'canceled') return result(false, ['もう注文してある。']);
+      if (state.time <= EXPRESS_DEADLINE) {
+        state.orders[item.id] = 'express';
+        state.flags.add(`ordered:${item.id}`);
+        return result(true, [`「${item.name}」を特急便で注文した。明日の朝届く！`], COST.order);
+      }
+      state.orders[item.id] = 'late';
+      state.flags.add(`ordered_late:${item.id}`);
+      return result(
+        true,
+        [`「${item.name}」を注文した。……特急便の締切（${formatTime(EXPRESS_DEADLINE)}）を過ぎていて、明後日着になった。`],
+        COST.order,
+      );
+    }
+
+    case 'cancelOrder': {
+      if (state.orders[action.item] !== 'existing') return result(false, ['キャンセルできる注文がない。']);
+      if (state.time > CANCEL_DEADLINE) return result(false, ['発送処理済みのため、キャンセルできません。']);
+      state.orders[action.item] = 'canceled';
+      state.flags.add(`canceled:${action.item}`);
+      return result(true, [`「${ITEM_MAP[action.item]?.name ?? action.item}」の注文をキャンセルした。`], COST.cancelOrder);
+    }
+
+    case 'buy': {
+      const item = ITEM_MAP[action.item];
+      if (state.location !== 'konbini') return result(false, ['コンビニにいない。']);
+      if (!item || item.source !== 'konbini') return result(false, ['その商品はコンビニに置いていない。']);
+      state.inventory.push(item.id);
+      state.flags.add(`bought:${item.id}`);
+      return result(true, [`「${item.name}」を買った。`], COST.buy);
+    }
+
+    case 'discard': {
+      const item = ITEM_MAP[action.item];
+      const idx = state.inventory.indexOf(action.item);
+      if (state.location !== 'trash') return result(false, ['ゴミ捨て場にいない。']);
+      if (idx < 0 || !item?.discardable) return result(false, ['それは捨てられない。']);
+      state.inventory.splice(idx, 1);
+      state.flags.add(`discarded:${item.id}`);
+      return result(true, [`「${item.name}」を捨てた。`], COST.discard);
+    }
+
+    case 'use': {
+      const item = ITEM_MAP[action.item];
+      const idx = state.inventory.indexOf(action.item);
+      if (idx < 0 || !item?.useLabel) return result(false, ['それは使えない。']);
+      state.inventory.splice(idx, 1);
+      state.flags.add(`used:${item.id}`);
+      return result(true, [item.useMessage ?? `${item.name}を使った。`], COST.use);
+    }
+
+    case 'pickup': {
+      const p = state.pickups.find((x) => x.item === action.item);
+      if (!p || state.location !== 'door') return result(false, ['ここには無い。']);
+      if (state.flags.has(`picked:${p.item}`)) return result(false, ['もう持っている。']);
+      state.flags.add(`picked:${p.item}`);
+      state.inventory.push(p.item);
+      return result(true, [`${ITEM_MAP[p.item]?.name ?? p.item}を持った。`], COST.pickup);
+    }
+
+    case 'travel': {
+      if (state.location === action.to) return result(true, []);
+      const cost = TRAVEL[state.location][action.to];
+      if (cost === undefined) return result(false, ['そこへは直接行けない。']);
+      state.location = action.to;
+      return result(true, [], cost);
+    }
+
+    case 'openDoor': {
+      if (state.location !== 'door') return result(false, ['ドアの前にいない。']);
+      const angry = unresolvedCauses(state);
+      if (angry.length > 0) return result(true, [], 0, { kind: 'angry', causes: angry });
+      return result(true, [], 0, { kind: 'home', lines: state.successLines });
+    }
+  }
+};
+
+/**
+ * 行動を実行して状態を更新する。時間経過と「遅すぎる」判定もここで行う。
+ * 判定は「openDoor 時点で全 cause が解消済みか」だけ。
+ */
+export const perform = (state: DayState, action: Action): ActionResult => {
+  const r = act(state, action);
+  state.time += r.cost;
+  if (state.time > TIME_LIMIT) return { ...r, outcome: { kind: 'late' } };
+  return r;
+};
