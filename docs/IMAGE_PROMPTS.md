@@ -16,6 +16,7 @@ consistent with a mobile casual game, no text, no letters, no watermark
 * 文字は入れない指定にしてある（AI が描く文字は崩れやすいので、看板などは「読めない程度のぼかし」にする）
 * 背景は **縦 9:16**（例: 1080×1920）。少しはみ出しても中央基準で切り取って表示される
 * アイテム・オーバーレイは **透過 PNG**。透過が出せない場合は「plain white background」で生成すれば、こちらで抜き処理できる
+* PNG 以外（JPG など）で置くときは、`src/assets/manifest.ts` の `file` の拡張子も合わせる
 * できれば既存の `bg_door.png` を参照画像（image-to-image / スタイル参照）に指定すると絵柄が揃う
 
 ---
@@ -24,10 +25,10 @@ consistent with a mobile casual game, no text, no letters, no watermark
 
 | ファイル | 用途 |
 |---|---|
-| `bg_town.png` | 「引き返す」で出る夜の街 |
-| `bg_trash.png` | ゴミ捨て場 |
-| `bg_bench.png` | 公園のベンチ（通販を使う場所） |
-| `clear.png` | 8日連続クリアの画面 |
+| `bg_town.jpg` | 「引き返す」で出る夜の街 ✅ 作成済み |
+| `bg_trash.jpg` | ゴミ捨て場 ✅ 作成済み |
+| `bg_bench.jpg` | 公園のベンチ（通販を使う場所） ✅ 作成済み |
+| `clear.jpg` | 8日連続クリアの画面 ✅ 作成済み |
 
 **bg_town.png**
 ```

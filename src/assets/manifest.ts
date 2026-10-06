@@ -35,10 +35,10 @@ export const IMAGES = {
   wet_floor: { file: 'wet_floor.png', label: '水たまり', color: '#4a79a8' },
   // --- 街 ---
   bg_title: { file: 'bg_title.png', label: '8番玄関', color: '#10141c', fit: 'cover' },
-  bg_town: { file: 'bg_town.png', label: '夜の街', color: '#1d2333', fit: 'cover' },
+  bg_town: { file: 'bg_town.jpg', label: '夜の街', color: '#1d2333', fit: 'cover' },
   bg_konbini: { file: 'bg_konbini.png', label: 'コンビニ店内', color: '#dfe9e4', fit: 'cover' },
-  bg_trash: { file: 'bg_trash.png', label: 'ゴミ捨て場', color: '#38403a', fit: 'cover' },
-  bg_bench: { file: 'bg_bench.png', label: '公園のベンチ', color: '#25352a', fit: 'cover' },
+  bg_trash: { file: 'bg_trash.jpg', label: 'ゴミ捨て場', color: '#38403a', fit: 'cover' },
+  bg_bench: { file: 'bg_bench.jpg', label: '公園のベンチ', color: '#25352a', fit: 'cover' },
   // --- 人物・結末 ---
   hero: { file: 'hero.png', label: '主人公', color: '#4b5a74' },
   wife_angry: { file: 'wife_angry.png', label: '鬼の形相の妻', color: '#7a1010', fit: 'cover' },
@@ -47,7 +47,7 @@ export const IMAGES = {
   wife_suspicious: { file: 'wife_suspicious.png', label: '腕組みの妻', color: '#5a4a4a', fit: 'cover' },
   /** wife_angry に炎が描き込まれていれば不要 */
   fire: { file: 'fire.png', label: '炎', color: '#ff5a1f' },
-  clear: { file: 'clear.png', label: '8日連続 帰宅成功！', color: '#f7d774', fit: 'cover' },
+  clear: { file: 'clear.jpg', label: '8日連続 帰宅成功！', color: '#f7d774', fit: 'cover' },
   // --- 持ち物・手がかりのイラスト（UI 内に表示。無ければ出さない） ---
   shirt_clean: { file: 'shirt_clean.png', label: 'ワイシャツ', color: '#eeeeee' },
   shirt_lipstick: { file: 'shirt_lipstick.png', label: '口紅つきシャツ', color: '#f3d3d3' },

@@ -112,14 +112,14 @@ npm run preview    # ビルド結果の確認
 | garbage_bag.png | 玄関脇のゴミ袋 | — |
 | wet_floor.png | 足元の水たまり | — |
 | door / window / nameplate / floor / hallway.png | 玄関前のパーツ差し替え（任意） | — |
-| bg_town.png / bg_trash.png / bg_bench.png | 夜の街・ゴミ捨て場・公園のベンチ | — |
+| bg_town.jpg / bg_trash.jpg / bg_bench.jpg | 夜の街・ゴミ捨て場・公園のベンチ | ✅ |
 | bg_konbini.png | コンビニ店内 | ✅ |
 | wife_smile.png | おかえりの妻 | ✅ |
 | wife_angry.png | 鬼の形相の妻（炎込み） | ✅ |
 | wife_dark.png | 時間切れの無言の妻 | ✅ |
 | wife_suspicious.png | ゲームオーバー画面の背景 | ✅ |
 | fire.png | 炎（wife_angry が無いときの代替演出用） | — |
-| clear.png | クリア画面 | — |
+| clear.jpg | クリア画面 | ✅ |
 | shirt_clean.png / shirt_lipstick.png | 替えのシャツ / 口紅つきシャツ | ✅ |
 | item_card.png / item_receipt.png | 店の名刺 / レシート | ✅ |
 | item_bouquet.png / item_shopping_bag.png | 花束 / レジ袋（牛乳・卵） | ✅ |

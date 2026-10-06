@@ -708,3 +708,15 @@ button:disabled {
   color: #888;
   font-size: 0.8em;
 }
+
+/* クリア画面は絵（朝食の二人）を見せるため、カードを下に寄せて少し透かす */
+.center-card.clear {
+  top: auto;
+  bottom: 3%;
+  transform: none;
+  padding: 1em 1.2em;
+  background: rgba(20, 24, 33, 0.82);
+}
+.center-card.clear .sign {
+  font-size: 1.6em;
+}
