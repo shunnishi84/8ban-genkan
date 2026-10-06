@@ -60,10 +60,11 @@ describe('データの参照整合性', () => {
     }
   });
 
-  it('チャット定型文の前提フラグが実在するアイテムを指している', () => {
+  it('チャット定型文の前提フラグが実在するアイテム・定型文を指している', () => {
     for (const t of CHAT_TEMPLATES) {
       for (const f of t.requires ? flagsIn(t.requires) : []) {
-        expect(ITEM_MAP[f.split(':')[1]], `${t.id}: ${f}`).toBeDefined();
+        const [kind, id] = f.split(':');
+        expect(kind === 'chat' ? CHAT_MAP[id] : ITEM_MAP[id], `${t.id}: ${f}`).toBeDefined();
       }
     }
   });

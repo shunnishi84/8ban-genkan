@@ -44,6 +44,19 @@ export const ITEMS: ItemDef[] = [
     useLabel: '締める',
     useMessage: '紺のネクタイをキュッと締めた。暗いし、紺ならバレない……はず。',
   },
+  { id: 'ice_cream', name: 'プレミアムバニラアイス', desc: 'ちょっと高いやつ。妻の機嫌が直る（はず）。', source: 'konbini', price: 324, slot: 'bag' },
+  {
+    id: 'glue',
+    name: '強力瞬間接着剤',
+    desc: '陶器もくっつく。',
+    source: 'konbini',
+    price: 440,
+    slot: 'bag',
+    useLabel: '割れたマグカップを直す',
+    useRequires: 'broken_mug',
+    useResult: 'fixed_mug',
+    useMessage: '破片をひとつずつ接着した。ヒビは残ったが、形は元どおりだ。',
+  },
   // 紛らわしい商品（買っても何も解決しない）
   { id: 'detergent_generic', name: '洗剤 詰め替え（ノーブランド）', desc: '…いつものとは違うやつ。', source: 'konbini', price: 358, slot: 'bag' },
   { id: 'vinyl_umbrella', name: 'ビニール傘', desc: '透明。花柄ではない。', source: 'konbini', price: 550, slot: 'bag' },
@@ -56,6 +69,7 @@ export const ITEMS: ItemDef[] = [
   { id: 'pair_glass', name: '名入れペアグラス', desc: '記念日ギフトの大定番。', source: 'mail', price: 6800, slot: 'bag' },
   { id: 'umbrella_same', name: '花柄ジャンプ傘（限定色）', desc: '妻と同じモデル。在庫ラスト1。', source: 'mail', price: 3800, slot: 'bag' },
   { id: 'limited_pudding', name: '駅ナカ限定 窯出しとろけるプリン（お取り寄せ）', desc: '妻が楽しみにしていたやつ。', source: 'mail', price: 1620, slot: 'bag' },
+  { id: 'onsen_ticket', name: '温泉ペア宿泊ギフト（eギフト）', desc: '箱根の老舗旅館。明朝メールで届く。', source: 'mail', price: 39800, slot: 'bag' },
   { id: 'kashiori', name: '老舗の菓子折り「千年最中」', desc: '義母が好きなやつ。', source: 'mail', price: 3240, slot: 'bag' },
 
   // --- シナリオ専用 ---
@@ -73,6 +87,8 @@ export const ITEMS: ItemDef[] = [
     useLabel: '指にはめる',
     useMessage: '左手の薬指に指輪をはめ直した。しっくりくる。',
   },
+  { id: 'broken_mug', name: '割れたマグカップ', desc: '新聞紙にくるんだ妻の青いマグカップ。昨日割った。', source: 'none', slot: 'bag' },
+  { id: 'fixed_mug', name: '直したマグカップ', desc: 'ヒビは残ったが、ちゃんと使える。', source: 'none', slot: 'bag' },
   { id: 'ramen_receipt', name: 'ラーメン屋のレシート', desc: '『麺処 夜の蝶 — 特製味噌ラーメン ¥980／餃子 ¥380』', source: 'none', slot: 'wallet', discardable: true },
 ];
 

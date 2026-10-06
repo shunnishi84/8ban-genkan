@@ -38,6 +38,8 @@ export const SPOT_RECTS: Record<SpotId, Rect> = {
 const OVERLAY_RECTS: Record<string, Rect> = {
   window_garland: art(177, 93, 43, 93),
   window_candle: art(186, 140, 22, 34),
+  window_dark: art(177, 93, 43, 93),
+  window_tv: art(180, 120, 36, 50),
   garbage_bag: art(2, 270, 40, 48),
   wet_floor: art(56, 322, 120, 14),
 };

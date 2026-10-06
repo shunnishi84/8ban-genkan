@@ -350,6 +350,142 @@ export const SCENARIOS: Scenario[] = [
       { at: 'app:chat', cause: 'tie_lost', text: '今日、私があげたネクタイしてってくれたね☺️（8:05）' },
     ],
   },
+  // ---------------------------------------------------------------- 14
+  {
+    id: 'morning_fight',
+    title: '朝、喧嘩して出てきた',
+    causes: [
+      {
+        id: 'morning_fight',
+        title: '朝の喧嘩',
+        resolution: { all: ['bought:ice_cream', 'chat:morning_sorry'] },
+        angerLines: [
+          '……朝のこと、まだ終わってないから。',
+          '「悪かったって言ってるだろ」って、それ謝ってないよね？',
+          '明日からあなたの朝ごはんは、自己責任です。',
+        ],
+        successLine: '……アイス、半分こなら許す。',
+      },
+    ],
+    clues: [
+      { at: 'app:chat', cause: 'morning_fight', text: '（あなた）だから悪かったって言ってるだろ（7:46）' },
+      { at: 'app:chat', cause: 'morning_fight', text: 'もういい。（7:48）' },
+      { at: 'spot:door', cause: 'morning_fight', text: 'ドアの向こうから、いつもの「おかえり」の気配がまったくしない。' },
+      { at: 'slot:bag', cause: 'morning_fight', text: '朝、玄関で投げつけられたスリッパが鞄に挟まったままだ。' },
+      { at: 'app:memo', cause: 'morning_fight', text: '【自分用】妻の機嫌が直るもの: ちょっと高いバニラアイス' },
+    ],
+  },
+  // ---------------------------------------------------------------- 15
+  {
+    id: 'wrong_send',
+    title: '妻の悪口を妻に誤爆した',
+    causes: [
+      {
+        id: 'wrong_send',
+        title: '悪口の誤爆',
+        resolution: 'unsent:wrong_send',
+        angerLines: [
+          '「鬼軍曹」って、誰のこと？',
+          '口うるさくて悪かったわね。今から2時間、黙って説教を聞いてもらいます。',
+          '……あ、ちなみにスクショは撮ってあるから。',
+        ],
+        successLine: '今日は早く寝ちゃった。……なんか送ってきた？（……セーフ）',
+      },
+    ],
+    clues: [
+      {
+        at: 'app:chat',
+        cause: 'wrong_send',
+        id: 'wrong_send',
+        unsendable: true,
+        text: '（あなた）うちの嫁、最近マジで口うるさくてさ〜 鬼軍曹かよｗ（22:58）',
+      },
+      { at: 'app:chat', cause: 'wrong_send', text: '今日は疲れたから先に寝るね。0時までには寝る〜（21:00）' },
+      {
+        at: 'notice',
+        cause: 'wrong_send',
+        text: '💬 送信済み: 妻「うちの嫁、最近マジで…」 ……ん？ 友達に送ったはずでは？',
+        hiddenWhen: 'unsent:wrong_send',
+      },
+    ],
+  },
+  // ---------------------------------------------------------------- 16
+  {
+    id: 'broken_mug',
+    title: '妻のマグカップを割って隠している',
+    startItems: [{ item: 'broken_mug' }],
+    causes: [
+      {
+        id: 'broken_mug',
+        title: 'マグカップ隠蔽',
+        resolution: { all: ['used:glue', 'chat:mug_sorry'] },
+        angerLines: [
+          '青いマグカップ、知らないって言ったよね？',
+          '……ゴミ箱の奥から、破片が出てきたんだけど。',
+          'あなたのマグカップ、今日から紙コップです。',
+        ],
+        successLine: '……接着剤のあと、味があるかもね。正直に言ってくれてありがと。',
+      },
+    ],
+    clues: [
+      {
+        at: 'slot:bag',
+        cause: 'broken_mug',
+        text: '鞄の奥に、新聞紙でくるんだ破片……。昨日割った妻の青いマグカップだ。隠したままだった。',
+        hiddenWhen: 'used:glue',
+      },
+      { at: 'app:chat', cause: 'broken_mug', unread: true, text: '私の青いマグカップ知らない？ 食器棚にないんだけど（21:30）' },
+      { at: 'app:memo', cause: 'broken_mug', text: '【自分用】マグカップの件、今日こそ言う' },
+    ],
+  },
+  // ---------------------------------------------------------------- 17
+  {
+    id: 'tv_interview',
+    title: 'テレビのインタビューで妻の悪口',
+    visuals: ['window_tv'],
+    causes: [
+      {
+        id: 'tv_interview',
+        title: 'テレビで悪口',
+        resolution: { all: ['ordered:onsen_ticket', 'chat:tv_sorry'] },
+        angerLines: [
+          '「うちの嫁は鬼です」……全国放送で。',
+          'モザイクなしで、ばっちり映ってたよ。',
+          'お望みどおり、鬼になってあげる。',
+        ],
+        successLine: '温泉……？ まあ、鬼もたまには休みたいしね。',
+      },
+    ],
+    clues: [
+      { at: 'notice', cause: 'tv_interview', image: 'tv_capture', text: '📺 見逃し配信「街の声: 新橋のサラリーマンに聞いた 奥さんってどんな人？」' },
+      { at: 'app:chat', cause: 'tv_interview', unread: true, text: 'ねえ、今テレビに出てたよね？ 「うちの嫁は鬼です」ってどういうこと？（22:30）' },
+      { at: 'spot:window', cause: 'tv_interview', text: '窓の向こうでテレビの青い光がチラチラしている。……同じ場面を何度も巻き戻しているようだ。' },
+      { at: 'app:calendar', cause: 'tv_interview', text: '今日 19:00 新橋で飲み会（駅前でテレビの取材に捕まった気がする）' },
+    ],
+  },
+  // ---------------------------------------------------------------- 18
+  {
+    id: 'kouhai_chat',
+    title: '後輩女子との仲良しチャットがバレた',
+    causes: [
+      {
+        id: 'kouhai_chat',
+        title: '後輩とのチャット',
+        resolution: { all: ['chat:kouhai_photo', 'chat:kouhai_explain'] },
+        angerLines: [
+          '「先輩♡」……ハート、ついてたね。',
+          '「また二人で」？ どこへ？ 何回目？',
+          '家のタブレット、今日からリビングのど真ん中に置きます。',
+        ],
+        successLine: '8人で焼き鳥ね。……部長の隣で目が死んでる写真、保存しといた。',
+      },
+    ],
+    clues: [
+      { at: 'notice', cause: 'kouhai_chat', image: 'kouhai_notice', text: '💬 佐藤（後輩）: 先輩、今日も楽しかったです♡ また二人で行きましょ〜' },
+      { at: 'app:chat', cause: 'kouhai_chat', unread: true, text: '家のタブレットに通知来てたんだけど。「また二人で」って何？（22:50）' },
+      { at: 'app:calendar', cause: 'kouhai_chat', text: '今日 18:30 課の飲み会（8名）＠焼き鳥 とり吉' },
+    ],
+  },
 
   // ================================================================ 異変なし（ニセ異変入り）
   {
@@ -386,6 +522,20 @@ export const SCENARIOS: Scenario[] = [
       { at: 'spot:door', text: 'カレーのいい匂いがする……。よく嗅ぐと、隣の部屋の換気扇からだ。' },
       { at: 'app:chat', text: '今日は友達とご飯行ってくる〜。そっちも楽しんで！（17:20）' },
       { at: 'spot:hallway', text: '廊下に不在票が落ちている……と思ったら、お隣さん宛てだった。' },
+    ],
+  },
+  {
+    id: 'wife_away',
+    title: '異変なし: 妻は実家に帰省中',
+    causes: [],
+    homeAlone: true,
+    visuals: ['window_dark'],
+    successLine: '（……そうだ、妻は実家に帰ってるんだった。カップ麺でも食べて寝よう）',
+    clues: [
+      { at: 'spot:window', text: '部屋の灯りが真っ暗だ……！ まさか、家出……!?' },
+      { at: 'spot:door', text: '郵便受けにチラシが2日分たまっている。' },
+      { at: 'app:calendar', text: '今日〜日曜: 妻、実家に帰省（お義母さんの手伝い）' },
+      { at: 'app:chat', text: '実家着いた〜！ お母さんがよろしくって（18:20）' },
     ],
   },
 ];

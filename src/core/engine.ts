@@ -85,6 +85,7 @@ export const buildDay = (day: number, scenarios: Scenario[], startTime: number):
     successLines: normal
       ? scenarios.map((s) => s.successLine ?? 'おかえり。今日もお疲れさま')
       : scenarios.flatMap((s) => s.causes.map((c) => c.successLine)),
+    homeAlone: scenarios.length > 0 && scenarios.every((s) => s.homeAlone),
   };
 };
 
@@ -105,6 +106,23 @@ export const advanceRun = (run: RunState): boolean => {
 
 export const visibleClues = (state: DayState, at: ClueLocation): Clue[] =>
   state.clues.filter((c) => c.at === at && !(c.hiddenWhen && evaluate(c.hiddenWhen, state.flags)));
+
+/** チャット本文末尾の「（HH:MM）」/「（昨日）」から並び順のキーを作る。時刻の無いものは最後 */
+const chatTimeKey = (text: string): number => {
+  if (text.includes('（昨日）')) return -1;
+  const m = text.match(/（(\d{1,2}):(\d{2})）\s*$/);
+  return m ? Number(m[1]) * 60 + Number(m[2]) : Number.POSITIVE_INFINITY;
+};
+
+/**
+ * チャットアプリに出す手がかりを時刻順に並べる。
+ * 複数シナリオを合成した日でも、メッセージの時系列が前後しないようにする（同時刻は元の順）。
+ */
+export const chatTimeline = (state: DayState): Clue[] =>
+  visibleClues(state, 'app:chat')
+    .map((c, i) => ({ c, i, k: chatTimeKey(c.text) }))
+    .sort((a, b) => a.k - b.k || a.i - b.i)
+    .map((x) => x.c);
 
 export const unresolvedCauses = (state: DayState): Cause[] =>
   state.causes.filter((c) => !evaluate(c.resolution, state.flags));
@@ -223,7 +241,13 @@ const act = (state: DayState, action: Action): ActionResult => {
       const item = ITEM_MAP[action.item];
       const idx = state.inventory.indexOf(action.item);
       if (idx < 0 || !item?.useLabel) return result(false, ['それは使えない。']);
+      if (item.useRequires && !state.inventory.includes(item.useRequires)) {
+        return result(false, [`${ITEM_MAP[item.useRequires]?.name ?? item.useRequires}が無いと使えない。`]);
+      }
       state.inventory.splice(idx, 1);
+      if (item.useRequires && item.useResult) {
+        state.inventory[state.inventory.indexOf(item.useRequires)] = item.useResult;
+      }
       state.flags.add(`used:${item.id}`);
       return result(true, [item.useMessage ?? `${item.name}を使った。`], COST.use);
     }
@@ -235,6 +259,15 @@ const act = (state: DayState, action: Action): ActionResult => {
       state.flags.add(`picked:${p.item}`);
       state.inventory.push(p.item);
       return result(true, [`${ITEM_MAP[p.item]?.name ?? p.item}を持った。`], COST.pickup);
+    }
+
+    case 'unsend': {
+      const clue = state.clues.find((c) => c.id === action.clue && c.unsendable);
+      if (!clue) return result(false, ['取り消せるメッセージがない。']);
+      if (state.flags.has(`unsent:${action.clue}`)) return result(false, ['もう取り消した。']);
+      if (state.time > CANCEL_DEADLINE) return result(false, ['既読がついている……。もう取り消せない。']);
+      state.flags.add(`unsent:${action.clue}`);
+      return result(true, ['メッセージの送信を取り消した。……セーフ。'], COST.unsend);
     }
 
     case 'travel': {

@@ -70,13 +70,16 @@ npm run preview    # ビルド結果の確認
 
 | 追加先 | 内容 |
 |---|---|
-| `src/data/items.ts` | 新しい商品（`source: 'konbini' \| 'mail' \| 'none'`）。`useLabel` を付けると持ち物画面で「使う」ボタンが出る |
+| `src/data/items.ts` | 新しい商品（`source: 'konbini' \| 'mail' \| 'none'`）。`useLabel` を付けると持ち物画面で「使う」ボタンが出る。`useRequires` / `useResult` で「接着剤 → 割れたマグカップを直す」のような組み合わせも作れる |
 | `src/data/chat.ts` | 新しい定型文。`requires` で送信条件（例: 注文済み）を付けられる |
 | `src/assets/manifest.ts` | 玄関前の見た目を変えるオーバーレイ（`visuals`）や手がかりのイラスト（`image`） |
 
 使える仕掛け: `startItems`（最初から持っている物）、`pickups`（玄関前で拾える物）、
+`unsendable`（0:00 の既読前なら送信取消できる誤爆メッセージ）、`homeAlone`（妻が不在の日）、
 `startOrders`（キャンセルが必要な既存注文）、`hiddenWhen`（対処したら消える描写）、
 `conflictsWith`（同じ日に組み合わせないシナリオ）、`unread`（チャットの未読表示）。
+
+チャットの手がかりは本文の末尾に `（HH:MM）` か `（昨日）` を付ける。複数の火種が重なった日でも時刻順に並ぶ（テストで付け忘れを検出する）。
 
 追加したら **`npm test`** を実行する。テストが以下を自動で確認する:
 
@@ -94,6 +97,8 @@ npm run preview    # ビルド結果の確認
 
 ✅ = 同梱済み（提供イラストシートから切り出し）、— = 未作成（仮の四角＋ラベルで表示）
 
+未作成の画像を生成するためのプロンプトは [docs/IMAGE_PROMPTS.md](docs/IMAGE_PROMPTS.md) にまとめてある。
+
 | ファイル | 用途 | 状態 |
 |---|---|---|
 | bg_door.png | 玄関前の一枚絵（224x367 基準。当たり判定は `renderer.ts` の `SPOT_RECTS`） | ✅ |
@@ -102,6 +107,8 @@ npm run preview    # ビルド結果の確認
 | hero.png | 主人公（タイトル・幕間） | ✅ |
 | window_garland.png | 誕生日の飾り付け（窓に重ねる） | ✅ |
 | window_candle.png | 結婚記念日のキャンドル（窓に重ねる） | — |
+| window_dark.png | 妻が帰省中で真っ暗な窓 | ✅ |
+| window_tv.png | テレビの青い光（窓に重ねる） | — |
 | garbage_bag.png | 玄関脇のゴミ袋 | — |
 | wet_floor.png | 足元の水たまり | — |
 | door / window / nameplate / floor / hallway.png | 玄関前のパーツ差し替え（任意） | — |
@@ -116,6 +123,8 @@ npm run preview    # ビルド結果の確認
 | shirt_clean.png / shirt_lipstick.png | 替えのシャツ / 口紅つきシャツ | ✅ |
 | item_card.png / item_receipt.png | 店の名刺 / レシート | ✅ |
 | item_bouquet.png / item_shopping_bag.png | 花束 / レジ袋（牛乳・卵） | ✅ |
+| item_cake / ice_cream / glue / broken_mug / fixed_mug / onsen_ticket / golf_club / empty_can / ring / mint .png | 持ち物アイコン（無ければ文字だけ） | — |
+| tv_capture.png / kouhai_notice.png | 手がかりに添えるイラスト（無ければ文字だけ） | — |
 
 ### 音声（`public/assets/audio/`）
 

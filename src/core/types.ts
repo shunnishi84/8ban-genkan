@@ -29,7 +29,7 @@ export type ClueLocation =
  * フラグ名の規約（engine.ts が立てる）:
  *   bought:<item>  ordered:<item>  ordered_late:<item>  canceled:<item>
  *   discarded:<item>  used:<item>  picked:<item>  chat:<template>
- *   seen:<location>  read:chat
+ *   unsent:<clue>  seen:<location>  read:chat
  */
 export type Requirement = string | { all: Requirement[] } | { any: Requirement[] };
 
@@ -40,6 +40,10 @@ export interface Clue {
   cause?: string;
   /** チャットアプリ用: 妻からのメッセージを未読として表示する */
   unread?: boolean;
+  /** unsendable 等で参照するための ID */
+  id?: string;
+  /** 自分が送ったチャット: 妻が既読にする前（0:00 まで）なら送信取消できる。取り消すと unsent:<id> */
+  unsendable?: boolean;
   /** 手がかりに添えるイラスト（assets/manifest.ts の IMAGES のキー） */
   image?: string;
   /** この条件を満たしたら表示しない（着替えたら口紅の描写が消える等） */
@@ -87,6 +91,8 @@ export interface Scenario {
   visuals?: string[];
   /** 同じ日に組み合わせない シナリオID */
   conflictsWith?: string[];
+  /** 妻が不在の日（実家に帰省中など）。帰宅シーンが「ただいま…（返事なし）」になる */
+  homeAlone?: boolean;
   /** 異変なしの日の帰宅セリフ */
   successLine?: string;
 }
@@ -106,6 +112,10 @@ export interface ItemDef {
   discardable?: boolean;
   /** 所持品画面のボタン（着替える、食べる 等）。押すと used:<id> が立つ */
   useLabel?: string;
+  /** 使うのにこのアイテムを持っている必要がある（接着剤 → 割れたマグカップ） */
+  useRequires?: string;
+  /** 使ったあと useRequires のアイテムをこれに置き換える（割れたマグカップ → 直したマグカップ） */
+  useResult?: string;
   useMessage?: string;
 }
 
@@ -141,6 +151,7 @@ export interface DayState {
   /** その日に送ったチャット（妻の返信込み）。過去ログ・手がかりは含まない */
   chatLog: { from: 'me' | 'wife'; text: string }[];
   successLines: string[];
+  homeAlone: boolean;
 }
 
 export interface RunState {
@@ -161,6 +172,7 @@ export type Action =
   | { type: 'discard'; item: string }
   | { type: 'use'; item: string }
   | { type: 'pickup'; item: string }
+  | { type: 'unsend'; clue: string }
   | { type: 'travel'; to: Location }
   | { type: 'openDoor' };
 

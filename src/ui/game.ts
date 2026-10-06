@@ -16,6 +16,7 @@ import {
   advanceRun,
   buildDay,
   canSendChat,
+  chatTimeline,
   hasUnreadChat,
   newRun,
   perform,
@@ -40,7 +41,7 @@ type Screen =
   | { name: 'howto' }
   | { name: 'intro' }
   | { name: 'play' }
-  | { name: 'talk'; mood: 'angry' | 'home'; late?: boolean; lines: Line[]; index: number; after: () => void }
+  | { name: 'talk'; mood: 'angry' | 'home'; late?: boolean; alone?: boolean; lines: Line[]; index: number; after: () => void }
   | { name: 'gameover'; reason: string; causes: Cause[] }
   | { name: 'clear' };
 
@@ -182,16 +183,24 @@ export class Game {
   private goHome(successLines: string[]) {
     this.audio.playSe('se_door');
     window.setTimeout(() => this.audio.playSe('se_success'), 300);
-    const lines: Line[] = [
-      { who: 'me', text: 'ただいま……' },
-      { who: 'wife', text: 'おかえり。' },
-      ...successLines.map((text) => ({ who: 'wife' as const, text })),
-    ];
+    const alone = this.day!.homeAlone;
+    const lines: Line[] = alone
+      ? [
+          { who: 'me', text: 'ただいま……' },
+          { who: 'narr', text: 'シーン……。返事はない。' },
+          ...successLines.map((text) => ({ who: 'narr' as const, text })),
+        ]
+      : [
+          { who: 'me', text: 'ただいま……' },
+          { who: 'wife', text: 'おかえり。' },
+          ...successLines.map((text) => ({ who: 'wife' as const, text })),
+        ];
     const cleared = advanceRun(this.run);
     this.recordBest();
     this.go({
       name: 'talk',
       mood: 'home',
+      alone,
       lines,
       index: 0,
       after: () => (cleared ? this.go({ name: 'clear' }) : this.beginDay()),
@@ -262,7 +271,9 @@ export class Game {
       if (s.index === 0) {
         this.renderer.setScene(
           s.mood === 'home'
-            ? { kind: 'home' }
+            ? s.alone
+              ? { kind: 'bg', image: 'bg_door_dark' }
+              : { kind: 'home' }
             : { kind: 'angry', started: performance.now(), image: s.late ? 'wife_dark' : 'wife_angry' },
         );
       }
@@ -562,7 +573,7 @@ export class Game {
       const notices = visibleClues(day, 'notice');
       body = [
         h('div', { class: 'lock-time' }, formatTime(day.time)),
-        notices.map((n) => h('div', { class: 'notice' }, n.text)),
+        notices.map((n) => h('div', { class: 'notice' }, this.illust(n.image, 'clue-img'), n.text)),
         h(
           'div',
           { class: 'apps' },
@@ -598,9 +609,21 @@ export class Game {
         'div',
         { class: 'chat-log' },
         CHAT_HISTORY.map((m) => bubble(m.from, m.text, 'old')),
-        visibleClues(day, 'app:chat').map((c) =>
-          c.text.startsWith(ME) ? bubble('me', c.text.slice(ME.length)) : bubble('wife', c.text, c.unread ? 'unread' : ''),
-        ),
+        chatTimeline(day).map((c) => {
+          if (!c.text.startsWith(ME)) return bubble('wife', c.text, c.unread ? 'unread' : '');
+          if (!c.unsendable) return bubble('me', c.text.slice(ME.length));
+          // 誤爆メッセージ: 既読になる 0:00 までは送信取消できる
+          if (day.flags.has(`unsent:${c.id}`)) return h('div', { class: 'chat-system' }, 'メッセージの送信を取り消しました');
+          const read = day.time > CANCEL_DEADLINE;
+          return h(
+            'div',
+            { class: 'bubble-row me' },
+            read
+              ? h('small', { class: 'read-mark' }, '既読')
+              : h('button', { class: 'btn small unsend', onclick: () => this.act({ type: 'unsend', clue: c.id! }, 'se_tap') }, '送信取消（2分）'),
+            bubble('me', c.text.slice(ME.length)),
+          );
+        }),
         day.chatLog.map((m) => bubble(m.from, m.text)),
       ),
       h(

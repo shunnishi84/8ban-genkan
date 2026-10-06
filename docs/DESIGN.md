@@ -100,6 +100,7 @@ interface Scenario {
 | `discarded:<item>` | ゴミ捨て場で捨てる |
 | `used:<item>` | 持ち物の「着替える」「指にはめる」等 |
 | `picked:<item>` | 玄関前で拾う（ゴミ袋） |
+| `unsent:<clue>` | 誤爆したチャットを 0:00 の既読前に送信取消 |
 | `chat:<template>` | 定型文を送信 |
 
 ### 日ごとの抽選

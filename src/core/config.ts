@@ -9,7 +9,7 @@ export const hm = (h: number, m: number): Minutes => h * 60 + m;
 export const TIME_LIMIT = hm(25, 0);
 /** 通販の特急便（翌朝着）締切。この時刻ちょうどまでに注文すれば翌朝届く */
 export const EXPRESS_DEADLINE = hm(23, 59);
-/** 既存注文のキャンセル締切（0:00 の発送処理より前） */
+/** 既存注文のキャンセル締切（0:00 の発送処理より前）。誤爆メッセージの送信取消も同じ（0:00 に妻が既読にする） */
 export const CANCEL_DEADLINE = hm(23, 59);
 /** 時計が赤くなる時刻 */
 export const WARN_TIME = hm(24, 30);
@@ -38,6 +38,7 @@ export const COST = {
   discard: 1,
   use: 2,
   pickup: 1,
+  unsend: 2,
 } as const;
 
 /** 移動時間。from→to。town を起点に放射状 */

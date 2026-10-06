@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { GOAL_DAYS, hm } from '../src/core/config';
-import { advanceRun, buildDay, chooseScenarios, newRun, perform, startDay, visibleClues } from '../src/core/engine';
+import { advanceRun, buildDay, chatTimeline, chooseScenarios, newRun, perform, startDay, visibleClues } from '../src/core/engine';
 import { seeded } from '../src/core/rng';
 import { solve } from '../src/core/solver';
 import { SCENARIO_MAP } from '../src/data/scenarios';
@@ -88,6 +88,58 @@ describe('行動', () => {
     const r = perform(s, { type: 'openDoor' });
     expect(r.outcome.kind).toBe('angry');
     if (r.outcome.kind === 'angry') expect(r.outcome.causes.map((c) => c.id)).toEqual(['tie_lost']);
+  });
+});
+
+describe('チャットの時系列', () => {
+  const minutes = (text: string) => {
+    if (text.includes('（昨日）')) return -1;
+    const m = text.match(/（(\d{1,2}):(\d{2})）\s*$/);
+    return m ? Number(m[1]) * 60 + Number(m[2]) : Infinity;
+  };
+
+  it('複数の火種を合成しても、チャットは時刻順に並ぶ', () => {
+    // dinner(19:02, 22:15) と morning(7:46, 7:48) と umbrella(23:10) を逆順に合成
+    const s = day(['umbrella_lost', 'dinner_unannounced', 'morning_fight']);
+    const times = chatTimeline(s).map((c) => minutes(c.text));
+    expect(times).toEqual([...times].sort((a, b) => a - b));
+    expect(times[0]).toBe(7 * 60 + 46);
+  });
+
+  it('全シナリオのチャット手がかりに時刻（または昨日）が付いている', () => {
+    for (const s of Object.values(SCENARIO_MAP)) {
+      for (const c of s.clues.filter((x) => x.at === 'app:chat')) {
+        expect(Number.isFinite(minutes(c.text)), `${s.id}: ${c.text}`).toBe(true);
+      }
+    }
+  });
+});
+
+describe('新しい仕掛け', () => {
+  it('誤爆メッセージは 0:00 の既読前なら送信取消できる', () => {
+    const s = day(['wrong_send'], hm(23, 50));
+    expect(perform(s, { type: 'unsend', clue: 'wrong_send' }).ok).toBe(true);
+    expect(perform(s, { type: 'openDoor' }).outcome.kind).toBe('home');
+  });
+
+  it('既読がついたら取り消せない', () => {
+    const s = day(['wrong_send'], hm(24, 0));
+    expect(perform(s, { type: 'unsend', clue: 'wrong_send' }).ok).toBe(false);
+    expect(perform(s, { type: 'openDoor' }).outcome.kind).toBe('angry');
+  });
+
+  it('接着剤は割れたマグカップを持っていないと使えない', () => {
+    const s = day(['dinner_unannounced']);
+    s.location = 'konbini';
+    perform(s, { type: 'buy', item: 'glue' });
+    expect(perform(s, { type: 'use', item: 'glue' }).ok).toBe(false);
+  });
+
+  it('妻が帰省中の日は「おかえり」が無い帰宅になる', () => {
+    const s = day(['wife_away']);
+    expect(s.homeAlone).toBe(true);
+    expect(perform(s, { type: 'openDoor' }).outcome.kind).toBe('home');
+    expect(day(['ring_off']).homeAlone).toBe(false);
   });
 });
 

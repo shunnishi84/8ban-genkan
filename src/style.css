@@ -685,3 +685,26 @@ button:disabled {
   margin: 0.4em auto 0;
   object-fit: contain;
 }
+
+/* 誤爆メッセージの送信取消 */
+.bubble-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: 0.4em;
+}
+.bubble-row .unsend {
+  background: #fff;
+  border-color: #ff3b30;
+  color: #ff3b30;
+  font-size: 0.75em;
+}
+.read-mark {
+  color: #888;
+  font-size: 0.7em;
+}
+.chat-system {
+  align-self: center;
+  color: #888;
+  font-size: 0.8em;
+}

@@ -29,6 +29,8 @@ export const IMAGES = {
   // --- 玄関前のオーバーレイ（Scenario.visuals / Pickup.visual で指定） ---
   window_garland: { file: 'window_garland.png', label: 'HAPPY BIRTHDAY', color: '#f39ac2' },
   window_candle: { file: 'window_candle.png', label: 'キャンドル', color: '#ffb347' },
+  window_dark: { file: 'window_dark.png', label: '消灯', color: '#11151d' },
+  window_tv: { file: 'window_tv.png', label: 'テレビの光', color: '#5b8fd9' },
   garbage_bag: { file: 'garbage_bag.png', label: 'ゴミ袋', color: '#9fb4c7' },
   wet_floor: { file: 'wet_floor.png', label: '水たまり', color: '#4a79a8' },
   // --- 街 ---
@@ -53,6 +55,19 @@ export const IMAGES = {
   item_receipt: { file: 'item_receipt.png', label: 'レシート', color: '#f4f4f4' },
   item_bouquet: { file: 'item_bouquet.png', label: '花束', color: '#9fd39b' },
   item_shopping_bag: { file: 'item_shopping_bag.png', label: 'レジ袋', color: '#e8e0cc' },
+  item_cake: { file: 'item_cake.png', label: 'ケーキ', color: '#f6d6dc' },
+  item_ice_cream: { file: 'item_ice_cream.png', label: 'アイス', color: '#f3ead2' },
+  item_glue: { file: 'item_glue.png', label: '接着剤', color: '#e2c23a' },
+  item_broken_mug: { file: 'item_broken_mug.png', label: '割れたマグ', color: '#4f78b8' },
+  item_fixed_mug: { file: 'item_fixed_mug.png', label: '直したマグ', color: '#4f78b8' },
+  item_onsen_ticket: { file: 'item_onsen_ticket.png', label: '温泉ギフト', color: '#c9a86a' },
+  item_golf_club: { file: 'item_golf_club.png', label: 'ゴルフクラブ', color: '#8a8f99' },
+  item_empty_can: { file: 'item_empty_can.png', label: '空き缶', color: '#b7c4cf' },
+  item_ring: { file: 'item_ring.png', label: '指輪', color: '#e7d27a' },
+  item_mint: { file: 'item_mint.png', label: 'ミント', color: '#9fe0d0' },
+  // 手がかりに添えるイラスト
+  tv_capture: { file: 'tv_capture.png', label: 'テレビの画面', color: '#33415c' },
+  kouhai_notice: { file: 'kouhai_notice.png', label: '後輩の通知', color: '#f2a7c3' },
 } satisfies Record<string, ImageEntry>;
 
 /** アイテムID → 一覧に出すイラスト */
@@ -64,6 +79,16 @@ export const ITEM_ICONS: Partial<Record<string, ImageKey>> = {
   bouquet: 'item_bouquet',
   milk: 'item_shopping_bag',
   eggs: 'item_shopping_bag',
+  cake: 'item_cake',
+  ice_cream: 'item_ice_cream',
+  glue: 'item_glue',
+  broken_mug: 'item_broken_mug',
+  fixed_mug: 'item_fixed_mug',
+  golf_club: 'item_golf_club',
+  empty_can: 'item_empty_can',
+  ring: 'item_ring',
+  mint: 'item_mint',
+  garbage_bag: 'garbage_bag',
 };
 
 export type ImageKey = keyof typeof IMAGES;

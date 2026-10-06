@@ -75,6 +75,40 @@ export const CHAT_TEMPLATES: ChatTemplate[] = [
     replyRelevant: '……ふたつ食べていいなら許す',
     replyIrrelevant: 'プリン？ 何の話？ 電話するね',
   },
+  {
+    id: 'morning_sorry',
+    text: '朝はごめん。言いすぎた。アイス買ったから一緒に食べよう',
+    requires: 'bought:ice_cream',
+    replyRelevant: '……ハーフ＆ハーフね',
+    replyIrrelevant: '朝？ 何かあったっけ？ ……電話するね',
+  },
+  {
+    id: 'mug_sorry',
+    text: '青いマグカップ、昨日割っちゃって隠してた。ごめん。接着剤で直した',
+    requires: 'used:glue',
+    replyRelevant: '……正直に言ったから、半分許す',
+    replyIrrelevant: 'マグカップ？？ 何を割ったの？ 電話します',
+  },
+  {
+    id: 'tv_sorry',
+    text: 'テレビのあれ、編集で切られてて…本当は「嫁は鬼のように優しい」って言ったんだ。温泉予約したから一緒に行こう',
+    requires: 'ordered:onsen_ticket',
+    replyRelevant: '……苦しい言い訳。でも温泉は行く',
+    replyIrrelevant: 'テレビ？ 何に出たの？ 電話するね',
+  },
+  {
+    id: 'kouhai_photo',
+    text: '【写真】今日の飲み会の集合写真。課の8人で焼き鳥だったよ',
+    replyRelevant: '……部長の隣で目が死んでるね',
+    replyIrrelevant: '急に写真？ 何かあったの？ 電話するね',
+  },
+  {
+    id: 'kouhai_explain',
+    text: '佐藤さんは同じ課の後輩で、「二人で」は課のノリ。誤解させる返信はもうしない',
+    requires: 'chat:kouhai_photo',
+    replyRelevant: 'ふーん。……信じてあげる',
+    replyIrrelevant: '佐藤さんって誰？？ 今すぐ電話します',
+  },
   // 罠: どんな日でも関係ない扱いになり、問い詰められる
   {
     id: 'love',

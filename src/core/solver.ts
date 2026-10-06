@@ -17,11 +17,14 @@ export const isObtainable = (state: DayState, flag: string, depth = 0): boolean 
       return item?.source === 'mail';
     case 'canceled':
       return state.orders[id] === 'existing';
+    case 'unsent':
+      return state.clues.some((c) => c.id === id && c.unsendable);
     case 'picked':
       return state.pickups.some((p) => p.item === id);
     case 'discarded':
       return !!item?.discardable && (inHand || item.source === 'konbini');
     case 'used':
+      if (item?.useRequires && !state.inventory.includes(item.useRequires)) return false;
       return !!item?.useLabel && (inHand || item.source === 'konbini');
     case 'chat': {
       const t = CHAT_MAP[id];
@@ -48,12 +51,13 @@ export const requiredFlags = (state: DayState): string[] | null => {
     const req = kind === 'chat' ? CHAT_MAP[id]?.requires : undefined;
     if (req) pickSatisfyingFlags(req, (g) => isObtainable(state, g))?.forEach((g) => out.add(g));
   }
-  return [...out];
+  // 既に立っているフラグはやり直さない（プレイ途中のデバッグ表示用）
+  return [...out].filter((f) => !state.flags.has(f));
 };
 
 /**
  * 最短っぽい手順を組み立てる。
- * 締切のある通販注文・キャンセルを最初に、次に街へ出て買い物→使用→ゴミ捨て、最後にチャット。
+ * 締切のある送信取消・通販注文・キャンセルを最初に、次に街へ出て買い物→使用→ゴミ捨て、最後にチャット。
  */
 export const solve = (state: DayState): Action[] | null => {
   const flags = requiredFlags(state);
@@ -67,6 +71,7 @@ export const solve = (state: DayState): Action[] | null => {
   const toPick = new Set([...of('picked'), ...toDiscard.filter((id) => state.pickups.some((p) => p.item === id))]);
 
   toPick.forEach((item) => plan.push({ type: 'pickup', item }));
+  of('unsent').forEach((clue) => plan.push({ type: 'unsend', clue }));
   if (of('ordered').length || of('canceled').length) plan.push({ type: 'openApp', app: 'shop' });
   of('canceled').forEach((item) => plan.push({ type: 'cancelOrder', item }));
   of('ordered').forEach((item) => plan.push({ type: 'order', item }));
