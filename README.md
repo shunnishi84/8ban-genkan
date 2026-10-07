@@ -23,6 +23,31 @@ npm run preview    # ビルド結果の確認
 
 `dist/` はそのまま任意の静的ホスティングに置ける（`base: './'` なのでサブディレクトリでも可）。
 
+### Android アプリ（Capacitor）
+
+Web 版をそのまま Android アプリに同梱している（`capacitor.config.ts`、`android/`）。
+アプリ ID は `com.shunnishi.hachibangenkan`。
+
+**APK の入手（おすすめ）**: `8ban-genkan/` を変更してプッシュすると、GitHub Actions
+（`.github/workflows/android-8ban-genkan.yml`）が APK を作る。Actions の実行結果ページの
+「Artifacts」から zip をダウンロードし、中の APK をスマホで開いてインストールする
+（初回は「提供元不明のアプリ」の許可が必要）。手動で動かすときは Actions 画面の「Run workflow」。
+
+**手元でビルドする場合**（Android Studio / Android SDK と JDK 21 が必要）:
+
+```bash
+npm run build
+npx cap sync android
+cd android && ./gradlew assembleDebug   # → android/app/build/outputs/apk/debug/app-debug.apk
+```
+
+* 署名は `android/app/sideload.keystore`（個人のスマホに入れる用）で固定している。どこでビルドしても
+  同じ鍵なので、新しい APK を上書きインストールでき、最高記録も消えない。
+  **Play ストアに出すときはこの鍵を使わず、本番用の鍵を別に作ること。**
+* アイコンと起動画面の元絵は `resources/`。差し替えたら
+  `npx @capacitor/assets generate --android --assetPath resources` で各解像度を作り直す。
+* 端末の「戻る」ボタン: 開いている画面を閉じる → 店から街へ出る → プレイ中はタイトルに戻るか確認 → タイトルではアプリ終了。
+
 ### デバッグ
 
 * `?debug` … その日のシナリオ・未解消の原因・解答例を画面上部に表示

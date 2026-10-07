@@ -1,4 +1,6 @@
 // 画面遷移と入力の管理。ゲームのルールそのものは core/engine.ts にある。
+import { App as NativeApp } from '@capacitor/app';
+import { Capacitor } from '@capacitor/core';
 import { AudioManager } from '../audio/AudioManager';
 import { ImageStore } from '../assets/loader';
 import { IMAGES, ITEM_ICONS, type BgmKey, type ImageKey, type SeKey } from '../assets/manifest';
@@ -49,7 +51,8 @@ type Modal =
   | { kind: 'spot'; spot: SpotId }
   | { kind: 'items'; slot: SlotId }
   | { kind: 'phone'; app: AppId | null }
-  | { kind: 'confirmDoor' };
+  | { kind: 'confirmDoor' }
+  | { kind: 'confirmQuit' };
 
 const INTRO_FLAVOR = [
   '今日も飲み会だった……。',
@@ -100,6 +103,8 @@ export class Game {
     const unlock = () => this.audio.unlock();
     root.addEventListener('pointerdown', unlock, { once: true });
     root.addEventListener('keydown', unlock, { once: true });
+    // Android アプリ: 端末の「戻る」ボタン
+    if (Capacitor.isNativePlatform()) void NativeApp.addListener('backButton', () => this.onBack());
     this.render();
   }
 
@@ -219,6 +224,38 @@ export class Game {
     this.act({ type: 'inspect', spot });
     this.modal = { kind: 'spot', spot };
     this.render();
+  }
+
+  /**
+   * Android の「戻る」: 開いているものを1段閉じる。店からは街へ出る。
+   * プレイ中はタイトルに戻るか確認し、タイトルではアプリを閉じる。
+   */
+  private onBack() {
+    const m = this.modal;
+    if (m) {
+      if (m.kind === 'phone' && m.app) this.openModal({ kind: 'phone', app: null });
+      else this.closeModal();
+      return;
+    }
+    switch (this.screen.name) {
+      case 'title':
+        void NativeApp.exitApp();
+        return;
+      case 'howto':
+      case 'gameover':
+      case 'clear':
+        this.go({ name: 'title' });
+        return;
+      case 'play': {
+        const loc = this.day?.location;
+        if (loc === 'konbini' || loc === 'trash' || loc === 'bench') this.travel('town');
+        else this.openModal({ kind: 'confirmQuit' });
+        return;
+      }
+      default:
+        // 幕間・会話中は無視（会話はタップで進める）
+        return;
+    }
   }
 
   private openModal(modal: Modal, action?: Action) {
@@ -529,6 +566,23 @@ export class Game {
               { class: 'row' },
               h('button', { class: 'btn', onclick: () => this.closeModal() }, 'やめる'),
               h('button', { class: 'btn danger', onclick: () => this.act({ type: 'openDoor' }) }, '開ける'),
+            ),
+          ),
+        );
+      case 'confirmQuit':
+        return h(
+          'div',
+          { class: 'dialog-backdrop' },
+          h(
+            'div',
+            { class: 'dialog' },
+            h('p', {}, 'タイトルに戻る？'),
+            h('p', { class: 'dim' }, `今の連続帰宅（${this.run.streak}日）はここで途切れる。最高記録は残る。`),
+            h(
+              'div',
+              { class: 'row' },
+              h('button', { class: 'btn', onclick: () => this.closeModal() }, 'つづける'),
+              h('button', { class: 'btn danger', onclick: () => this.go({ name: 'title' }) }, 'タイトルへ'),
             ),
           ),
         );
