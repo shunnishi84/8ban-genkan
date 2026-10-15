@@ -751,3 +751,38 @@ button:disabled {
   margin: 0 0 0.5em;
   border-radius: 8px;
 }
+
+/* SNS（つぶやきー） */
+.sns-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6em;
+}
+.sns-post {
+  padding: 0.6em 0.9em;
+  border-radius: var(--radius);
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+.sns-post.mine {
+  border-left: 4px solid #1d9bf0;
+}
+.sns-post.deleted {
+  color: #999;
+  font-style: italic;
+}
+.sns-post .desc {
+  margin: 0.2em 0 0.5em;
+}
+
+/* スマホ画面（白背景）の中のボタンは明るい配色に。危険操作だけ赤 */
+.phone .btn {
+  background: #eef1f6;
+  border-color: #cfd5df;
+  color: #1f2633;
+}
+.phone .btn.danger {
+  background: var(--danger);
+  border-color: transparent;
+  color: #fff;
+}

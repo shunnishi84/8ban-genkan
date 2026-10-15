@@ -666,7 +666,7 @@ export class Game {
             h(
               'button',
               { class: `app app-${a}`, onclick: () => this.openModal({ kind: 'phone', app: a }, { type: 'openApp', app: a }) },
-              h('span', { class: 'app-icon' }, { chat: '💬', calendar: '📅', memo: '📝', shop: '🛒' }[a]),
+              h('span', { class: 'app-icon' }, { chat: '💬', calendar: '📅', memo: '📝', shop: '🛒', sns: '📣' }[a]),
               APP_LABEL[a],
               a === 'chat' && hasUnreadChat(day) ? h('i', { class: 'dot' }) : null,
             ),
@@ -674,6 +674,7 @@ export class Game {
         ),
       ];
     } else if (app === 'chat') body = this.viewChat();
+    else if (app === 'sns') body = this.viewSns();
     else if (app === 'shop') body = this.viewShop();
     else body = h('div', { class: `paper ${app}` }, this.clueTexts(`app:${app}`, APP_BASE[app]));
 
@@ -744,6 +745,29 @@ export class Game {
     ];
   }
 
+  /** SNS（つぶやきー）: 自分の炎上投稿は削除できる。それ以外は文字だけ */
+  private viewSns(): Child {
+    const day = this.day!;
+    const clues = visibleClues(day, 'app:sns');
+    if (clues.length === 0) return h('div', { class: 'paper sns' }, h('p', { class: 'desc' }, APP_BASE.sns));
+    return h(
+      'div',
+      { class: 'sns-feed' },
+      clues.map((c) => {
+        if (!c.deletable) return h('div', { class: 'sns-post' }, h('p', { class: 'desc' }, c.text));
+        const deleted = day.flags.has(`deleted:${c.id}`);
+        return h(
+          'div',
+          { class: `sns-post mine${deleted ? ' deleted' : ''}` },
+          deleted ? h('p', { class: 'desc' }, 'この投稿は削除されました') : h('p', { class: 'desc' }, c.text),
+          deleted
+            ? null
+            : h('button', { class: 'btn small danger', onclick: () => this.act({ type: 'deletePost', clue: c.id! }, 'se_discard') }, '投稿を削除（2分）'),
+        );
+      }),
+    );
+  }
+
   private viewShop(): Child {
     const day = this.day!;
     const open = day.time <= EXPRESS_DEADLINE;
@@ -780,7 +804,7 @@ export class Game {
                 h(
                   'div',
                   { class: 'item' },
-                  h('div', {}, h('b', {}, ITEM_MAP[id]?.name ?? id), h('small', {}, `¥${ITEM_MAP[id]?.price?.toLocaleString()}　0:00 発送処理`)),
+                  h('div', {}, h('b', {}, ITEM_MAP[id]?.name ?? id), h('small', {}, `¥${ITEM_MAP[id]?.price?.toLocaleString()}　${ITEM_MAP[id]?.cancelNote ?? '0:00 発送処理'}`)),
                   v === 'canceled'
                     ? h('span', { class: 'tag' }, 'キャンセル済み')
                     : h(

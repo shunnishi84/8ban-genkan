@@ -277,6 +277,14 @@ const act = (state: DayState, action: Action): ActionResult => {
       return result(true, ['メッセージの送信を取り消した。……セーフ。'], COST.unsend);
     }
 
+    case 'deletePost': {
+      const clue = state.clues.find((c) => c.id === action.clue && c.deletable);
+      if (!clue) return result(false, ['削除できる投稿がない。']);
+      if (state.flags.has(`deleted:${action.clue}`)) return result(false, ['もう削除した。']);
+      state.flags.add(`deleted:${action.clue}`);
+      return result(true, ['投稿を削除した。……スクショは、たぶん出回っている。'], COST.deletePost);
+    }
+
     case 'travel': {
       if (state.location === action.to) return result(true, []);
       const cost = TRAVEL[state.location][action.to];

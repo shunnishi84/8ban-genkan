@@ -109,6 +109,41 @@ export const CHAT_TEMPLATES: ChatTemplate[] = [
     replyRelevant: 'ふーん。……信じてあげる',
     replyIrrelevant: '佐藤さんって誰？？ 今すぐ電話します',
   },
+  {
+    id: 'sns_kowai_sorry',
+    text: 'SNSの投稿、消しました。こわいなんて嘘です。いつも感謝してます。お詫びにスイーツ買いました',
+    requires: { all: ['deleted:post_kowai', 'bought:sweets'] },
+    replyRelevant: '……3.4万人に「こわい嫁」って思われたままだけどね',
+    replyIrrelevant: 'SNS？ 何か投稿したの？ ……電話するね',
+  },
+  {
+    id: 'sns_meshi_sorry',
+    text: '投稿消しました。飯がマズいなんて大嘘。明日の朝ごはんは俺が作ります（卵焼き）',
+    requires: { all: ['deleted:post_meshi', 'bought:eggs'] },
+    replyRelevant: '……焦がしたら、もう一回バズらせてあげる',
+    replyIrrelevant: 'ごはん？ 何の話？ 電話するね',
+  },
+  {
+    id: 'sns_meiru_sorry',
+    text: '投稿消しました。本当にごめん。週末、スパのペアチケット取ったので一緒に行こう',
+    requires: { all: ['deleted:post_meiru', 'ordered:spa_ticket'] },
+    replyRelevant: '……気が滅入らないように、ちゃんとエスコートしてね',
+    replyIrrelevant: 'スパ？ 急にどうしたの？ 電話するね',
+  },
+  {
+    id: 'av_sorry',
+    text: 'テレビの件、本当にすみませんでした。あのサブスクは解約しました',
+    requires: 'canceled:av_subscription',
+    replyRelevant: '……リモコンは、しばらく私が預かります',
+    replyIrrelevant: 'テレビの件？ 何のこと？ 電話するね',
+  },
+  {
+    id: 'gravure_sorry',
+    text: '写真集、資源ゴミに出してきました。すみませんでした',
+    requires: 'discarded:gravure_book',
+    replyRelevant: '……ベッドの下、他にも何かないでしょうね',
+    replyIrrelevant: '写真集？？ 何の写真集？ 電話します',
+  },
   // ---------------------------------------------------------------- 暴言（おふざけ枠）
   // 送ると、どんなに火種を消していても魔王化した妻が待っている。
   {

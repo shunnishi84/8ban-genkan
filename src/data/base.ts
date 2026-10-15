@@ -36,6 +36,7 @@ export const APP_LABEL: Record<AppId, string> = {
   calendar: 'カレンダー',
   memo: 'メモ',
   shop: 'ポチッとマート',
+  sns: 'つぶやきー',
 };
 
 export const APP_BASE: Record<AppId, string> = {
@@ -43,6 +44,7 @@ export const APP_BASE: Record<AppId, string> = {
   calendar: '今日: 予定なし',
   memo: 'メモはありません。',
   shop: '',
+  sns: '（あなた）今日も一日おつかれ。（昨日）\nタイムラインに特に変わったことはない。',
 };
 
 /** チャットの過去ログ（毎日共通の「いつもの」やり取り） */

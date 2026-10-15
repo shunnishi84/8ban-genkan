@@ -10,7 +10,7 @@ export type SpotId = 'door' | 'hallway' | 'window' | 'nameplate' | 'floor';
 export type SlotId = 'bag' | 'shirt' | 'wallet' | 'cardcase';
 
 /** スマホのアプリ */
-export type AppId = 'chat' | 'calendar' | 'memo' | 'shop';
+export type AppId = 'chat' | 'calendar' | 'memo' | 'shop' | 'sns';
 
 /** 手がかりが見つかる場所 */
 export type ClueLocation =
@@ -29,7 +29,7 @@ export type ClueLocation =
  * フラグ名の規約（engine.ts が立てる）:
  *   bought:<item>  ordered:<item>  ordered_late:<item>  canceled:<item>
  *   discarded:<item>  used:<item>  picked:<item>  chat:<template>
- *   unsent:<clue>  seen:<location>  read:chat
+ *   unsent:<clue>  deleted:<clue>  seen:<location>  read:chat
  */
 export type Requirement = string | { all: Requirement[] } | { any: Requirement[] };
 
@@ -44,6 +44,8 @@ export interface Clue {
   id?: string;
   /** 自分が送ったチャット: 妻が既読にする前（0:00 まで）なら送信取消できる。取り消すと unsent:<id> */
   unsendable?: boolean;
+  /** SNS アプリの自分の投稿: 「投稿を削除」できる（締切なし）。削除すると deleted:<id> */
+  deletable?: boolean;
   /** 手がかりに添えるイラスト（assets/manifest.ts の IMAGES のキー） */
   image?: string;
   /** この条件を満たしたら表示しない（着替えたら口紅の描写が消える等） */
@@ -116,6 +118,8 @@ export interface ItemDef {
   useRequires?: string;
   /** 使ったあと useRequires のアイテムをこれに置き換える（割れたマグカップ → 直したマグカップ） */
   useResult?: string;
+  /** 通販の注文履歴でキャンセル期限の代わりに出す説明（既定は「0:00 発送処理」） */
+  cancelNote?: string;
   useMessage?: string;
 }
 
@@ -180,6 +184,7 @@ export type Action =
   | { type: 'use'; item: string }
   | { type: 'pickup'; item: string }
   | { type: 'unsend'; clue: string }
+  | { type: 'deletePost'; clue: string }
   | { type: 'travel'; to: Location }
   | { type: 'openDoor' };
 

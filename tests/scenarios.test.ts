@@ -60,11 +60,14 @@ describe('データの参照整合性', () => {
     }
   });
 
-  it('チャット定型文の前提フラグが実在するアイテム・定型文を指している', () => {
+  it('チャット定型文の前提フラグが実在するアイテム・定型文・投稿を指している', () => {
     for (const t of CHAT_TEMPLATES) {
       for (const f of t.requires ? flagsIn(t.requires) : []) {
         const [kind, id] = f.split(':');
-        expect(kind === 'chat' ? CHAT_MAP[id] : ITEM_MAP[id], `${t.id}: ${f}`).toBeDefined();
+        // deleted:/unsent: は投稿・メッセージ（手がかりの id）、chat: は定型文、それ以外はアイテム
+        const clueIds = SCENARIOS.flatMap((sc) => sc.clues.map((c) => c.id).filter(Boolean));
+        const target = kind === 'chat' ? CHAT_MAP[id] : kind === 'deleted' || kind === 'unsent' ? clueIds.find((c) => c === id) : ITEM_MAP[id];
+        expect(target, `${t.id}: ${f}`).toBeDefined();
       }
     }
   });

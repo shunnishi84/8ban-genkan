@@ -19,6 +19,8 @@ export const isObtainable = (state: DayState, flag: string, depth = 0): boolean 
       return state.orders[id] === 'existing';
     case 'unsent':
       return state.clues.some((c) => c.id === id && c.unsendable);
+    case 'deleted':
+      return state.clues.some((c) => c.id === id && c.deletable);
     case 'picked':
       return state.pickups.some((p) => p.item === id);
     case 'discarded':
@@ -72,6 +74,7 @@ export const solve = (state: DayState): Action[] | null => {
 
   toPick.forEach((item) => plan.push({ type: 'pickup', item }));
   of('unsent').forEach((clue) => plan.push({ type: 'unsend', clue }));
+  of('deleted').forEach((clue) => plan.push({ type: 'deletePost', clue }));
   if (of('ordered').length || of('canceled').length) plan.push({ type: 'openApp', app: 'shop' });
   of('canceled').forEach((item) => plan.push({ type: 'cancelOrder', item }));
   of('ordered').forEach((item) => plan.push({ type: 'order', item }));

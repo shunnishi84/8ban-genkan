@@ -143,6 +143,41 @@ describe('新しい仕掛け', () => {
   });
 });
 
+describe('SNS・AV・写真集', () => {
+  it('SNS の炎上投稿は削除でき、通知も消える。削除しないと謝罪チャットは送れない', () => {
+    const s = day(['sns_meshi']);
+    expect(perform(s, { type: 'sendChat', template: 'sns_meshi_sorry' }).ok).toBe(false);
+    expect(visibleClues(s, 'notice')).toHaveLength(1);
+    expect(perform(s, { type: 'deletePost', clue: 'post_meshi' }).ok).toBe(true);
+    expect(visibleClues(s, 'notice')).toHaveLength(0);
+  });
+
+  it('SNS の3パターンは同じ日に重ならない', () => {
+    const rng = seeded(7);
+    for (let i = 0; i < 200; i++) {
+      const ids = chooseScenarios({ day: 8, used: [], streak: 0 }, rng).map((x) => x.id);
+      expect(ids.filter((id) => id.startsWith('sns_')).length).toBeLessThanOrEqual(1);
+    }
+  });
+
+  it('AV のサブスクは 0:00 の自動更新を過ぎると解約できない', () => {
+    const s = day(['av_left_on'], hm(24, 0));
+    expect(perform(s, { type: 'cancelOrder', item: 'av_subscription' }).ok).toBe(false);
+  });
+
+  it('写真集は玄関マットで拾ってゴミ捨て場で捨て、白状すれば許される', () => {
+    const s = day(['gravure_found']);
+    perform(s, { type: 'pickup', item: 'gravure_book' });
+    perform(s, { type: 'travel', to: 'town' });
+    perform(s, { type: 'travel', to: 'trash' });
+    perform(s, { type: 'discard', item: 'gravure_book' });
+    perform(s, { type: 'travel', to: 'town' });
+    perform(s, { type: 'travel', to: 'door' });
+    perform(s, { type: 'sendChat', template: 'gravure_sorry' });
+    expect(perform(s, { type: 'openDoor' }).outcome.kind).toBe('home');
+  });
+});
+
 describe('暴言（おふざけ枠）', () => {
   it('暴言を送ると、火種を全部消していてもドアの向こうは魔王', () => {
     const s = day(['ring_off']);

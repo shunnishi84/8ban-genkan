@@ -487,6 +487,165 @@ export const SCENARIOS: Scenario[] = [
     ],
   },
 
+  // ---------------------------------------------------------------- 19〜21 SNS で妻の悪口がバズった（3パターン。同じ日には重ならない）
+  {
+    id: 'sns_kowai',
+    title: 'SNSで「嫁がこわい」がバズった',
+    conflictsWith: ['sns_meshi', 'sns_meiru'],
+    causes: [
+      {
+        id: 'sns_kowai',
+        title: 'SNSで悪口がバズった',
+        resolution: { all: ['deleted:post_kowai', 'bought:sweets', 'chat:sns_kowai_sorry'] },
+        angerLines: ['こわい？ ……ふふ。', '3万4千人が、あなたの奥さんはこわいって知ってるの。', 'じゃあ、期待に応えないとね。'],
+        successLine: '……スイーツに免じて、今日は「こわくない嫁」でいてあげる。',
+      },
+    ],
+    clues: [
+      {
+        at: 'app:sns',
+        cause: 'sns_kowai',
+        id: 'post_kowai',
+        deletable: true,
+        text: '@tanaka_salaryman（あなた）\n「うちの嫁、マジでこわい。玄関開けるのが毎晩ホラー」\n🔁 1.2万　♥ 3.4万（21:12）',
+      },
+      {
+        at: 'app:sns',
+        text: 'リプライ: 「奥さん見てますよ」「これ特定されてない？」「わかりみが深い」「強く生きて」',
+      },
+      {
+        at: 'notice',
+        cause: 'sns_kowai',
+        text: '📣 つぶやきー: あなたの投稿が話題になっています（🔁1.2万）',
+        hiddenWhen: 'deleted:post_kowai',
+      },
+      { at: 'app:chat', cause: 'sns_kowai', unread: true, text: '「玄関開けるのが毎晩ホラー」……3.4万いいね、おめでとう（22:31）' },
+    ],
+  },
+  {
+    id: 'sns_meshi',
+    title: 'SNSで「嫁の飯が不味い」がバズった',
+    conflictsWith: ['sns_kowai', 'sns_meiru'],
+    causes: [
+      {
+        id: 'sns_meshi',
+        title: 'SNSで悪口がバズった',
+        resolution: { all: ['deleted:post_meshi', 'bought:eggs', 'chat:sns_meshi_sorry'] },
+        angerLines: ['マズい飯、7年間ありがとうございました。', '明日からは、お好きな外食をどうぞ。一生。', '……レシピ本、全部捨てといたから。'],
+        successLine: '卵焼き、明日の朝ね。……マズかったら、私が投稿するから。',
+      },
+    ],
+    clues: [
+      {
+        at: 'app:sns',
+        cause: 'sns_meshi',
+        id: 'post_meshi',
+        deletable: true,
+        text: '@tanaka_salaryman（あなた）\n「嫁の飯が今日もマズい。外で食べて帰るのが唯一の楽しみ」\n🔁 2.8万　♥ 5.1万（21:12）',
+      },
+      {
+        at: 'app:sns',
+        text: 'リプライ: 「奥さん見てますよ」「これ特定されてない？」「わかりみが深い」「強く生きて」',
+      },
+      {
+        at: 'notice',
+        cause: 'sns_meshi',
+        text: '📣 つぶやきー: あなたの投稿が話題になっています（🔁2.8万）',
+        hiddenWhen: 'deleted:post_meshi',
+      },
+      { at: 'app:chat', cause: 'sns_meshi', unread: true, text: '「嫁の飯がマズい」がトレンド入りしてるんだけど。お母さんからも電話来た（22:05）' },
+    ],
+  },
+  {
+    id: 'sns_meiru',
+    title: 'SNSで「嫁といると気が滅入る」がバズった',
+    conflictsWith: ['sns_kowai', 'sns_meshi'],
+    causes: [
+      {
+        id: 'sns_meiru',
+        title: 'SNSで悪口がバズった',
+        resolution: { all: ['deleted:post_meiru', 'ordered:spa_ticket', 'chat:sns_meiru_sorry'] },
+        angerLines: ['気が滅入る？ 奇遇ね。私もよ。', 'ため息、ついてあげましょうか。……はぁ〜〜〜〜〜。', '今夜から、空気の重さを思い知らせてあげる。'],
+        successLine: 'スパ……。まあ、ため息はひとつ減ったかな。',
+      },
+    ],
+    clues: [
+      {
+        at: 'app:sns',
+        cause: 'sns_meiru',
+        id: 'post_meiru',
+        deletable: true,
+        text: '@tanaka_salaryman（あなた）\n「家に帰ると気が滅入る。嫁のため息で空気が重い」\n🔁 8千　♥ 1.9万（21:12）',
+      },
+      {
+        at: 'app:sns',
+        text: 'リプライ: 「奥さん見てますよ」「これ特定されてない？」「わかりみが深い」「強く生きて」',
+      },
+      {
+        at: 'notice',
+        cause: 'sns_meiru',
+        text: '📣 つぶやきー: あなたの投稿が話題になっています（🔁8千）',
+        hiddenWhen: 'deleted:post_meiru',
+      },
+      { at: 'app:chat', cause: 'sns_meiru', unread: true, text: '気が滅入るなら、帰ってこなくていいよ（22:47）' },
+    ],
+  },
+  // ---------------------------------------------------------------- 22
+  {
+    id: 'av_left_on',
+    title: '昨夜アダルトビデオをつけっぱなしで寝落ちした',
+    startOrders: ['av_subscription'],
+    causes: [
+      {
+        id: 'av_left_on',
+        title: 'AVつけっぱなし寝落ち',
+        resolution: { all: ['canceled:av_subscription', 'chat:av_sorry'] },
+        angerLines: [
+          '朝、リビングのテレビがついてたの。',
+          '……音量、32だったわよ。',
+          'お隣の奥さんに「昨夜はお楽しみでしたね」って言われた私の気持ち、わかる？',
+          'テレビは今日から、リビングに一台もありません。',
+        ],
+        successLine: '……解約したならいいわ。リモコンは当分、私の管理です。',
+      },
+    ],
+    clues: [
+      { at: 'app:chat', cause: 'av_left_on', unread: true, text: '朝起きたらリビングのテレビ、つけっぱなしだったんだけど。……あれ、何？（7:12）' },
+      { at: 'app:shop', cause: 'av_left_on', text: '注文履歴に、見覚えのある月額プランがある……。0:00 の自動更新までなら解約できる。' },
+      { at: 'notice', cause: 'av_left_on', text: '📺 ミッドナイトシアター＋: 昨夜の「続きから再生」はこちら', hiddenWhen: 'canceled:av_subscription' },
+      { at: 'spot:window', cause: 'av_left_on', text: 'リビングのテレビの前に、リモコンが一本だけ、正座するように置かれている。' },
+    ],
+  },
+  // ---------------------------------------------------------------- 23
+  {
+    id: 'gravure_found',
+    title: '隠していた水着グラビア写真集が見つかった',
+    pickups: [{ at: 'floor', item: 'gravure_book', label: '写真集を拾う' }],
+    causes: [
+      {
+        id: 'gravure_found',
+        title: 'グラビア写真集の発覚',
+        resolution: { all: ['discarded:gravure_book', 'chat:gravure_sorry'] },
+        angerLines: [
+          '『夏、渚で。』……いい本ね。',
+          'ベッドの下を掃除してたら、出てきたの。付箋まで貼ってあったわよ。',
+          '今日からあなたの寝床は、そのベッドの下です。',
+        ],
+        successLine: '資源ゴミの日、ちゃんと覚えてたんだ。……付箋のページ、私も見たけどね。',
+      },
+    ],
+    clues: [
+      {
+        at: 'spot:floor',
+        cause: 'gravure_found',
+        text: '玄関マットの上に、ベッドの下に隠していたはずの水着グラビア写真集が……きれいに置かれている。付箋つきで。',
+        hiddenWhen: 'picked:gravure_book',
+      },
+      { at: 'app:chat', cause: 'gravure_found', unread: true, text: 'ベッドの下、掃除しといたよ。玄関に置いといたから（14:20）' },
+      { at: 'app:memo', cause: 'gravure_found', text: '資源ゴミ（古紙・雑誌）: 今夜のうちに集積所へ出してOK' },
+    ],
+  },
+
   // ================================================================ 異変なし（ニセ異変入り）
   {
     id: 'ramen_receipt',
