@@ -231,8 +231,12 @@ export class Renderer {
     const shake = Math.min(1, t) * Math.sin(t * 55) * 5;
     const zoom = 1.02 + Math.min(t, 2) * 0.05;
     const r = { x: (W - W * zoom) / 2 + shake, y: (H - H * zoom) / 2 + Math.cos(t * 47) * 2, w: W * zoom, h: H * zoom };
-    if (this.images.get('wife_demon')) {
-      this.drawImage('wife_demon', r);
+    const demon = this.images.get('wife_demon');
+    if (demon) {
+      // 横幅いっぱい・縦は中央。上下の余白は回る光線とオーラが埋める
+      const w = W * zoom;
+      const h = (w * demon.naturalHeight) / demon.naturalWidth;
+      this.drawImage('wife_demon', { x: (W - w) / 2 + shake, y: (H - h) / 2 + Math.cos(t * 47) * 2, w, h });
     } else {
       this.drawImage('wife_angry', r);
       // 代用: 紫に染めて闇落ちさせる

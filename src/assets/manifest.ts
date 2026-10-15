@@ -45,7 +45,8 @@ export const IMAGES = {
   wife_dark: { file: 'wife_dark.png', label: '無言の妻', color: '#2b2b38', fit: 'cover' },
   wife_smile: { file: 'wife_smile.png', label: 'おかえりの妻', color: '#f2c6a0', fit: 'cover' },
   /** 暴言を送った日の結末: 邪悪なオーラを放つ魔王化した妻（無ければ wife_angry を紫に染めて代用） */
-  wife_demon: { file: 'wife_demon.png', label: '魔王化した妻', color: '#2a0640', fit: 'cover' },
+  // 3:4 の一枚絵。隅の正座する夫まで見せるため、cover ではなく横幅いっぱいで描く（renderer.ts の drawDemon）
+  wife_demon: { file: 'wife_demon.jpg', label: '魔王化した妻', color: '#2a0640' },
   wife_suspicious: { file: 'wife_suspicious.png', label: '腕組みの妻', color: '#5a4a4a', fit: 'cover' },
   /** wife_angry に炎が描き込まれていれば不要 */
   fire: { file: 'fire.png', label: '炎', color: '#ff5a1f' },

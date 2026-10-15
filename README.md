@@ -143,7 +143,7 @@ cd android && ./gradlew assembleDebug   # → android/app/build/outputs/apk/debu
 | wife_angry.png | 鬼の形相の妻（炎込み） | ✅ |
 | wife_dark.png | 時間切れの無言の妻 | ✅ |
 | wife_suspicious.png | ゲームオーバー画面の背景 | ✅ |
-| wife_demon.png | 暴言を送った日の魔王化した妻（無ければ wife_angry を紫に染めて代用。プロンプトは IMAGE_PROMPTS.md の 5） | — |
+| wife_demon.jpg | 暴言を送った日の魔王化した妻（Gemini で生成） | ✅ |
 | fire.png | 炎（wife_angry が無いときの代替演出用） | — |
 | clear.jpg | クリア画面 | ✅ |
 | shirt_clean.png / shirt_lipstick.png | 替えのシャツ / 口紅つきシャツ | ✅ |
