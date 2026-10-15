@@ -131,11 +131,11 @@ cd android && ./gradlew assembleDebug   # → android/app/build/outputs/apk/debu
 | bg_title.png | タイトル背景 | ✅ |
 | hero.png | 主人公（タイトル・幕間） | ✅ |
 | window_garland.png | 誕生日の飾り付け（窓に重ねる） | ✅ |
-| window_candle.png | 結婚記念日のキャンドル（窓に重ねる） | — |
+| window_candle.png | 結婚記念日のキャンドル（窓に重ねる） | ✅ |
 | window_dark.png | 妻が帰省中で真っ暗な窓 | ✅ |
-| window_tv.png | テレビの青い光（窓に重ねる） | — |
+| window_tv.png | テレビの青い光（窓に重ねる） | ✅ |
 | garbage_bag.png | 玄関脇のゴミ袋 | — |
-| wet_floor.png | 足元の水たまり | — |
+| wet_floor.png | 足元の水たまり | ✅ |
 | door / window / nameplate / floor / hallway.png | 玄関前のパーツ差し替え（任意） | — |
 | bg_town.jpg / bg_trash.jpg / bg_bench.jpg | 夜の街・ゴミ捨て場・公園のベンチ | ✅ |
 | bg_konbini.png | コンビニ店内 | ✅ |
@@ -149,7 +149,7 @@ cd android && ./gradlew assembleDebug   # → android/app/build/outputs/apk/debu
 | shirt_clean.png / shirt_lipstick.png | 替えのシャツ / 口紅つきシャツ | ✅ |
 | item_card.png / item_receipt.png | 店の名刺 / レシート | ✅ |
 | item_bouquet.png / item_shopping_bag.png | 花束 / レジ袋（牛乳・卵） | ✅ |
-| item_cake / ice_cream / glue / broken_mug / fixed_mug / onsen_ticket / golf_club / empty_can / ring / mint .png | 持ち物アイコン（無ければ文字だけ） | — |
+| item_cake / ice_cream / glue / broken_mug / fixed_mug / onsen_ticket / golf_club / empty_can / ring / mint .png | 持ち物アイコン | ✅ |
 | tv_capture.png / kouhai_notice.png | 手がかりに添えるイラスト（無ければ文字だけ） | — |
 
 ### 音声（`public/assets/audio/`）

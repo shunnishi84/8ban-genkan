@@ -34,14 +34,14 @@ export const SPOT_RECTS: Record<SpotId, Rect> = {
   floor: art(50, 303, 132, 32),
 };
 
-/** オーバーレイの描画位置（window_garland は窓枠ごと差し替える切り抜き） */
+/** オーバーレイの描画位置（window_* は窓枠ごと差し替える絵なので、すべて窓と同じ矩形） */
 const OVERLAY_RECTS: Record<string, Rect> = {
   window_garland: art(177, 93, 43, 93),
-  window_candle: art(186, 140, 22, 34),
+  window_candle: art(177, 93, 43, 93),
   window_dark: art(177, 93, 43, 93),
-  window_tv: art(180, 120, 36, 50),
+  window_tv: art(177, 93, 43, 93),
   garbage_bag: art(2, 270, 40, 48),
-  wet_floor: art(56, 322, 120, 14),
+  wet_floor: art(48, 316, 136, 23),
 };
 
 export type Scene =
