@@ -211,4 +211,7 @@ export const CHAT_TEMPLATES: ChatTemplate[] = [
   },
 ];
 
+/** 暴言を送ったあとの妻の返事。何を送っても取りつく島がない（順番に使う） */
+export const COLD_REPLIES = ['は？', '知らない', '……', '既読', 'で？', '話しかけないで', 'ふーん', '……………'];
+
 export const CHAT_MAP: Record<string, ChatTemplate> = Object.fromEntries(CHAT_TEMPLATES.map((t) => [t.id, t]));

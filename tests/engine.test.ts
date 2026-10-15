@@ -4,6 +4,7 @@ import { advanceRun, buildDay, chatTimeline, chooseScenarios, newRun, perform, s
 import { seeded } from '../src/core/rng';
 import { solve } from '../src/core/solver';
 import { SCENARIO_MAP } from '../src/data/scenarios';
+import { COLD_REPLIES } from '../src/data/chat';
 
 const day = (ids: string[], start = hm(23, 0)) => buildDay(1, ids.map((id) => SCENARIO_MAP[id]), start);
 
@@ -201,6 +202,20 @@ describe('暴言（おふざけ枠）', () => {
     const s = day(['neighbor_curry'], hm(24, 55));
     perform(s, { type: 'sendChat', template: 'insult_gunsou' });
     expect(perform(s, { type: 'travel', to: 'town' }).outcome.kind).toBe('demon');
+  });
+
+  it('暴言のあとは、謝っても何を送っても取りつく島もない返事だけ', () => {
+    const s = day(['dinner_unannounced']);
+    perform(s, { type: 'sendChat', template: 'insult_oni' });
+    const before = s.chatLog.length;
+    perform(s, { type: 'sendChat', template: 'apology_dinner' });
+    perform(s, { type: 'sendChat', template: 'love' });
+    perform(s, { type: 'sendChat', template: 'insult_gunsou' });
+    const replies = s.chatLog.slice(before).filter((m) => m.from === 'wife').map((m) => m.text);
+    expect(replies).toHaveLength(3);
+    for (const r of replies) expect(COLD_REPLIES).toContain(r);
+    // 関係ない「愛してるよ」でも電話は来ない（2分だけ）
+    expect(s.time).toBe(hm(23, 8));
   });
 
   it('暴言は電話ペナルティなしの2分（その代わり取り返しがつかない）', () => {

@@ -1,5 +1,5 @@
 // ゲームの純粋ロジック。DOM・音・描画には一切触らない。
-import { CHAT_MAP } from '../data/chat';
+import { CHAT_MAP, COLD_REPLIES } from '../data/chat';
 import { ITEM_MAP } from '../data/items';
 import { SCENARIOS } from '../data/scenarios';
 import {
@@ -181,12 +181,18 @@ const act = (state: DayState, action: Action): ActionResult => {
       if (t.requires && !evaluate(t.requires, state.flags)) return result(false, ['まだそれを言える状況じゃない。']);
       state.flags.add(`chat:${t.id}`);
       state.chatLog.push({ from: 'me', text: t.text });
+      // 一度でも暴言を送ったら、以後は何を送っても取りつく島もない返事だけ（電話も来ない）
+      const coldReply = () => COLD_REPLIES[state.chatLog.filter((m) => m.from === 'wife').length % COLD_REPLIES.length];
+      const alreadyInsulted = state.flags.has('insulted');
       if (t.insult) {
-        // 電話すら来ない。既読だけがつく
         state.flags.add('insulted');
         state.flags.add(`insult:${t.id}`);
-        if (t.replyIrrelevant) state.chatLog.push({ from: 'wife', text: t.replyIrrelevant });
+        state.chatLog.push({ from: 'wife', text: alreadyInsulted ? coldReply() : t.replyIrrelevant || '既読' });
         return result(true, ['送信した。', '……既読がついた。返事はない。電話も来ない。', '背筋に、冷たいものが走った。'], COST.sendChat);
+      }
+      if (alreadyInsulted) {
+        state.chatLog.push({ from: 'wife', text: coldReply() });
+        return result(true, ['送信した。', '……取りつく島もない。'], COST.sendChat);
       }
       const relevant = isChatRelevant(state, t.id);
       const reply = relevant ? t.replyRelevant : t.replyIrrelevant;
