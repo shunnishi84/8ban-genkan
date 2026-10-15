@@ -134,7 +134,7 @@ cd android && ./gradlew assembleDebug   # → android/app/build/outputs/apk/debu
 | window_candle.png | 結婚記念日のキャンドル（窓に重ねる） | ✅ |
 | window_dark.png | 妻が帰省中で真っ暗な窓 | ✅ |
 | window_tv.png | テレビの青い光（窓に重ねる） | ✅ |
-| garbage_bag.png | 玄関脇のゴミ袋 | — |
+| garbage_bag.png | 玄関脇のゴミ袋 | ✅ |
 | wet_floor.png | 足元の水たまり | ✅ |
 | door / window / nameplate / floor / hallway.png | 玄関前のパーツ差し替え（任意） | — |
 | bg_town.jpg / bg_trash.jpg / bg_bench.jpg | 夜の街・ゴミ捨て場・公園のベンチ | ✅ |
