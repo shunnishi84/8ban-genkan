@@ -218,6 +218,104 @@ No blood, no gore, no weapons, no text, no letters, no watermark.
 
 ---
 
+## 6. Gemini で残りをまとめて作る（貼るだけ版）
+
+Gemini は透過 PNG を出せないことが多いので、背景は**白**で作って、こちらで抜く。
+窓の絵は `bg_door.png` と `window_garland.png` を、取材画面は `hero.png` を添付して使う。
+
+### 6-1. window_candle.png（添付: bg_door.png, window_garland.png）
+```
+The first attached image is a Japanese apartment entrance at night. The second attached image
+shows how the narrow window on the right side of the door was redrawn on its own, with
+decorations inside it. Make another image exactly like the second one: ONLY that same narrow
+vertical window, same dark metal frame, same straight-on angle, same tall and narrow
+proportions (about 1:2.2), cropped tightly to the frame with nothing outside it.
+Inside the window this time: three lit candles on a small table and a glass of red wine,
+warm orange flickering glow in an otherwise dark room, romantic but a little lonely.
+Japanese manga-style digital illustration, clean bold black outlines, flat cel shading,
+same art style as the references. No text, no letters, no watermark.
+```
+
+### 6-2. window_tv.png（添付: bg_door.png, window_garland.png）
+```
+The first attached image is a Japanese apartment entrance at night. The second attached image
+shows how the narrow window on the right side of the door was redrawn on its own. Make another
+image exactly like the second one: ONLY that same narrow vertical window, same dark metal
+frame, same straight-on angle, same tall and narrow proportions (about 1:2.2), cropped
+tightly to the frame with nothing outside it.
+Inside the window this time: a dark room lit only by the flickering blue-white light of a
+television, and the faint silhouette of a woman with short bob hair sitting with her arms
+crossed, staring at the screen. Ominous but comedic.
+Japanese manga-style digital illustration, clean bold black outlines, flat cel shading,
+same art style as the references. No text, no letters, no watermark.
+```
+
+### 6-3. garbage_bag.png
+```
+A single semi-transparent white 45-liter Japanese household garbage bag, tied at the top,
+bulging and stuffed full, standing upright with a slight shadow under it. Seen from the
+front at eye level. Japanese manga-style digital illustration, clean bold black outlines,
+flat cel shading, muted cool night colors. Isolated object centered on a plain pure white
+background, nothing else in the image. No text, no watermark.
+```
+
+### 6-4. wet_floor.png
+```
+A wide, flat puddle of rainwater on the floor, seen from slightly above, very wide
+horizontal shape (about 9:1), a few water droplets around it, subtle blue reflections,
+dark outline. Japanese manga-style digital illustration, clean bold black outlines, flat
+cel shading. Isolated object centered on a plain pure white background, nothing else in
+the image. No text, no watermark.
+```
+
+### 6-5. 持ち物アイコン10個（1枚にまとめて描かせる → こちらで切り出す）
+```
+A sprite sheet of 10 separate game item icons arranged in a neat 5 columns x 2 rows grid
+on a plain pure white background. Each icon is a single object, centered in its own cell,
+with plenty of white space between icons, nothing touching or overlapping, no labels,
+no numbers, no frames.
+Row 1, left to right:
+1. two slices of strawberry shortcake in a clear plastic convenience-store container
+2. a small premium vanilla ice cream cup with a gold lid
+3. a small tube of super glue in yellow and red packaging
+4. a broken blue ceramic mug in three pieces, partly wrapped in newspaper
+5. a blue ceramic mug repaired with visible glued crack lines, slightly crooked but whole
+Row 2, left to right:
+6. an elegant Japanese hot spring gift voucher envelope with a red seal and a steam motif
+7. a flashy expensive golf driver with a glittering galaxy-patterned head
+8. a crushed empty highball can, silver and blue
+9. a simple gold wedding ring with a soft sparkle
+10. a small plastic case of breath mint tablets, mint green
+Japanese manga-style digital illustration, clean bold black outlines, flat cel shading,
+simple and readable at small size, consistent style across all icons.
+No text, no letters, no watermark.
+```
+→ 順番どおりに `item_cake / item_ice_cream / item_glue / item_broken_mug / item_fixed_mug /
+item_onsen_ticket / item_golf_club / item_empty_can / item_ring / item_mint` として切り出す。
+
+### 6-6. tv_capture.png（添付: hero.png）
+```
+Use the attached image as the character reference: the same tired Japanese salaryman with
+short black hair, white shirt and dark tie. Draw a TV news screen capture of a nighttime
+street interview in a busy Japanese business district: he is laughing nervously and a bit
+drunk, talking into a microphone held out from the side by an unseen reporter, neon signs
+blurred in the background. Add a TV-style lower-third caption bar and a small channel logo
+area, but with blurred, unreadable shapes instead of real text. Landscape 4:3 framing like a
+TV screen. Japanese manga-style digital illustration, clean bold black outlines, flat cel
+shading. No readable text, no watermark.
+```
+
+### 6-7. kouhai_notice.png
+```
+Close-up of a smartphone lock-screen notification card glowing in a dark room. The card shows
+a round avatar icon of a cheerful young female office worker making a peace sign, small pink
+heart stickers floating around the card, and a few lines of blurred, unreadable message text.
+Slightly suspicious, comedic mood. Landscape 4:3. Japanese manga-style digital illustration,
+clean bold black outlines, flat cel shading. No readable text, no watermark.
+```
+
+---
+
 ## 置いたあとの確認
 
 1. `npm run dev` で起動
