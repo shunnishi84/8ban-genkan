@@ -143,6 +143,37 @@ describe('新しい仕掛け', () => {
   });
 });
 
+describe('暴言（おふざけ枠）', () => {
+  it('暴言を送ると、火種を全部消していてもドアの向こうは魔王', () => {
+    const s = day(['ring_off']);
+    perform(s, { type: 'use', item: 'ring' });
+    perform(s, { type: 'sendChat', template: 'insult_oni' });
+    const r = perform(s, { type: 'openDoor' });
+    expect(r.outcome.kind).toBe('demon');
+    if (r.outcome.kind === 'demon') expect(r.outcome.lines[0]).toBe('……鬼嫁？');
+  });
+
+  it('異変なしの日でも、妻が帰省中でも、暴言を送れば魔王', () => {
+    for (const id of ['neighbor_curry', 'wife_away']) {
+      const s = day([id]);
+      perform(s, { type: 'sendChat', template: 'insult_komakai' });
+      expect(perform(s, { type: 'openDoor' }).outcome.kind, id).toBe('demon');
+    }
+  });
+
+  it('暴言を送ったまま 1:00 を過ぎても、ただの時間切れではなく魔王', () => {
+    // 24:55 に送信（+2分）→ 街へ（+5分）で 1:02
+    const s = day(['neighbor_curry'], hm(24, 55));
+    perform(s, { type: 'sendChat', template: 'insult_gunsou' });
+    expect(perform(s, { type: 'travel', to: 'town' }).outcome.kind).toBe('demon');
+  });
+
+  it('暴言は電話ペナルティなしの2分（その代わり取り返しがつかない）', () => {
+    const s = day(['neighbor_curry']);
+    expect(perform(s, { type: 'sendChat', template: 'insult_kaachan' }).cost).toBe(2);
+  });
+});
+
 describe('周回', () => {
   it('日が進むほど原因が重なる（6日目以降は2つ、8日目は3つ）', () => {
     const rng = seeded(1);

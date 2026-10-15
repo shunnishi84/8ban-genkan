@@ -44,6 +44,8 @@ export const IMAGES = {
   wife_angry: { file: 'wife_angry.png', label: '鬼の形相の妻', color: '#7a1010', fit: 'cover' },
   wife_dark: { file: 'wife_dark.png', label: '無言の妻', color: '#2b2b38', fit: 'cover' },
   wife_smile: { file: 'wife_smile.png', label: 'おかえりの妻', color: '#f2c6a0', fit: 'cover' },
+  /** 暴言を送った日の結末: 邪悪なオーラを放つ魔王化した妻（無ければ wife_angry を紫に染めて代用） */
+  wife_demon: { file: 'wife_demon.png', label: '魔王化した妻', color: '#2a0640', fit: 'cover' },
   wife_suspicious: { file: 'wife_suspicious.png', label: '腕組みの妻', color: '#5a4a4a', fit: 'cover' },
   /** wife_angry に炎が描き込まれていれば不要 */
   fire: { file: 'fire.png', label: '炎', color: '#ff5a1f' },
@@ -105,6 +107,7 @@ export const BGM = {
   bgm_door: { file: 'bgm_door.mp3', volume: 0.4 },
   bgm_town: { file: 'bgm_town.mp3', volume: 0.4 },
   bgm_angry: { file: 'bgm_angry.mp3', volume: 0.6 },
+  bgm_demon: { file: 'bgm_demon.mp3', volume: 0.7 },
   bgm_home: { file: 'bgm_home.mp3', volume: 0.5 },
   bgm_clear: { file: 'bgm_clear.mp3', volume: 0.6 },
 } satisfies Record<string, AudioEntry>;
@@ -122,6 +125,7 @@ export const SE = {
   se_angry: { file: 'se_angry.mp3', beep: 110, volume: 0.7 },
   se_success: { file: 'se_success.mp3', beep: 1040, volume: 0.5 },
   se_late: { file: 'se_late.mp3', beep: 150, volume: 0.6 },
+  se_demon: { file: 'se_demon.mp3', beep: 70, volume: 0.8 },
 } satisfies Record<string, AudioEntry>;
 
 export type BgmKey = keyof typeof BGM;

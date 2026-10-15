@@ -156,6 +156,68 @@ unreadable blurred message text, glowing in a dark room, 4:3
 
 ---
 
+## 5. 魔王化した妻（暴言を送った日の結末）— Gemini 用
+
+| ファイル | 用途 | 形式 |
+|---|---|---|
+| `wife_demon.png` | 暴言チャットを送った日、ドアを開けると待っている魔王 | 縦 9:16（例 1080×1920）、背景つき |
+
+画像が無いあいだは、`wife_angry.png` を紫に染めた代用表示になる（オーラ・火の粉・稲妻はコード側で重ねる）。
+
+**Gemini での作り方**
+1. Gemini に `public/assets/images/wife_angry.png`（鬼の形相の妻）を**添付**する
+2. 下のプロンプトを貼る（英語版の方が絵柄は安定しやすい。日本語版でも可）
+3. 気に入らなければ「もっとコミカルに」「オーラをもっと大きく」など追加で指示して描き直す
+
+**英語版**
+```
+Use the attached image as the character reference. Keep the exact same woman: same face
+shape, short dark brown bob hair, beige long-sleeve top and the same pink floral apron.
+
+Transform her into a comically over-the-top DEMON QUEEN, one level beyond the angry version.
+She stands in the same narrow Japanese apartment entrance (genkan) at night, facing the
+viewer, vertical 9:16 composition.
+
+- Long curved black horns (bigger than the small red ones in the reference)
+- Eyes glowing solid white-violet with no pupils, a wide sinister grin instead of shouting
+- Hair floating upward as if charged with static electricity
+- A huge swirling aura of dark purple and black flames filling the whole background,
+  with ghostly wisps shaped like tiny screaming faces
+- Purple lightning crackling around her, the door frame bending, small cracks in the floor
+- One finger slowly pointing at the viewer, the other hand on her hip
+- The floral apron stays on, for comedic contrast
+- In the lower corner, a tiny chibi silhouette of a terrified salaryman in a white shirt
+  and tie, kneeling in seiza
+
+Japanese manga-style digital illustration, clean bold black outlines, flat cel shading,
+matching the art style of the reference image. Comedic horror, not scary for real.
+No blood, no gore, no weapons, no text, no letters, no watermark.
+```
+
+**日本語版**
+```
+添付画像の女性をキャラクターの参考にしてください。顔立ち、こげ茶のショートボブ、
+ベージュの長袖、ピンクの花柄エプロンはそのまま同じ人物にしてください。
+
+その女性が、怒りを通り越して「魔王」になった姿を描いてください。
+夜の日本のマンションの狭い玄関に立ち、こちらを向いている、縦長 9:16 の構図です。
+
+・参考画像の小さな赤い角より大きい、黒く長く湾曲した角
+・瞳のない、白紫に光る目。叫ぶのではなく、不気味にニヤリと笑っている
+・静電気を帯びたように逆立って浮かぶ髪
+・背景いっぱいに渦巻く、黒と濃い紫の巨大な邪悪なオーラの炎。小さな叫び顔のような霊の筋が混じる
+・周囲に走る紫の稲妻。ゆがむドア枠、床に入る小さなひび
+・片手の指でゆっくりこちらを指さし、もう片手は腰に
+・花柄エプロンはそのまま（ギャップで笑える感じ）
+・画面の下の隅に、白シャツにネクタイの小さなちびキャラのサラリーマンが、怯えて正座している
+
+参考画像と同じ、日本の漫画風デジタルイラスト。くっきりした太い黒の線、フラットなセル塗り。
+本気で怖いホラーではなく、笑えるコミカルな怖さ。
+血、流血、武器、文字、ロゴ、透かしは入れないでください。
+```
+
+---
+
 ## 置いたあとの確認
 
 1. `npm run dev` で起動

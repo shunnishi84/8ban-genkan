@@ -48,6 +48,7 @@ export type Scene =
   | { kind: 'door'; visuals: string[] }
   | { kind: 'bg'; image: ImageKey }
   | { kind: 'angry'; started: number; image: 'wife_angry' | 'wife_dark' }
+  | { kind: 'demon'; started: number }
   | { kind: 'home' }
   | { kind: 'clear' }
   | { kind: 'title' };
@@ -80,7 +81,7 @@ export class Renderer {
 
   /** 画像の読み込み完了時などに呼ぶ */
   redraw() {
-    if (this.scene.kind !== 'angry') this.draw();
+    if (this.scene.kind !== 'angry' && this.scene.kind !== 'demon') this.draw();
   }
 
   private resize() {
@@ -124,6 +125,9 @@ export class Renderer {
         break;
       case 'angry':
         this.drawAngry(s.started, s.image);
+        break;
+      case 'demon':
+        this.drawDemon(s.started);
         break;
     }
   }
@@ -185,6 +189,90 @@ export class Renderer {
       ctx.fillRect(0, 0, W, H);
     }
     this.raf = requestAnimationFrame(() => this.drawAngry(started, image));
+  }
+
+  /**
+   * 暴言を送った日の結末: 邪悪なオーラを放つ魔王化した妻。
+   * wife_demon 画像が無いあいだは wife_angry を紫に染めて代用する。
+   */
+  private drawDemon(started: number) {
+    const t = (performance.now() - started) / 1000;
+    const { ctx } = this;
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#07020d';
+    ctx.fillRect(0, 0, W, H);
+
+    // 背後で回る闇の光線
+    ctx.save();
+    ctx.translate(W / 2, H * 0.42);
+    ctx.rotate(t * 0.35);
+    for (let i = 0; i < 14; i++) {
+      ctx.rotate((Math.PI * 2) / 14);
+      ctx.fillStyle = i % 2 ? 'rgba(120,20,190,0.22)' : 'rgba(40,0,70,0.35)';
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(-40, -H);
+      ctx.lineTo(40, -H);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.restore();
+
+    // 脈打つオーラ
+    const pulse = 0.55 + Math.sin(t * 5) * 0.2;
+    const aura = ctx.createRadialGradient(W / 2, H * 0.45, 30, W / 2, H * 0.45, H * 0.55);
+    aura.addColorStop(0, `rgba(190,60,255,${pulse})`);
+    aura.addColorStop(0.5, 'rgba(90,0,150,0.35)');
+    aura.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = aura;
+    ctx.fillRect(0, 0, W, H);
+
+    // 妻（魔王）。震えは怒りより大きく
+    const shake = Math.min(1, t) * Math.sin(t * 55) * 5;
+    const zoom = 1.02 + Math.min(t, 2) * 0.05;
+    const r = { x: (W - W * zoom) / 2 + shake, y: (H - H * zoom) / 2 + Math.cos(t * 47) * 2, w: W * zoom, h: H * zoom };
+    if (this.images.get('wife_demon')) {
+      this.drawImage('wife_demon', r);
+    } else {
+      this.drawImage('wife_angry', r);
+      // 代用: 紫に染めて闇落ちさせる
+      ctx.save();
+      ctx.globalCompositeOperation = 'multiply';
+      ctx.fillStyle = 'rgba(110,40,180,0.85)';
+      ctx.fillRect(0, 0, W, H);
+      ctx.globalCompositeOperation = 'screen';
+      ctx.fillStyle = `rgba(150,40,255,${0.15 + Math.sin(t * 5) * 0.08})`;
+      ctx.fillRect(0, 0, W, H);
+      ctx.restore();
+    }
+
+    // 立ちのぼる闇の火の粉
+    for (let i = 0; i < 40; i++) {
+      const seed = i * 97.13;
+      const x = (Math.sin(seed) * 0.5 + 0.5) * W + Math.sin(t * 2 + i) * 12;
+      const y = H - (((t * (40 + (i % 7) * 12) + seed * 3) % (H + 40)));
+      const size = 2 + (i % 4);
+      ctx.fillStyle = i % 3 ? 'rgba(200,90,255,0.8)' : 'rgba(30,0,40,0.9)';
+      ctx.beginPath();
+      ctx.arc(x, y, size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // ときどき稲妻で画面が白く光る
+    const phase = t % 2.3;
+    if (phase < 0.12) {
+      ctx.fillStyle = `rgba(235,220,255,${0.75 - phase * 6})`;
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    // 画面の縁を闇で締める
+    const vignette = ctx.createRadialGradient(W / 2, H / 2, H * 0.25, W / 2, H / 2, H * 0.75);
+    vignette.addColorStop(0, 'rgba(0,0,0,0)');
+    vignette.addColorStop(1, 'rgba(10,0,20,0.85)');
+    ctx.fillStyle = vignette;
+    ctx.fillRect(0, 0, W, H);
+
+    this.raf = requestAnimationFrame(() => this.drawDemon(started));
   }
 
   /** 画像があれば描き、無ければ「仮の四角＋ラベル」 */

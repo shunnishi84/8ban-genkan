@@ -143,6 +143,7 @@ cd android && ./gradlew assembleDebug   # → android/app/build/outputs/apk/debu
 | wife_angry.png | 鬼の形相の妻（炎込み） | ✅ |
 | wife_dark.png | 時間切れの無言の妻 | ✅ |
 | wife_suspicious.png | ゲームオーバー画面の背景 | ✅ |
+| wife_demon.png | 暴言を送った日の魔王化した妻（無ければ wife_angry を紫に染めて代用。プロンプトは IMAGE_PROMPTS.md の 5） | — |
 | fire.png | 炎（wife_angry が無いときの代替演出用） | — |
 | clear.jpg | クリア画面 | ✅ |
 | shirt_clean.png / shirt_lipstick.png | 替えのシャツ / 口紅つきシャツ | ✅ |
@@ -159,6 +160,7 @@ cd android && ./gradlew assembleDebug   # → android/app/build/outputs/apk/debu
 |---|---|
 | bgm_title.mp3 / bgm_door.mp3 / bgm_town.mp3 | タイトル / 玄関前 / 街（ループ） |
 | bgm_angry.mp3 / bgm_home.mp3 / bgm_clear.mp3 | 怒り / 帰宅成功 / クリア（ループ） |
+| bgm_demon.mp3 / se_demon.mp3 | 魔王化（ループ）/ 魔王登場の効果音 |
 | se_tap / se_open / se_send / se_buy / se_order / se_discard .mp3 | 操作音 |
 | se_walk / se_phone_call / se_door / se_angry / se_success / se_late .mp3 | 移動・ドア・結末 |
 

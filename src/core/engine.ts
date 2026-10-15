@@ -181,6 +181,13 @@ const act = (state: DayState, action: Action): ActionResult => {
       if (t.requires && !evaluate(t.requires, state.flags)) return result(false, ['まだそれを言える状況じゃない。']);
       state.flags.add(`chat:${t.id}`);
       state.chatLog.push({ from: 'me', text: t.text });
+      if (t.insult) {
+        // 電話すら来ない。既読だけがつく
+        state.flags.add('insulted');
+        state.flags.add(`insult:${t.id}`);
+        if (t.replyIrrelevant) state.chatLog.push({ from: 'wife', text: t.replyIrrelevant });
+        return result(true, ['送信した。', '……既読がついた。返事はない。電話も来ない。', '背筋に、冷たいものが走った。'], COST.sendChat);
+      }
       const relevant = isChatRelevant(state, t.id);
       const reply = relevant ? t.replyRelevant : t.replyIrrelevant;
       if (reply) state.chatLog.push({ from: 'wife', text: reply });
@@ -280,11 +287,19 @@ const act = (state: DayState, action: Action): ActionResult => {
 
     case 'openDoor': {
       if (state.location !== 'door') return result(false, ['ドアの前にいない。']);
+      if (state.flags.has('insulted')) return result(true, [], 0, demonOutcome(state));
       const angry = unresolvedCauses(state);
       if (angry.length > 0) return result(true, [], 0, { kind: 'angry', causes: angry });
       return result(true, [], 0, { kind: 'home', lines: state.successLines });
     }
   }
+};
+
+/** 暴言を送った日の結末。最初に送った暴言のセリフを使う */
+const demonOutcome = (state: DayState): Outcome => {
+  const first = [...state.flags].find((f) => f.startsWith('insult:'))?.slice('insult:'.length);
+  const lines = (first && CHAT_MAP[first]?.demonLines) || ['…………。'];
+  return { kind: 'demon', lines };
 };
 
 /**
@@ -294,6 +309,8 @@ const act = (state: DayState, action: Action): ActionResult => {
 export const perform = (state: DayState, action: Action): ActionResult => {
   const r = act(state, action);
   state.time += r.cost;
-  if (state.time > TIME_LIMIT) return { ...r, outcome: { kind: 'late' } };
+  if (state.time > TIME_LIMIT) {
+    return { ...r, outcome: state.flags.has('insulted') ? demonOutcome(state) : { kind: 'late' } };
+  }
   return r;
 };

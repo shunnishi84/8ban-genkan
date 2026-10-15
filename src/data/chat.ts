@@ -109,6 +109,58 @@ export const CHAT_TEMPLATES: ChatTemplate[] = [
     replyRelevant: 'ふーん。……信じてあげる',
     replyIrrelevant: '佐藤さんって誰？？ 今すぐ電話します',
   },
+  // ---------------------------------------------------------------- 暴言（おふざけ枠）
+  // 送ると、どんなに火種を消していても魔王化した妻が待っている。
+  {
+    id: 'insult_oni',
+    text: 'うるせえ、この鬼嫁',
+    insult: true,
+    replyRelevant: '',
+    replyIrrelevant: '既読',
+    demonLines: [
+      '……鬼嫁？',
+      'そう。鬼がお望みなのね。',
+      'いいえ。鬼じゃ足りないわね。',
+      '今夜から私は、この家の魔王です。',
+    ],
+  },
+  {
+    id: 'insult_komakai',
+    text: 'いちいち細けえんだよ！ほっとけ！',
+    insult: true,
+    replyRelevant: '',
+    replyIrrelevant: '既読',
+    demonLines: [
+      '細かい？ ふふ……',
+      'あなたが脱ぎっぱなしにした靴下の数、言ってあげましょうか。',
+      '三百六十五足よ。今年だけで。',
+      'ほっといてあげる。……永遠にね。',
+    ],
+  },
+  {
+    id: 'insult_kaachan',
+    text: 'お前は俺の母ちゃんか！説教ならよそでやれ',
+    insult: true,
+    replyRelevant: '',
+    replyIrrelevant: '既読',
+    demonLines: [
+      'お義母さんには、さっき電話しておいたわ。',
+      '「育て方を間違えた」って泣いてらしたわよ。',
+      'これからは私が、もう一度あなたを育て直してあげる。',
+    ],
+  },
+  {
+    id: 'insult_gunsou',
+    text: '黙って寝てろ、この鬼軍曹',
+    insult: true,
+    replyRelevant: '',
+    replyIrrelevant: '既読',
+    demonLines: [
+      '鬼軍曹……？ ずいぶん階級を低く見られたものね。',
+      '本日付けで、大元帥に昇進しました。',
+      '総員、玄関で正座。……総員って、あなた一人だけど。',
+    ],
+  },
   // 罠: どんな日でも関係ない扱いになり、問い詰められる
   {
     id: 'love',

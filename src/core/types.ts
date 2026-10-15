@@ -130,6 +130,13 @@ export interface ChatTemplate {
   replyIrrelevant: string;
   /** 関係なくてもペナルティにならない無難なメッセージ */
   neutral?: boolean;
+  /**
+   * 暴言（おふざけ枠）。送ると insulted が立ち、どんなに火種を消していても
+   * ドアを開けた瞬間（や時間切れ）に魔王化した妻が待っている。
+   */
+  insult?: boolean;
+  /** 暴言を送ったあと、ドアの向こうの魔王が言うセリフ */
+  demonLines?: string[];
 }
 
 export type Location = 'door' | 'town' | 'konbini' | 'trash' | 'bench';
@@ -180,6 +187,8 @@ export type Outcome =
   | { kind: 'continue' }
   | { kind: 'late' }
   | { kind: 'angry'; causes: Cause[] }
+  /** 暴言を送っていた: 火種の有無に関係なく、魔王化した妻が待っている */
+  | { kind: 'demon'; lines: string[] }
   | { kind: 'home'; lines: string[] };
 
 export interface ActionResult {

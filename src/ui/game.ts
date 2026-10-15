@@ -43,7 +43,7 @@ type Screen =
   | { name: 'howto' }
   | { name: 'intro' }
   | { name: 'play' }
-  | { name: 'talk'; mood: 'angry' | 'home'; late?: boolean; alone?: boolean; lines: Line[]; index: number; after: () => void }
+  | { name: 'talk'; mood: 'angry' | 'home' | 'demon'; late?: boolean; alone?: boolean; lines: Line[]; index: number; after: () => void }
   | { name: 'gameover'; reason: string; causes: Cause[] }
   | { name: 'clear' };
 
@@ -64,6 +64,8 @@ const INTRO_FLAVOR = [
   '送別会。泣いた。',
   '今日こそ早く帰るつもりだった。',
 ];
+
+const DEMON_REASON = '暴言による魔王化';
 
 const LOCATION_LABEL: Record<Location, string> = {
   door: '自宅の玄関前',
@@ -148,6 +150,9 @@ export class Game {
       case 'angry':
         this.gameOver('angry', r.outcome.causes);
         return false;
+      case 'demon':
+        this.demonEnding(r.outcome.lines);
+        return false;
       case 'home':
         this.goHome(r.outcome.lines);
         return false;
@@ -182,6 +187,28 @@ export class Game {
       lines,
       index: 0,
       after: () => this.go({ name: 'gameover', reason: kind === 'late' ? '遅すぎる帰宅' : '妻の怒り', causes }),
+    });
+  }
+
+  /** 暴言を送っていた日: 火種に関係なく、ドアの向こうに魔王 */
+  private demonEnding(demonLines: string[]) {
+    this.audio.playSe('se_door');
+    window.setTimeout(() => this.audio.playSe('se_demon'), 300);
+    const alone = this.day!.homeAlone;
+    const lines: Line[] = [
+      ...(alone ? [{ who: 'narr' as const, text: '実家にいるはずの妻の靴が、玄関にある。' }] : []),
+      { who: 'narr', text: 'ガチャ……' },
+      { who: 'narr', text: '玄関の空気が、凍りついた。' },
+      ...demonLines.map((text) => ({ who: 'wife' as const, text })),
+      { who: 'narr', text: '妻は、人であることをやめた。' },
+    ];
+    this.recordBest();
+    this.go({
+      name: 'talk',
+      mood: 'demon',
+      lines,
+      index: 0,
+      after: () => this.go({ name: 'gameover', reason: DEMON_REASON, causes: [] }),
     });
   }
 
@@ -304,10 +331,12 @@ export class Game {
     if (s.name === 'title' || s.name === 'howto') {
       this.renderer.setScene({ kind: 'title' });
     } else if (s.name === 'talk') {
-      bgm = s.mood === 'angry' ? 'bgm_angry' : 'bgm_home';
+      bgm = s.mood === 'demon' ? 'bgm_demon' : s.mood === 'angry' ? 'bgm_angry' : 'bgm_home';
       if (s.index === 0) {
         this.renderer.setScene(
-          s.mood === 'home'
+          s.mood === 'demon'
+            ? { kind: 'demon', started: performance.now() }
+            : s.mood === 'home'
             ? s.alone
               ? { kind: 'bg', image: 'bg_door_dark' }
               : { kind: 'home' }
@@ -315,8 +344,10 @@ export class Game {
         );
       }
     } else if (s.name === 'gameover') {
-      bgm = 'bgm_angry';
-      this.renderer.setScene({ kind: 'bg', image: 'wife_suspicious' });
+      const demon = s.reason === DEMON_REASON;
+      bgm = demon ? 'bgm_demon' : 'bgm_angry';
+      // 魔王化のときは、結果画面の背後でも魔王が蠢き続ける
+      this.renderer.setScene(demon ? { kind: 'demon', started: performance.now() } : { kind: 'bg', image: 'wife_suspicious' });
     } else if (s.name === 'clear') {
       bgm = 'bgm_clear';
       this.renderer.setScene({ kind: 'clear' });
@@ -684,13 +715,26 @@ export class Game {
         'div',
         { class: 'compose' },
         h('small', { class: 'dim' }, '定型文を送る（2分）'),
-        CHAT_TEMPLATES.map((t) => {
+        CHAT_TEMPLATES.filter((t) => !t.insult).map((t) => {
           const sent = day.flags.has(`chat:${t.id}`);
           return h(
             'button',
             {
               class: 'template',
               disabled: sent || !canSendChat(day, t.id),
+              onclick: () => this.act({ type: 'sendChat', template: t.id }, 'se_send'),
+            },
+            sent ? `✓ ${t.text}` : t.text,
+          );
+        }),
+        h('small', { class: 'insult-label' }, '😤 感情のままに送る（※おすすめしない）'),
+        CHAT_TEMPLATES.filter((t) => t.insult).map((t) => {
+          const sent = day.flags.has(`chat:${t.id}`);
+          return h(
+            'button',
+            {
+              class: 'template insult',
+              disabled: sent,
               onclick: () => this.act({ type: 'sendChat', template: t.id }, 'se_send'),
             },
             sent ? `✓ ${t.text}` : t.text,

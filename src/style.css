@@ -720,3 +720,27 @@ button:disabled {
 .center-card.clear .sign {
   font-size: 1.6em;
 }
+
+/* 暴言（おふざけ枠） */
+.insult-label {
+  margin-top: 0.6em;
+  color: #c0392b;
+  font-weight: bold;
+}
+.template.insult {
+  border-color: #e3a2a2;
+  background: #fff3f3;
+  color: #8e1b1b;
+}
+/* 魔王化の会話: 紫の禍々しい吹き出し */
+.talk.demon .speech.wife {
+  border-color: #9b3dff;
+  box-shadow: 0 0 18px rgba(155, 61, 255, 0.7);
+  color: #f0dcff;
+  font-weight: bold;
+  font-size: 1.3em;
+  animation: shake 0.2s linear infinite;
+}
+.talk.demon .speech.narr {
+  color: #c9a6ff;
+}

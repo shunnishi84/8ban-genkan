@@ -70,6 +70,18 @@ describe('データの参照整合性', () => {
   });
 });
 
+describe('暴言の定型文', () => {
+  it('暴言には魔王のセリフがあり、どの火種の解消条件にも使われていない', () => {
+    const insults = CHAT_TEMPLATES.filter((t) => t.insult);
+    expect(insults.length).toBeGreaterThanOrEqual(3);
+    const used = SCENARIOS.flatMap((s) => s.causes.flatMap((c) => flagsIn(c.resolution)));
+    for (const t of insults) {
+      expect(t.demonLines?.length, t.id).toBeGreaterThan(0);
+      expect(used).not.toContain(`chat:${t.id}`);
+    }
+  });
+});
+
 describe('シナリオの構成', () => {
   it('異変なしの日が2種類以上ある', () => {
     expect(normalScenarios.length).toBeGreaterThanOrEqual(2);
