@@ -151,7 +151,7 @@ cd android && ./gradlew assembleDebug   # → android/app/build/outputs/apk/debu
 | item_bouquet.png / item_shopping_bag.png | 花束 / レジ袋（牛乳・卵） | ✅ |
 | item_cake / ice_cream / glue / broken_mug / fixed_mug / onsen_ticket / golf_club / empty_can / ring / mint .png | 持ち物アイコン | ✅ |
 | tv_capture.jpg | テレビ取材の画面（Gemini で生成、テロップの文字化けは上から描き直し） | ✅ |
-| kouhai_notice.png | 後輩女子からの通知（無ければ文字だけ） | — |
+| kouhai_notice.jpg | 後輩女子からの通知（Gemini で生成、文字化けした本文は上から描き直し） | ✅ |
 
 ### 音声（`public/assets/audio/`）
 
