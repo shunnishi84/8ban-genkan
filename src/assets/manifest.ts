@@ -69,7 +69,7 @@ export const IMAGES = {
   item_ring: { file: 'item_ring.png', label: '指輪', color: '#e7d27a' },
   item_mint: { file: 'item_mint.png', label: 'ミント', color: '#9fe0d0' },
   // 手がかりに添えるイラスト
-  tv_capture: { file: 'tv_capture.png', label: 'テレビの画面', color: '#33415c' },
+  tv_capture: { file: 'tv_capture.jpg', label: 'テレビの画面', color: '#33415c' },
   kouhai_notice: { file: 'kouhai_notice.png', label: '後輩の通知', color: '#f2a7c3' },
 } satisfies Record<string, ImageEntry>;
 
