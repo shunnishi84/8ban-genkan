@@ -5,6 +5,7 @@ import { seeded } from '../src/core/rng';
 import { solve } from '../src/core/solver';
 import { SCENARIO_MAP } from '../src/data/scenarios';
 import { COLD_REPLIES } from '../src/data/chat';
+import { FINALE_IDS, type FinaleId } from '../src/data/finales';
 
 const day = (ids: string[], start = hm(23, 0)) => buildDay(1, ids.map((id) => SCENARIO_MAP[id]), start);
 
@@ -221,6 +222,55 @@ describe('暴言（おふざけ枠）', () => {
   it('暴言は電話ペナルティなしの2分（その代わり取り返しがつかない）', () => {
     const s = day(['neighbor_curry']);
     expect(perform(s, { type: 'sendChat', template: 'insult_kaachan' }).cost).toBe(2);
+  });
+});
+
+describe('暴言4種コンプリートのフィナーレ', () => {
+  const ALL = ['insult_oni', 'insult_komakai', 'insult_kaachan', 'insult_gunsou'];
+  const withSeed = (finale: FinaleId, ids = ['neighbor_curry']) => {
+    const s = day(ids);
+    s.seed = (FINALE_IDS.indexOf(finale) + 0.5) / FINALE_IDS.length;
+    return s;
+  };
+
+  it('暴言が3つまでなら魔王、4つ全部ならフィナーレ', () => {
+    const s = withSeed('court');
+    for (const t of ALL.slice(0, 3)) perform(s, { type: 'sendChat', template: t });
+    expect(s.finale).toBeUndefined();
+    perform(s, { type: 'sendChat', template: ALL[3] });
+    expect(s.finale).toBe('court');
+    const r = perform(s, { type: 'openDoor' });
+    expect(r.outcome).toEqual({ kind: 'finale', finale: 'court' });
+  });
+
+  it('6本すべてが seed で選ばれうる', () => {
+    for (const id of FINALE_IDS) {
+      const s = withSeed(id);
+      for (const t of ALL) perform(s, { type: 'sendChat', template: t });
+      expect(s.finale).toBe(id);
+    }
+  });
+
+  it('魔王城: 4つ目を送った瞬間にスマホが割れて、以後スマホは使えない', () => {
+    const s = withSeed('castle');
+    for (const t of ALL) perform(s, { type: 'sendChat', template: t });
+    expect(s.flags.has('phone_broken')).toBe(true);
+    expect(perform(s, { type: 'openApp', app: 'chat' }).ok).toBe(false);
+    expect(perform(s, { type: 'order', item: 'bouquet' }).ok).toBe(false);
+  });
+
+  it('包囲網: 4つ目を送った瞬間に義母・義父・友達・上司の通知が届く', () => {
+    const s = withSeed('siege');
+    const before = visibleClues(s, 'notice').length;
+    for (const t of ALL) perform(s, { type: 'sendChat', template: t });
+    expect(visibleClues(s, 'notice').length).toBe(before + 4);
+  });
+
+  it('フィナーレが決まった日は、時間切れでもフィナーレ', () => {
+    const s = withSeed('lockout');
+    s.time = hm(24, 50);
+    for (const t of ALL) perform(s, { type: 'sendChat', template: t });
+    expect(perform(s, { type: 'travel', to: 'town' }).outcome).toEqual({ kind: 'finale', finale: 'lockout' });
   });
 });
 

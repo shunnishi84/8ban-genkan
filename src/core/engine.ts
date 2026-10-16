@@ -1,5 +1,6 @@
 // ゲームの純粋ロジック。DOM・音・描画には一切触らない。
-import { CHAT_MAP, COLD_REPLIES } from '../data/chat';
+import { CHAT_MAP, CHAT_TEMPLATES, COLD_REPLIES } from '../data/chat';
+import { FINALES, FINALE_IDS, type Finale } from '../data/finales';
 import { ITEM_MAP } from '../data/items';
 import { SCENARIOS } from '../data/scenarios';
 import {
@@ -64,7 +65,7 @@ export const chooseScenarios = (
 };
 
 /** シナリオ（複数可）を合成して1日分の状態を作る */
-export const buildDay = (day: number, scenarios: Scenario[], startTime: number): DayState => {
+export const buildDay = (day: number, scenarios: Scenario[], startTime: number, seed = 0): DayState => {
   const orders: DayState['orders'] = {};
   for (const s of scenarios) for (const o of s.startOrders ?? []) orders[o] = 'existing';
   const normal = scenarios.every(isNormal);
@@ -86,13 +87,14 @@ export const buildDay = (day: number, scenarios: Scenario[], startTime: number):
       ? scenarios.map((s) => s.successLine ?? 'おかえり。今日もお疲れさま')
       : scenarios.flatMap((s) => s.causes.map((c) => c.successLine)),
     homeAlone: scenarios.length > 0 && scenarios.every((s) => s.homeAlone),
+    seed,
   };
 };
 
 export const startDay = (run: RunState, rng: Rng, pool: readonly Scenario[] = SCENARIOS): DayState => {
   const scenarios = chooseScenarios(run, rng, pool);
   run.used.push(...scenarios.map((s) => s.id));
-  return buildDay(run.day, scenarios, startTimeFor(run.day, rng()));
+  return buildDay(run.day, scenarios, startTimeFor(run.day, rng()), rng());
 };
 
 /** 帰宅成功時に周回を進める。クリアしたら true */
@@ -157,7 +159,13 @@ const look = (state: DayState, key: string, cost: number): ActionResult => {
   return result(true, [], cost);
 };
 
+/** スマホを使う行動（スマホが壊れたらできない） */
+const PHONE_ACTIONS = new Set<Action['type']>(['openApp', 'sendChat', 'order', 'cancelOrder', 'unsend', 'deletePost']);
+
 const act = (state: DayState, action: Action): ActionResult => {
+  if (state.flags.has('phone_broken') && PHONE_ACTIONS.has(action.type)) {
+    return result(false, ['スマホは割れていて、もう何も映らない。']);
+  }
   switch (action.type) {
     case 'inspect':
       if (state.location !== 'door') return result(false, ['家の前にいないと調べられない。']);
@@ -188,7 +196,12 @@ const act = (state: DayState, action: Action): ActionResult => {
         state.flags.add('insulted');
         state.flags.add(`insult:${t.id}`);
         state.chatLog.push({ from: 'wife', text: alreadyInsulted ? coldReply() : t.replyIrrelevant || '既読' });
-        return result(true, ['送信した。', '……既読がついた。返事はない。電話も来ない。', '背筋に、冷たいものが走った。'], COST.sendChat);
+        const finale = triggerFinale(state);
+        return result(
+          true,
+          ['送信した。', '……既読がついた。返事はない。電話も来ない。', '背筋に、冷たいものが走った。', ...(finale?.onTrigger ?? [])],
+          COST.sendChat,
+        );
       }
       if (alreadyInsulted) {
         state.chatLog.push({ from: 'wife', text: coldReply() });
@@ -301,12 +314,27 @@ const act = (state: DayState, action: Action): ActionResult => {
 
     case 'openDoor': {
       if (state.location !== 'door') return result(false, ['ドアの前にいない。']);
+      if (state.finale) return result(true, [], 0, { kind: 'finale', finale: state.finale });
       if (state.flags.has('insulted')) return result(true, [], 0, demonOutcome(state));
       const angry = unresolvedCauses(state);
       if (angry.length > 0) return result(true, [], 0, { kind: 'angry', causes: angry });
       return result(true, [], 0, { kind: 'home', lines: state.successLines });
     }
   }
+};
+
+/** 暴言を4種すべて送ったら、その日のフィナーレを決めて仕掛けを発動する */
+const triggerFinale = (state: DayState): Finale | null => {
+  if (state.finale) return null;
+  const all = CHAT_TEMPLATES.filter((t) => t.insult).every((t) => state.flags.has(`insult:${t.id}`));
+  if (!all) return null;
+  const id = FINALE_IDS[Math.min(FINALE_IDS.length - 1, Math.floor(state.seed * FINALE_IDS.length))];
+  const finale = FINALES[id];
+  state.finale = id;
+  state.flags.add(`finale:${id}`);
+  if (finale.breaksPhone) state.flags.add('phone_broken');
+  state.clues.push(...(finale.triggerClues ?? []));
+  return finale;
 };
 
 /** 暴言を送った日の結末。最初に送った暴言のセリフを使う */
@@ -324,7 +352,12 @@ export const perform = (state: DayState, action: Action): ActionResult => {
   const r = act(state, action);
   state.time += r.cost;
   if (state.time > TIME_LIMIT) {
-    return { ...r, outcome: state.flags.has('insulted') ? demonOutcome(state) : { kind: 'late' } };
+    const outcome: Outcome = state.finale
+      ? { kind: 'finale', finale: state.finale }
+      : state.flags.has('insulted')
+        ? demonOutcome(state)
+        : { kind: 'late' };
+    return { ...r, outcome };
   }
   return r;
 };

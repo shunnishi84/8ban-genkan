@@ -786,3 +786,104 @@ button:disabled {
   border-color: transparent;
   color: #fff;
 }
+
+/* ---------------------------------------------------------------- フィナーレ */
+.talk.finale {
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 1em;
+}
+.talk.finale .speech {
+  border-color: #9b3dff;
+  box-shadow: 0 0 14px rgba(155, 61, 255, 0.55);
+}
+.talk.finale .speech.other b,
+.talk.finale .speech.wife b {
+  color: #e3c6ff;
+}
+/* 家庭裁判の証拠: 暴言のスクリーンショット風カード */
+.evidence {
+  align-self: center;
+  width: 86%;
+  padding: 0.8em 1em;
+  border-radius: 10px;
+  background: #f4f6fa;
+  color: #1f2633;
+  box-shadow: 0 0 0 4px #c9a35a, 0 10px 30px rgba(0, 0, 0, 0.6);
+  transform: rotate(-2deg);
+  animation: rise 0.25s ease-out;
+}
+.evidence small {
+  color: #8a8f99;
+}
+.evidence p {
+  margin: 0.3em 0 0;
+  padding: 0.5em 0.8em;
+  border-radius: 14px;
+  background: #8de37f;
+  font-weight: bold;
+  font-size: 1.15em;
+}
+/* RPG 風コマンド */
+.speech.rpg {
+  font-style: normal;
+  color: #fff;
+  border: 3px double #fff;
+  background: #000;
+  font-family: 'DotGothic16', ui-monospace, monospace;
+}
+.rpg-menu {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4em;
+  margin-top: 0.6em;
+}
+.rpg-cmd {
+  padding: 0.6em;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  text-align: left;
+  font-size: 1.05em;
+}
+.rpg-cmd:hover,
+.rpg-cmd:focus-visible {
+  background: #222;
+  outline: 1px solid #fff;
+}
+.talk.loop .speech .btn {
+  margin-top: 0.8em;
+}
+/* 割れたスマホ */
+.phone.broken {
+  background: #050608;
+  color: #ddd;
+}
+.phone.broken .phone-head {
+  background: #0d0f14;
+  border-color: #222;
+}
+.phone.broken .phone-body {
+  position: relative;
+  flex: 1;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+.crack {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(115deg, transparent 48%, rgba(255, 255, 255, 0.55) 49%, transparent 50%),
+    linear-gradient(35deg, transparent 58%, rgba(255, 255, 255, 0.45) 59%, transparent 60%),
+    linear-gradient(160deg, transparent 30%, rgba(255, 255, 255, 0.35) 31%, transparent 32%),
+    linear-gradient(80deg, transparent 70%, rgba(255, 255, 255, 0.4) 71%, transparent 72%),
+    radial-gradient(circle at 46% 38%, rgba(255, 255, 255, 0.5) 0 2%, transparent 3%);
+}
+.broken-msg {
+  position: relative;
+  text-align: center;
+  color: #ff6b5a;
+  font-weight: bold;
+  line-height: 1.8;
+}

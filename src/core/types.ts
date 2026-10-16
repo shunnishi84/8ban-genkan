@@ -1,3 +1,4 @@
+import type { FinaleId } from '../data/finales';
 // ゲーム全体で使うデータ型。DOM に依存しないこと（Vitest から直接読み込むため）。
 
 /** 時刻は「日付の 0:00 からの経過分」で持つ。23:00 = 1380, 翌 1:00 = 1500 */
@@ -163,6 +164,10 @@ export interface DayState {
   chatLog: { from: 'me' | 'wife'; text: string }[];
   successLines: string[];
   homeAlone: boolean;
+  /** その日の乱数（0〜1）。フィナーレの抽選に使う。テストでは固定できる */
+  seed: number;
+  /** 暴言を4種すべて送ったときに決まるフィナーレ */
+  finale?: FinaleId;
 }
 
 export interface RunState {
@@ -194,6 +199,8 @@ export type Outcome =
   | { kind: 'angry'; causes: Cause[] }
   /** 暴言を送っていた: 火種の有無に関係なく、魔王化した妻が待っている */
   | { kind: 'demon'; lines: string[] }
+  /** 暴言を4種すべて送った: 6本からランダムに選ばれたフィナーレ */
+  | { kind: 'finale'; finale: FinaleId }
   | { kind: 'home'; lines: string[] };
 
 export interface ActionResult {

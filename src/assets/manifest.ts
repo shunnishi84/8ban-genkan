@@ -33,6 +33,8 @@ export const IMAGES = {
   window_tv: { file: 'window_tv.png', label: 'テレビの光', color: '#5b8fd9' },
   garbage_bag: { file: 'garbage_bag.png', label: 'ゴミ袋', color: '#9fb4c7' },
   wet_floor: { file: 'wet_floor.png', label: '水たまり', color: '#4a79a8' },
+  /** フィナーレ「魔王城」: ドアに重ねる魔王城の門（ドアの位置に描く） */
+  castle_gate: { file: 'castle_gate.png', label: '魔王城の門', color: '#3a1458' },
   // --- 街 ---
   bg_title: { file: 'bg_title.png', label: '8番玄関', color: '#10141c', fit: 'cover' },
   bg_town: { file: 'bg_town.jpg', label: '夜の街', color: '#1d2333', fit: 'cover' },
@@ -50,6 +52,11 @@ export const IMAGES = {
   wife_suspicious: { file: 'wife_suspicious.png', label: '腕組みの妻', color: '#5a4a4a', fit: 'cover' },
   /** wife_angry に炎が描き込まれていれば不要 */
   fire: { file: 'fire.png', label: '炎', color: '#ff5a1f' },
+  // --- フィナーレの背景（無ければ bg_door_dark で代用） ---
+  bg_court: { file: 'bg_court.jpg', label: '家庭裁判所', color: '#3b2a1e', fit: 'cover' },
+  bg_siege: { file: 'bg_siege.jpg', label: '家族会議', color: '#2d2a33', fit: 'cover' },
+  bg_lockout: { file: 'bg_lockout.jpg', label: '締め出し', color: '#161a22', fit: 'cover' },
+  bg_exposed: { file: 'bg_exposed.jpg', label: 'マンション総出', color: '#1d2333', fit: 'cover' },
   clear: { file: 'clear.jpg', label: '8日連続 帰宅成功！', color: '#f7d774', fit: 'cover' },
   // --- 持ち物・手がかりのイラスト（UI 内に表示。無ければ出さない） ---
   shirt_clean: { file: 'shirt_clean.png', label: 'ワイシャツ', color: '#eeeeee' },

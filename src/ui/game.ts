@@ -31,20 +31,42 @@ import { solve } from '../core/solver';
 import type { Action, AppId, Cause, ItemDef, ClueLocation, DayState, Location, RunState, SlotId, SpotId } from '../core/types';
 import { APP_BASE, APP_LABEL, CHAT_HISTORY, SLOT_BASE, SLOT_LABEL, SPOT_BASE, SPOT_LABEL } from '../data/base';
 import { CHAT_TEMPLATES } from '../data/chat';
+import { FINALES, FINALE_IDS, type Finale, type FinaleChoice, type FinaleId, type FinaleLine } from '../data/finales';
 import { ITEM_MAP, itemsAt } from '../data/items';
 import { SCENARIO_MAP } from '../data/scenarios';
 import { h, type Child } from './dom';
 import { Renderer } from './renderer';
 
-type Line = { who: 'me' | 'wife' | 'narr'; text: string };
+type Line = {
+  who: 'me' | 'wife' | 'narr' | 'other';
+  text: string;
+  /** who が other のときの名札 */
+  name?: string;
+  /** 大きなカードで見せる文字（家庭裁判の証拠など） */
+  card?: string;
+};
+
+type SceneSpec = Parameters<Renderer['setScene']>[0];
 
 type Screen =
   | { name: 'title' }
   | { name: 'howto' }
   | { name: 'intro' }
   | { name: 'play' }
-  | { name: 'talk'; mood: 'angry' | 'home' | 'demon'; late?: boolean; alone?: boolean; lines: Line[]; index: number; after: () => void }
-  | { name: 'gameover'; reason: string; causes: Cause[] }
+  | {
+      name: 'talk';
+      mood: 'angry' | 'home' | 'demon' | 'finale';
+      late?: boolean;
+      alone?: boolean;
+      /** 指定すると最初の行でこの背景にする。finale で省略すると直前の背景を引き継ぐ */
+      scene?: SceneSpec;
+      lines: Line[];
+      index: number;
+      after: () => void;
+    }
+  | { name: 'choice'; prompt: string; options: FinaleChoice[]; onPick: (o: FinaleChoice) => void }
+  | { name: 'loop'; level: number }
+  | { name: 'gameover'; reason: string; causes: Cause[]; finale?: FinaleId }
   | { name: 'clear' };
 
 type Modal =
@@ -129,8 +151,12 @@ export class Game {
     const forced = this.debug ? new URLSearchParams(location.search).get('scenario') : null;
     const scenarios = forced?.split(',').map((id) => SCENARIO_MAP[id]).filter(Boolean);
     this.day = scenarios?.length
-      ? buildDay(this.run.day, scenarios, startTimeFor(this.run.day, Math.random()))
+      ? buildDay(this.run.day, scenarios, startTimeFor(this.run.day, Math.random()), Math.random())
       : startDay(this.run, Math.random);
+    // ?debug&finale=court で、暴言4種コンプリート時のフィナーレを固定できる
+    const finale = this.debug ? (new URLSearchParams(location.search).get('finale') as FinaleId | null) : null;
+    const idx = finale ? FINALE_IDS.indexOf(finale) : -1;
+    if (idx >= 0) this.day.seed = (idx + 0.5) / FINALE_IDS.length;
     this.go({ name: 'intro' });
   }
 
@@ -152,6 +178,9 @@ export class Game {
         return false;
       case 'demon':
         this.demonEnding(r.outcome.lines);
+        return false;
+      case 'finale':
+        this.playFinale(r.outcome.finale);
         return false;
       case 'home':
         this.goHome(r.outcome.lines);
@@ -209,6 +238,68 @@ export class Game {
       lines,
       index: 0,
       after: () => this.go({ name: 'gameover', reason: DEMON_REASON, causes: [] }),
+    });
+  }
+
+  // ---------------------------------------------------------------- フィナーレ（暴言4種コンプリート）
+
+  private finaleScene(f: Finale): SceneSpec {
+    if (f.scene === 'demon' || f.scene === 'loop') return { kind: 'demon', started: performance.now() };
+    return { kind: 'bg', image: f.scene, fallback: 'bg_door_dark' };
+  }
+
+  /** 証拠の行を、送った暴言1件ずつのカードに展開する */
+  private expand(lines: FinaleLine[]): Line[] {
+    const insults = CHAT_TEMPLATES.filter((t) => t.insult);
+    return lines.flatMap((l): Line[] =>
+      l.evidence
+        ? insults.map((t, i) => ({ who: 'other', name: l.name, text: `証拠第${i + 1}号。`, card: t.text }))
+        : [{ who: l.who, name: l.name, text: l.text }],
+    );
+  }
+
+  private playFinale(id: FinaleId) {
+    const f = FINALES[id];
+    this.audio.playSe('se_door');
+    window.setTimeout(() => this.audio.playSe('se_demon'), 300);
+    this.recordBest();
+    const end = () => this.go({ name: 'gameover', reason: f.title, causes: [], finale: id });
+    const outro = (scene?: SceneSpec) =>
+      f.outro.length ? this.go({ name: 'talk', mood: 'finale', scene, lines: this.expand(f.outro), index: 0, after: end }) : end();
+    const choice = () => {
+      if (!f.choice) return outro();
+      const c = f.choice;
+      this.go({
+        name: 'choice',
+        prompt: c.prompt,
+        options: c.options,
+        onPick: (o) =>
+          this.go({ name: 'talk', mood: 'finale', lines: this.expand(o.reply), index: 0, after: () => (o.end ? outro() : choice()) }),
+      });
+    };
+    if (f.loop) {
+      this.go({ name: 'loop', level: 1 });
+      return;
+    }
+    this.go({ name: 'talk', mood: 'finale', scene: this.finaleScene(f), lines: this.expand(f.intro), index: 0, after: choice });
+  }
+
+  /** 無限玄関ループ: ドアを開けるたびに1段ずつおかしくなる。最後は魔王 */
+  private nextLoop(level: number) {
+    const f = FINALES.loop;
+    this.audio.playSe('se_door');
+    if (level < f.loop!.length) {
+      this.go({ name: 'loop', level: level + 1 });
+      return;
+    }
+    window.setTimeout(() => this.audio.playSe('se_demon'), 300);
+    this.go({
+      name: 'talk',
+      mood: 'finale',
+      scene: { kind: 'demon', started: performance.now() },
+      lines: this.expand(f.outro),
+      index: 0,
+      after: () => this.go({ name: 'gameover', reason: f.title, causes: [], finale: 'loop' }),
     });
   }
 
@@ -331,8 +422,10 @@ export class Game {
     if (s.name === 'title' || s.name === 'howto') {
       this.renderer.setScene({ kind: 'title' });
     } else if (s.name === 'talk') {
-      bgm = s.mood === 'demon' ? 'bgm_demon' : s.mood === 'angry' ? 'bgm_angry' : 'bgm_home';
-      if (s.index === 0) {
+      bgm = s.mood === 'demon' || s.mood === 'finale' ? 'bgm_demon' : s.mood === 'angry' ? 'bgm_angry' : 'bgm_home';
+      if (s.mood === 'finale') {
+        if (s.index === 0 && s.scene) this.renderer.setScene(s.scene);
+      } else if (s.index === 0) {
         this.renderer.setScene(
           s.mood === 'demon'
             ? { kind: 'demon', started: performance.now() }
@@ -343,11 +436,22 @@ export class Game {
             : { kind: 'angry', started: performance.now(), image: s.late ? 'wife_dark' : 'wife_angry' },
         );
       }
+    } else if (s.name === 'choice') {
+      bgm = 'bgm_demon';
+    } else if (s.name === 'loop') {
+      bgm = 'bgm_demon';
+      this.renderer.setScene({ kind: 'loop', level: s.level, started: performance.now() });
     } else if (s.name === 'gameover') {
-      const demon = s.reason === DEMON_REASON;
+      const demon = s.reason === DEMON_REASON || !!s.finale;
       bgm = demon ? 'bgm_demon' : 'bgm_angry';
-      // 魔王化のときは、結果画面の背後でも魔王が蠢き続ける
-      this.renderer.setScene(demon ? { kind: 'demon', started: performance.now() } : { kind: 'bg', image: 'wife_suspicious' });
+      // 魔王化・フィナーレのときは、結果画面の背後でもその場面が続く
+      this.renderer.setScene(
+        s.finale
+          ? this.finaleScene(FINALES[s.finale])
+          : demon
+            ? { kind: 'demon', started: performance.now() }
+            : { kind: 'bg', image: 'wife_suspicious' },
+      );
     } else if (s.name === 'clear') {
       bgm = 'bgm_clear';
       this.renderer.setScene({ kind: 'clear' });
@@ -359,7 +463,8 @@ export class Game {
       bgm = loc === 'door' ? 'bgm_door' : 'bgm_town';
       if (loc === 'door') {
         const picked = day.pickups.filter((p) => day.flags.has(`picked:${p.item}`)).map((p) => p.visual);
-        this.renderer.setScene({ kind: 'door', visuals: day.visuals.filter((v) => !picked.includes(v)) });
+        const finaleVisuals = day.finale ? (FINALES[day.finale].doorVisuals ?? []) : [];
+        this.renderer.setScene({ kind: 'door', visuals: [...day.visuals.filter((v) => !picked.includes(v)), ...finaleVisuals] });
       } else {
         const bg = ({ town: 'bg_town', konbini: 'bg_konbini', trash: 'bg_trash', bench: 'bg_bench' } as const)[loc];
         this.renderer.setScene({ kind: 'bg', image: bg });
@@ -381,6 +486,10 @@ export class Game {
         return this.viewPlay();
       case 'talk':
         return this.viewTalk(s);
+      case 'choice':
+        return this.viewChoice(s);
+      case 'loop':
+        return this.viewLoop(s.level);
       case 'gameover':
         return this.viewGameOver(s.reason, s.causes);
       case 'clear':
@@ -504,7 +613,9 @@ export class Game {
       h('button', { class: `bar-btn ${cls}`, onclick }, label, sub ? h('small', {}, sub) : null);
     const common = [
       btn('持ち物', null, () => this.openModal({ kind: 'items', slot: 'bag' }, { type: 'openSlot', slot: 'bag' })),
-      btn('スマホ', hasUnreadChat(day) ? '● 未読' : null, () => this.openModal({ kind: 'phone', app: null }), hasUnreadChat(day) ? 'badge' : ''),
+      day.flags.has('phone_broken')
+        ? btn('スマホ', '故障', () => this.openModal({ kind: 'phone', app: null }), 'badge')
+        : btn('スマホ', hasUnreadChat(day) ? '● 未読' : null, () => this.openModal({ kind: 'phone', app: null }), hasUnreadChat(day) ? 'badge' : ''),
     ];
     const cost = (to: Location) => `${TRAVEL[day.location][to]}分`;
     if (day.location === 'door') {
@@ -652,6 +763,19 @@ export class Game {
 
   private viewPhone(app: AppId | null): HTMLElement {
     const day = this.day!;
+    if (day.flags.has('phone_broken')) {
+      return h(
+        'div',
+        { class: 'phone broken' },
+        h('div', { class: 'phone-head' }, h('button', { class: 'btn small', onclick: () => this.closeModal() }, '閉じる'), h('b', {}, '……'), h('span')),
+        h(
+          'div',
+          { class: 'phone-body' },
+          h('div', { class: 'crack' }),
+          h('p', { class: 'broken-msg' }, 'この端末は、妻によって', h('br'), 'リモート初期化されました'),
+        ),
+      );
+    }
     const back = app ? () => this.openModal({ kind: 'phone', app: null }) : () => this.closeModal();
     let body: Child;
     if (!app) {
@@ -873,12 +997,62 @@ export class Game {
       if (s.index + 1 < s.lines.length) this.go({ ...s, index: s.index + 1 });
       else s.after();
     };
-    const who = { me: 'あなた', wife: '妻', narr: '' }[line.who];
+    const who = line.name ?? { me: 'あなた', wife: '妻', narr: '', other: '' }[line.who];
     return [
       h(
         'div',
         { class: `talk ${s.mood}`, onclick: next },
+        line.card ? h('div', { class: 'evidence' }, h('small', {}, '送信済みメッセージ（スクリーンショット）'), h('p', {}, line.card)) : null,
         h('div', { class: `speech ${line.who}` }, who ? h('b', {}, who) : null, h('p', {}, line.text), h('small', { class: 'dim' }, '▼ タップ')),
+      ),
+    ];
+  }
+
+  private viewChoice(s: Extract<Screen, { name: 'choice' }>): Child[] {
+    return [
+      h(
+        'div',
+        { class: 'talk finale choice' },
+        h(
+          'div',
+          { class: 'speech narr rpg' },
+          h('p', {}, s.prompt),
+          h(
+            'div',
+            { class: 'rpg-menu' },
+            s.options.map((o) =>
+              h('button', { class: 'rpg-cmd', onclick: () => (this.audio.playSe('se_tap'), s.onPick(o)) }, `▶ ${o.label}`),
+            ),
+          ),
+        ),
+      ),
+    ];
+  }
+
+  private viewLoop(level: number): Child[] {
+    const f = FINALES.loop;
+    const day = this.day!;
+    return [
+      h(
+        'div',
+        { class: 'hud' },
+        h('div', { class: 'hud-left' }, h('b', {}, `${day.day}日目`), h('small', {}, '連続帰宅 ？/？')),
+        h('div', { class: 'clock warn' }, '4:44'),
+        this.muteButton(),
+      ),
+      h(
+        'div',
+        { class: 'talk finale loop' },
+        h(
+          'div',
+          { class: 'speech narr' },
+          h('p', {}, f.loop![level - 1]),
+          h(
+            'button',
+            { class: 'btn danger', onclick: () => this.nextLoop(level) },
+            level < f.loop!.length ? `ドアを開ける（${level}/${f.loop!.length}）` : '入る',
+          ),
+        ),
       ),
     ];
   }

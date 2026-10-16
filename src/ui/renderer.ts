@@ -42,13 +42,16 @@ const OVERLAY_RECTS: Record<string, Rect> = {
   window_tv: art(177, 93, 43, 93),
   garbage_bag: art(2, 270, 40, 48),
   wet_floor: art(48, 316, 136, 23),
+  castle_gate: art(52, 80, 130, 228),
 };
 
 export type Scene =
   | { kind: 'door'; visuals: string[] }
-  | { kind: 'bg'; image: ImageKey }
+  | { kind: 'bg'; image: ImageKey; fallback?: ImageKey }
   | { kind: 'angry'; started: number; image: 'wife_angry' | 'wife_dark' }
   | { kind: 'demon'; started: number }
+  /** 無限玄関ループ: level が上がるほど玄関がおかしくなる */
+  | { kind: 'loop'; level: number; started: number }
   | { kind: 'home' }
   | { kind: 'clear' }
   | { kind: 'title' };
@@ -81,7 +84,7 @@ export class Renderer {
 
   /** 画像の読み込み完了時などに呼ぶ */
   redraw() {
-    if (this.scene.kind !== 'angry' && this.scene.kind !== 'demon') this.draw();
+    if (this.scene.kind !== 'angry' && this.scene.kind !== 'demon' && this.scene.kind !== 'loop') this.draw();
   }
 
   private resize() {
@@ -115,7 +118,10 @@ export class Renderer {
         this.drawDoorScene(s.visuals);
         break;
       case 'bg':
-        this.drawImage(s.image, FULL);
+        this.drawImage(s.fallback && !this.images.get(s.image) && this.images.get(s.fallback) ? s.fallback : s.image, FULL);
+        break;
+      case 'loop':
+        this.drawLoop(s.level, s.started);
         break;
       case 'home':
         this.drawImage('wife_smile', FULL);
@@ -277,6 +283,71 @@ export class Renderer {
     ctx.fillRect(0, 0, W, H);
 
     this.raf = requestAnimationFrame(() => this.drawDemon(started));
+  }
+
+  /** 無限玄関ループ: 段階的に「異変」を足していく（8番出口オマージュ） */
+  private drawLoop(level: number, started: number) {
+    const t = (performance.now() - started) / 1000;
+    const { ctx } = this;
+    ctx.save();
+    // 5周目以降は画面が横にずれる
+    if (level >= 5) ctx.translate(Math.sin(t * 23) * (level - 4) * 1.5, 0);
+    this.drawDoorScene([]);
+    ctx.restore();
+
+    // 周を重ねるごとに赤黒く沈む
+    ctx.fillStyle = `rgba(60,0,10,${Math.min(0.45, level * 0.05)})`;
+    ctx.fillRect(0, 0, W, H);
+    if (level >= 3) {
+      // 表札が『魔』
+      const r = SPOT_RECTS.nameplate;
+      ctx.fillStyle = '#1a0d10';
+      ctx.fillRect(r.x + 4, r.y + 6, r.w - 8, r.h - 12);
+      ctx.fillStyle = '#d0202a';
+      ctx.font = `900 ${Math.round(r.h * 0.55)}px "Noto Sans CJK JP", sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('魔', r.x + r.w / 2, r.y + r.h / 2);
+    }
+    if (level >= 4) {
+      // 窓の向こうの目
+      const r = SPOT_RECTS.window;
+      const blink = Math.sin(t * 1.3) > 0.97 ? 0.1 : 1;
+      for (const dx of [-0.17, 0.17]) {
+        ctx.fillStyle = 'rgba(255,240,200,0.9)';
+        ctx.beginPath();
+        ctx.ellipse(r.x + r.w * (0.5 + dx), r.y + r.h * 0.42, 6, 4 * blink, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#300';
+        ctx.beginPath();
+        ctx.arc(r.x + r.w * (0.5 + dx), r.y + r.h * 0.42, 2 * blink, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    if (level >= 6) {
+      // 走査線
+      ctx.fillStyle = 'rgba(0,0,0,0.18)';
+      for (let y = (t * 40) % 4; y < H; y += 4) ctx.fillRect(0, y, W, 1);
+    }
+    if (level >= 7) {
+      // 足元にのびる、自分のものではない影
+      const g = ctx.createLinearGradient(0, H, 0, H * 0.55);
+      g.addColorStop(0, 'rgba(0,0,0,0.85)');
+      g.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.moveTo(W * 0.42, H);
+      ctx.lineTo(W * 0.58, H);
+      ctx.lineTo(W * 0.53 + Math.sin(t) * 4, H * 0.55);
+      ctx.lineTo(W * 0.47 + Math.sin(t) * 4, H * 0.55);
+      ctx.closePath();
+      ctx.fill();
+    }
+    if (level >= 8 && Math.sin(t * 9) > 0.6) {
+      ctx.fillStyle = 'rgba(255,0,30,0.12)';
+      ctx.fillRect(0, 0, W, H);
+    }
+    this.raf = requestAnimationFrame(() => this.drawLoop(level, started));
   }
 
   /** 画像があれば描き、無ければ「仮の四角＋ラベル」 */
