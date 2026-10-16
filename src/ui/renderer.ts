@@ -43,6 +43,8 @@ const OVERLAY_RECTS: Record<string, Rect> = {
   garbage_bag: art(2, 270, 40, 48),
   wet_floor: art(48, 316, 136, 23),
   castle_gate: art(52, 80, 130, 228),
+  // 玄関マットの上に置かれた写真集
+  item_gravure_book: art(100, 300, 30, 30),
 };
 
 export type Scene =

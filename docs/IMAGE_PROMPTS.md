@@ -316,6 +316,132 @@ clean bold black outlines, flat cel shading. No readable text, no watermark.
 
 ---
 
+## 7. 暴言コンプリートのフィナーレ用 ＋ 残りの持ち物アイコン（Gemini）
+
+| ファイル | 用途 | 添付する見本 |
+|---|---|---|
+| `castle_gate.png` | 魔王城: 玄関ドアに重ねる魔王城の門 | `bg_door.png` |
+| `bg_court.jpg` | 家庭裁判の法廷 | `wife_suspicious.png` |
+| `bg_siege.jpg` | 包囲網: 玄関に集まった家族会議の面々 | `wife_suspicious.png` |
+| `bg_lockout.jpg` | 締め出し: 布団が出された玄関前 | `bg_door.png` |
+| `bg_exposed.jpg` | 公開処刑: 全部の窓が開いたマンション | `wife_smile.png` |
+| `item_*.png` 8種 × 2枚 | 持ち物アイコン（シートで作ってこちらで切り出す） | なし |
+
+背景は縦 9:16。門とアイコンは白背景で作れば、こちらで抜く。
+
+### 7-1. castle_gate.png（添付: bg_door.png）
+```
+The attached image is a Japanese apartment entrance at night. Redraw ONLY its front door
+(including the door frame), keeping the same straight-on angle and the same tall
+rectangular proportion (about 1:1.75), but transformed into a huge, ominous demon lord's
+castle gate: heavy dark iron double doors with glowing purple runes, iron spikes and
+rivets, a horned skull-like crest at the top, hanging chains, and purple mist leaking from
+the gap between the doors. A small blank plaque above the doors with no text.
+Crop tightly to the gate, plain pure white background outside it.
+Japanese manga-style digital illustration, clean bold black outlines, flat cel shading,
+comedic over-the-top fantasy, same art style as the reference. No text, no watermark.
+```
+
+### 7-2. bg_court.jpg（添付: wife_suspicious.png）
+```
+Use the attached image as the character reference for the wife (same face, short dark bob
+hair, floral apron). Vertical 9:16. A small Japanese apartment living room at night turned
+into a parody courtroom: the wife sits at a judge's bench made from the dining table,
+wearing a black judge's robe over her floral apron, holding a wooden gavel, stern face.
+An elderly mother-in-law in a cardigan stands at a desk as the prosecutor, holding a stack
+of printed papers. In front, an empty defense table with one small sad chair. Neighbors sit
+on folding chairs as the gallery, whispering. A blank projector screen on the back wall.
+Japanese manga-style digital illustration, clean bold black outlines, flat cel shading,
+comedic tension. No text, no letters, no watermark.
+```
+
+### 7-3. bg_siege.jpg（添付: wife_suspicious.png）
+```
+Use the attached image as the character reference for the wife (same face, short dark bob
+hair, floral apron). Vertical 9:16, viewpoint of a husband standing at the open front door
+of a Japanese apartment at night. On the genkan floor, four pairs of other people's shoes
+are lined up neatly. Beyond the step, the wife stands with arms crossed; next to her an
+elderly mother-in-law smiling too politely, a stern father-in-law in a cardigan with arms
+folded, and the wife's friend holding up a smartphone to film. Everyone is looking straight
+at the viewer. Tense, comedic "family meeting" mood.
+Japanese manga-style digital illustration, clean bold black outlines, flat cel shading.
+No text, no letters, no watermark.
+```
+
+### 7-4. bg_lockout.jpg（添付: bg_door.png）
+```
+Use the attached image as the reference for the location: the same Japanese apartment
+outdoor corridor and front door at night. Vertical 9:16. The door is shut. On the floor
+beside it, a futon set and a pillow are neatly folded and stacked, as if put out for
+someone. A sheet of paper is taped to the door with blurred, unreadable writing. Past the
+corridor railing, a lonely night sky with a few stars and a thin moon. No people.
+Melancholic but comedic mood. Japanese manga-style digital illustration, clean bold black
+outlines, flat cel shading, cool blue night palette. No readable text, no watermark.
+```
+
+### 7-5. bg_exposed.jpg（添付: wife_smile.png）
+```
+Vertical 9:16. A 5-story Japanese apartment building at night, seen from the ground in
+front of the entrance. Every single window and balcony is open, and in each one a
+resident's silhouette is leaning out, silently staring down at the viewer. On one
+second-floor balcony stands the wife from the attached reference image (same face, short
+dark bob hair, floral apron), calmly holding a megaphone. A notice board at the entrance
+has a paper pinned to it with blurred, unreadable text. Dramatic light falling on the
+ground where the viewer stands. Comedic public-humiliation mood.
+Japanese manga-style digital illustration, clean bold black outlines, flat cel shading.
+No readable text, no watermark.
+```
+
+### 7-6. 持ち物アイコン シートA（コンビニの8種）
+```
+A sprite sheet of 8 separate game item icons arranged in a neat 4 columns x 2 rows grid
+on a plain pure white background. Each icon is a single object, centered in its own cell,
+with plenty of white space between icons, nothing touching or overlapping, no labels,
+no numbers, no frames.
+Row 1, left to right:
+1. a premium convenience-store roll cake in a clear plastic package
+2. a half bottle of red wine
+3. a small cup of smooth custard pudding with a caramel top
+4. a plain navy blue necktie, neatly folded
+Row 2, left to right:
+5. a cheap generic laundry detergent refill pouch, light blue, no brand
+6. a clear plastic vinyl umbrella, closed
+7. a gift box of assorted snacks and cookies
+8. a can of beer, gold and white
+Japanese manga-style digital illustration, clean bold black outlines, flat cel shading,
+simple and readable at small size, consistent style across all icons.
+No text, no letters, no watermark.
+```
+→ 順番に `item_sweets / item_wine / item_konbini_pudding / item_navy_tie /
+item_detergent_generic / item_vinyl_umbrella / item_snack_box / item_beer` として切り出す。
+
+### 7-7. 持ち物アイコン シートB（通販など8種）
+```
+A sprite sheet of 8 separate game item icons arranged in a neat 4 columns x 2 rows grid
+on a plain pure white background. Each icon is a single object, centered in its own cell,
+with plenty of white space between icons, nothing touching or overlapping, no labels,
+no numbers, no frames.
+Row 1, left to right:
+1. a premium botanical laundry detergent refill pouch, green with leaf motif
+2. a pair of elegant wine glasses with engraved initials, tied with a ribbon
+3. a pink umbrella with a floral pattern, closed
+4. a fancy kiln-baked custard pudding in a small glass jar with a ribbon
+Row 2, left to right:
+5. a traditional Japanese sweets gift box wrapped in noshi paper with a red and white cord
+6. an elegant spa and massage pair gift voucher envelope with a lotus motif
+7. a TV remote control next to a small dark purple subscription card with a crescent moon logo
+8. a photo book whose cover shows a bright summer beach with a parasol and a straw hat,
+   no people on the cover
+Japanese manga-style digital illustration, clean bold black outlines, flat cel shading,
+simple and readable at small size, consistent style across all icons.
+No text, no letters, no watermark.
+```
+→ 順番に `item_detergent_refill / item_pair_glass / item_umbrella_same / item_limited_pudding /
+item_kashiori / item_spa_ticket / item_av_subscription / item_gravure_book` として切り出す。
+`item_gravure_book` は持ち物アイコンのほか、玄関マットの上に置かれた写真集としても使う。
+
+---
+
 ## 置いたあとの確認
 
 1. `npm run dev` で起動

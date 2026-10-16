@@ -620,7 +620,8 @@ export const SCENARIOS: Scenario[] = [
   {
     id: 'gravure_found',
     title: '隠していた水着グラビア写真集が見つかった',
-    pickups: [{ at: 'floor', item: 'gravure_book', label: '写真集を拾う' }],
+    pickups: [{ at: 'floor', item: 'gravure_book', label: '写真集を拾う', visual: 'item_gravure_book' }],
+    visuals: ['item_gravure_book'],
     causes: [
       {
         id: 'gravure_found',
