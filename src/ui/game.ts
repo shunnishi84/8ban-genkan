@@ -816,7 +816,18 @@ export class Game {
     const items = day.inventory.map((id) => ITEM_MAP[id]).filter((i) => i && i.slot === slot);
     return [
       h('div', { class: 'tabs' }, tabs, h('button', { class: 'tab', onclick: () => this.openModal({ kind: 'phone', app: null }) }, 'スマホ')),
-      this.clueTexts(`slot:${slot}`, SLOT_BASE[slot]),
+      slot === 'shirt' && day.flags.has('undressed')
+        ? h('div', { class: 'paper' }, h('p', { class: 'desc' }, 'ワイシャツは脱いで手に持っている。今は肌着一枚だ。'))
+        : this.clueTexts(`slot:${slot}`, SLOT_BASE[slot]),
+      slot === 'shirt'
+        ? h(
+            'div',
+            { class: 'row-actions' },
+            day.flags.has('undressed')
+              ? h('button', { class: 'btn small', onclick: () => this.act({ type: 'dress' }, 'se_tap') }, '着る（1分）')
+              : h('button', { class: 'btn small', onclick: () => this.act({ type: 'undress' }, 'se_tap') }, '脱ぐ（1分）'),
+          )
+        : null,
       items.map((item) =>
         this.itemRow(
           item,

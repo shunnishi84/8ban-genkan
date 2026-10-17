@@ -175,6 +175,26 @@ describe('新しい仕掛け', () => {
     expect(perform(s, { type: 'openDoor' }).outcome).toEqual({ kind: 'finale', finale: 'castle' });
   });
 
+  it('ワイシャツを脱いだまま帰ると、火種が無くても怒られる', () => {
+    const s = day(['ramen_receipt']);
+    expect(perform(s, { type: 'undress' }).ok).toBe(true);
+    const o = perform(s, { type: 'openDoor' }).outcome;
+    expect(o.kind).toBe('angry');
+    if (o.kind === 'angry') expect(o.causes[0].angerLines).toContain('なんて格好で帰ってきてるの！');
+  });
+
+  it('着直すか、替えのシャツに着替えれば大丈夫', () => {
+    const a = day(['ramen_receipt']);
+    perform(a, { type: 'undress' });
+    perform(a, { type: 'dress' });
+    expect(perform(a, { type: 'openDoor' }).outcome.kind).toBe('home');
+
+    const b = day(['cabaret_lipstick']);
+    perform(b, { type: 'undress' });
+    for (const x of solve(b)!) perform(b, x);
+    expect(b.flags.has('undressed')).toBe(false);
+  });
+
   it('接着剤は割れたマグカップを持っていないと使えない', () => {
     const s = day(['dinner_unannounced']);
     s.location = 'konbini';

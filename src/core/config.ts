@@ -40,6 +40,8 @@ export const COST = {
   pickup: 1,
   unsend: 2,
   deletePost: 2,
+  undress: 1,
+  dress: 1,
 } as const;
 
 /** 移動時間。from→to。town を起点に放射状 */

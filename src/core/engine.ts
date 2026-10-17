@@ -287,6 +287,8 @@ const act = (state: DayState, action: Action): ActionResult => {
         state.inventory[state.inventory.indexOf(item.useRequires)] = item.useResult;
       }
       state.flags.add(`used:${item.id}`);
+      // 脱いだまま替えのシャツに着替えたら、ちゃんと服を着たことになる
+      if (item.slot === 'shirt' && item.id === 'spare_shirt') state.flags.delete('undressed');
       return result(true, [item.useMessage ?? `${item.name}を使った。`], COST.use);
     }
 
@@ -298,6 +300,16 @@ const act = (state: DayState, action: Action): ActionResult => {
       state.inventory.push(p.item);
       return result(true, [`${ITEM_MAP[p.item]?.name ?? p.item}を持った。`], COST.pickup);
     }
+
+    case 'undress':
+      if (state.flags.has('undressed')) return result(false, ['もう脱いでいる。']);
+      state.flags.add('undressed');
+      return result(true, ['ワイシャツを脱いだ。肌着一枚になった。', '……夜風が、冷たい。'], COST.undress);
+
+    case 'dress':
+      if (!state.flags.has('undressed')) return result(false, ['ちゃんと着ている。']);
+      state.flags.delete('undressed');
+      return result(true, ['ワイシャツを着直した。'], COST.dress);
 
     case 'unsend': {
       const clue = state.clues.find((c) => c.id === action.clue && c.unsendable);
@@ -337,7 +349,7 @@ const act = (state: DayState, action: Action): ActionResult => {
       if (state.location !== 'door') return result(false, ['ドアの前にいない。']);
       if (state.finale) return result(true, [], 0, { kind: 'finale', finale: state.finale });
       if (state.flags.has('insulted')) return result(true, [], 0, demonOutcome(state));
-      const angry = [...unresolvedCauses(state), ...provokeCauses(state)];
+      const angry = [...(state.flags.has('undressed') ? [UNDRESSED] : []), ...unresolvedCauses(state), ...provokeCauses(state)];
       if (angry.length > 0) return result(true, [], 0, { kind: 'angry', causes: angry });
       return result(true, [], 0, { kind: 'home', lines: state.successLines });
     }
@@ -351,6 +363,15 @@ const markMisfiresRead = (state: DayState): string[] => {
   );
   hit.forEach((c) => state.flags.add(`readmsg:${c.id}`));
   return hit.length ? ['……あ。最初に誤爆したメッセージに既読がついた。', 'もう、取り消せない。'] : [];
+};
+
+/** ワイシャツを脱いだまま帰ると、火種を全部消していても怒られる */
+const UNDRESSED: Cause = {
+  id: 'undressed',
+  title: '肌着で帰宅',
+  resolution: { all: [] },
+  angerLines: ['……ちょっと。', 'なんて格好で帰ってきてるの！', 'ご近所に見られたらどうするのよ！ シャツはどこ！？'],
+  successLine: '',
 };
 
 /** 余計なひと言を送っていたら、それ自体が新しい火種になる */

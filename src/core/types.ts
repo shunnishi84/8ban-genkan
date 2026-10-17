@@ -201,6 +201,9 @@ export type Action =
   | { type: 'discard'; item: string }
   | { type: 'use'; item: string }
   | { type: 'pickup'; item: string }
+  /** 着ているワイシャツを脱ぐ / 着直す */
+  | { type: 'undress' }
+  | { type: 'dress' }
   | { type: 'unsend'; clue: string }
   | { type: 'deletePost'; clue: string }
   | { type: 'travel'; to: Location }

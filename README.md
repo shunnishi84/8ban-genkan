@@ -140,7 +140,7 @@ cd android && ./gradlew assembleDebug   # → android/app/build/outputs/apk/debu
 | bg_town.jpg / bg_trash.jpg / bg_bench.jpg | 夜の街・ゴミ捨て場・公園のベンチ | ✅ |
 | bg_konbini.png | コンビニ店内 | ✅ |
 | wife_smile.png | おかえりの妻 | ✅ |
-| wife_sullen.png | 渋々許す日の無表情の妻（無ければ wife_smile で代用） | — |
+| wife_sullen.jpg | 渋々許す日の無表情の妻（Gemini で生成） | ✅ |
 | wife_angry.png | 鬼の形相の妻（炎込み） | ✅ |
 | wife_dark.png | 時間切れの無言の妻 | ✅ |
 | wife_suspicious.png | ゲームオーバー画面の背景 | ✅ |
