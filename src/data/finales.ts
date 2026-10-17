@@ -19,9 +19,16 @@ export interface FinaleLine {
 
 export interface FinaleChoice {
   label: string;
-  reply: FinaleLine[];
-  /** true ならこの選択で次へ進む。false なら返答のあと同じ選択肢に戻る */
+  /** 返しのパターン。選ぶたびにこの中からランダムで1つ */
+  replies: FinaleLine[][];
+  /** true ならこの選択で次へ進む。false なら返答のあと（相手の反撃を挟んで）同じ選択肢に戻る */
   end?: boolean;
+}
+
+/** 毎ターンの相手の反撃。damage だけ「こころのHP」が減る */
+export interface FinaleCounter {
+  lines: FinaleLine[];
+  damage: number;
 }
 
 export interface Finale {
@@ -41,7 +48,15 @@ export interface Finale {
   /** 無限玄関ループ: ドアを開けるたびに出るメッセージ（この回数だけループする） */
   loop?: string[];
   intro: FinaleLine[];
-  choice?: { prompt: string; options: FinaleChoice[] };
+  choice?: {
+    prompt: string;
+    options: FinaleChoice[];
+    /** 選ぶたびに相手が反撃してくる（ランダム）。無ければ反撃なし */
+    counters?: FinaleCounter[];
+    /** こころのHP。反撃で 0 になったら knockout を見せて先へ進む */
+    hp?: number;
+    knockout?: FinaleLine[];
+  };
   outro: FinaleLine[];
 }
 
@@ -64,18 +79,66 @@ export const FINALES: Record<FinaleId, Finale> = {
     ],
     choice: {
       prompt: 'どうする？',
+      hp: 100,
       options: [
-        { label: 'たたかう', reply: [{ who: 'narr', text: 'こわくて　てが　ふるえて　うごけない！' }] },
-        { label: 'にげる', reply: [{ who: 'narr', text: 'しかし　まわりこまれてしまった！' }] },
-        { label: 'どうぐ', reply: [{ who: 'narr', text: 'スイーツは　すべて　まおうに　たべられている！' }] },
+        {
+          label: 'たたかう',
+          replies: [
+            [{ who: 'narr', text: 'あなたの　こうげき！　……よわよわしすぎて　ダメージを　あたえられない！' }],
+            [{ who: 'narr', text: 'あなたは　こぶしを　にぎった。……が、そっと　ひらいた。' }],
+            [{ who: 'narr', text: 'あなたの　こうげき！　まおうは　あくびを　した。' }],
+            [{ who: 'narr', text: 'かいしんの　いちげき！　……と　おもったら　ゆめだった。' }],
+            [{ who: 'narr', text: 'あなたは　ネクタイを　ふりまわした！　じぶんの　かおに　あたった。' }],
+          ],
+        },
+        {
+          label: 'にげる',
+          replies: [
+            [{ who: 'wife', text: 'どこに逃げる気！？' }, { who: 'narr', text: 'まわりこまれてしまった！' }],
+            [{ who: 'wife', text: '逃げられると思ってるの！？' }, { who: 'narr', text: 'あしが　すくんで　うごけない！' }],
+            [{ who: 'narr', text: 'げんかんの　かぎは　まおうが　にぎっている！' }],
+            [{ who: 'wife', text: '実家？ もう電話してあるわよ。' }, { who: 'narr', text: 'にげばしょは　なかった！' }],
+            [{ who: 'wife', text: 'そっちは壁よ。' }, { who: 'narr', text: 'あなたは　かべに　ぶつかった。' }],
+          ],
+        },
+        {
+          label: 'どうぐ',
+          replies: [
+            [{ who: 'narr', text: 'スイーツは　すべて　まおうに　たべられている！' }],
+            [{ who: 'narr', text: 'あなたは　スマホを　とりだした。……われていた。' }],
+            [{ who: 'narr', text: 'あなたは　さいふを　ひらいた。こづかいは　のこっていなかった。' }],
+            [{ who: 'narr', text: 'あなたは　けっこんゆびわを　かかげた！　まおうの　いかりが　2ばいに　なった！' }],
+            [{ who: 'narr', text: 'あなたは　コンビニの　レシートを　みせた。まおうは　かけいぼに　きにゅうした。' }],
+          ],
+        },
         {
           label: 'どげざ',
           end: true,
-          reply: [
-            { who: 'narr', text: 'あなたは　げんかんで　ふかぶかと　どげざした。' },
-            { who: 'narr', text: 'まおうは　いちおう　みのがしてくれた……。' },
+          replies: [
+            [
+              { who: 'narr', text: 'あなたは　げんかんで　ふかぶかと　どげざした。' },
+              { who: 'narr', text: 'まおうは　いちおう　みのがしてくれた……。' },
+            ],
+            [
+              { who: 'narr', text: 'あなたは　ひたいを　げんかんマットに　こすりつけた。' },
+              { who: 'wife', text: '……顔、上げなくていいから。' },
+              { who: 'narr', text: 'まおうは　ためいきまじりに　みのがしてくれた……。' },
+            ],
           ],
         },
+      ],
+      counters: [
+        { damage: 25, lines: [{ who: 'narr', text: 'まおうの　こごと！' }, { who: 'wife', text: '何回言ったらわかるの？' }, { who: 'narr', text: 'こころに　25の　ダメージ！' }] },
+        { damage: 15, lines: [{ who: 'narr', text: 'まおうは　きのうの　くつしたを　なげつけた！　15の　ダメージ！' }] },
+        { damage: 20, lines: [{ who: 'narr', text: 'まおうは　ふかい　ためいきを　ついた。くうきが　おもくなった！　20の　ダメージ！' }] },
+        { damage: 30, lines: [{ who: 'narr', text: 'まおうは　かけいぼを　ひらいた！　こづかいが　0に　なった！　30の　ダメージ！' }] },
+        { damage: 35, lines: [{ who: 'narr', text: 'まおうは　ぼうげんの　スクショを　4まい　ならべた！　35の　ダメージ！' }] },
+        { damage: 40, lines: [{ who: 'narr', text: 'まおうは　だまって　ほほえんだ。……いちばん　こわい！　40の　ダメージ！' }] },
+        { damage: 20, lines: [{ who: 'wife', text: 'お義母さんに電話しようかしら。' }, { who: 'narr', text: 'まおうは　スマホを　ちらつかせた！　20の　ダメージ！' }] },
+      ],
+      knockout: [
+        { who: 'narr', text: 'あなたの　こころは　おれた……。' },
+        { who: 'narr', text: 'あなたは　げんかんで　しずかに　せいざした。' },
       ],
     },
     outro: [{ who: 'wife', text: '……続きは、明日の朝にしましょうか。' }],
@@ -145,9 +208,30 @@ export const FINALES: Record<FinaleId, Finale> = {
     choice: {
       prompt: '弁護人席は、空っぽだ。',
       options: [
-        { label: '異議あり！', end: true, reply: [{ who: 'other', name: judge, text: '却下。' }] },
-        { label: '黙秘', end: true, reply: [{ who: 'other', name: judge, text: '却下。' }] },
-        { label: '土下座', end: true, reply: [{ who: 'other', name: judge, text: '……却下。' }] },
+        {
+          label: '異議あり！',
+          end: true,
+          replies: [
+            [{ who: 'other', name: judge, text: '却下。' }],
+            [{ who: 'other', name: judge, text: '被告人、ここはあなたの法廷ではありません。却下。' }],
+          ],
+        },
+        {
+          label: '黙秘',
+          end: true,
+          replies: [
+            [{ who: 'other', name: judge, text: '却下。' }],
+            [{ who: 'other', name: '検察官（義母）', text: '黙っていれば済むと思って……。' }, { who: 'other', name: judge, text: '却下。' }],
+          ],
+        },
+        {
+          label: '土下座',
+          end: true,
+          replies: [
+            [{ who: 'other', name: judge, text: '……却下。' }],
+            [{ who: 'other', name: '傍聴席（ご近所）', text: '（ひそひそ）' }, { who: 'other', name: judge, text: '玄関でもう見飽きました。却下。' }],
+          ],
+        },
       ],
     },
     outro: [

@@ -130,6 +130,32 @@ describe('新しい仕掛け', () => {
     expect(perform(s, { type: 'openDoor' }).outcome.kind).toBe('angry');
   });
 
+  it('誤爆を取り消す前に何か送ると、誤爆にも既読がついて詰む', () => {
+    const s = day(['wrong_send', 'ramen_receipt'], hm(23, 0));
+    const r = perform(s, { type: 'sendChat', template: 'love' });
+    expect(r.messages.join()).toContain('既読がついた');
+    expect(perform(s, { type: 'unsend', clue: 'wrong_send' }).ok).toBe(false);
+    expect(perform(s, { type: 'openDoor' }).outcome.kind).toBe('angry');
+  });
+
+  it('先に取り消してから送れば大丈夫', () => {
+    const s = day(['wrong_send'], hm(23, 0));
+    perform(s, { type: 'unsend', clue: 'wrong_send' });
+    expect(perform(s, { type: 'sendChat', template: 'love' }).messages.join()).not.toContain('既読がついた');
+    expect(perform(s, { type: 'openDoor' }).outcome.kind).toBe('home');
+  });
+
+  it('後輩の日だけ「余計なひと言」が送れて、送ると火種を消していても怒られる', () => {
+    expect(perform(day(['ring_off']), { type: 'sendChat', template: 'kouhai_kawaii' }).ok).toBe(false);
+    const s = day(['kouhai_chat'], hm(23, 0));
+    for (const a of solve(s)!) if (a.type !== 'openDoor') perform(s, a);
+    expect(perform(s, { type: 'sendChat', template: 'kouhai_kawaii' }).ok).toBe(true);
+    expect(s.chatLog.at(-1)).toEqual({ from: 'wife', text: '……へえ。' });
+    const o = perform(s, { type: 'openDoor' }).outcome;
+    expect(o.kind).toBe('angry');
+    if (o.kind === 'angry') expect(o.causes.map((c) => c.title)).toEqual(['火に油']);
+  });
+
   it('接着剤は割れたマグカップを持っていないと使えない', () => {
     const s = day(['dinner_unannounced']);
     s.location = 'konbini';

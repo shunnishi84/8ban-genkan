@@ -136,6 +136,7 @@ export const isChatRelevant = (state: DayState, templateId: string): boolean =>
 export const canSendChat = (state: DayState, templateId: string): boolean => {
   const t = CHAT_MAP[templateId];
   if (!t || state.flags.has(`chat:${templateId}`)) return false;
+  if (t.onlyWith && !state.causes.some((c) => c.id === t.onlyWith)) return false;
   return !t.requires || evaluate(t.requires, state.flags);
 };
 
@@ -187,8 +188,12 @@ const act = (state: DayState, action: Action): ActionResult => {
       if (!t) return result(false, ['そんなメッセージは無い。']);
       if (state.flags.has(`chat:${t.id}`)) return result(false, ['それはもう送った。']);
       if (t.requires && !evaluate(t.requires, state.flags)) return result(false, ['まだそれを言える状況じゃない。']);
+      if (t.onlyWith && !state.causes.some((c) => c.id === t.onlyWith)) return result(false, ['今それを言う意味がない。']);
       state.flags.add(`chat:${t.id}`);
       state.chatLog.push({ from: 'me', text: t.text });
+      // 何か送るとトーク画面を開かれ、取り消し前の誤爆メッセージにも既読がつく
+      const exposed = markMisfiresRead(state);
+      const send = (...rest: string[]) => ['送信した。', ...exposed, ...rest];
       // 一度でも暴言を送ったら、以後は何を送っても取りつく島もない返事だけ（電話も来ない）
       const coldReply = () => COLD_REPLIES[state.chatLog.filter((m) => m.from === 'wife').length % COLD_REPLIES.length];
       const alreadyInsulted = state.flags.has('insulted');
@@ -199,21 +204,26 @@ const act = (state: DayState, action: Action): ActionResult => {
         const finale = triggerFinale(state);
         return result(
           true,
-          ['送信した。', '……既読がついた。返事はない。電話も来ない。', '背筋に、冷たいものが走った。', ...(finale?.onTrigger ?? [])],
+          [...send('……既読がついた。返事はない。電話も来ない。'), '背筋に、冷たいものが走った。', ...(finale?.onTrigger ?? [])],
           COST.sendChat,
         );
       }
       if (alreadyInsulted) {
         state.chatLog.push({ from: 'wife', text: coldReply() });
-        return result(true, ['送信した。', '……取りつく島もない。'], COST.sendChat);
+        return result(true, send('……取りつく島もない。'), COST.sendChat);
+      }
+      if (t.provokeLines) {
+        state.flags.add(`provoked:${t.id}`);
+        state.chatLog.push({ from: 'wife', text: t.replyRelevant });
+        return result(true, send('……妙に静かだ。', '言わなくていいことを言った気がする。'), COST.sendChat);
       }
       const relevant = isChatRelevant(state, t.id);
       const reply = relevant ? t.replyRelevant : t.replyIrrelevant;
       if (reply) state.chatLog.push({ from: 'wife', text: reply });
-      if (relevant || t.neutral) return result(true, ['送信した。'], COST.sendChat);
+      if (relevant || t.neutral) return result(true, send(), COST.sendChat);
       return result(
         true,
-        ['妻から電話がかかってきた……。', `しどろもどろの言い訳で ${COST.chatPenalty} 分を失った。`],
+        [...exposed, '妻から電話がかかってきた……。', `しどろもどろの言い訳で ${COST.chatPenalty} 分を失った。`],
         COST.sendChat + COST.chatPenalty,
       );
     }
@@ -291,7 +301,9 @@ const act = (state: DayState, action: Action): ActionResult => {
       const clue = state.clues.find((c) => c.id === action.clue && c.unsendable);
       if (!clue) return result(false, ['取り消せるメッセージがない。']);
       if (state.flags.has(`unsent:${action.clue}`)) return result(false, ['もう取り消した。']);
-      if (state.time > CANCEL_DEADLINE) return result(false, ['既読がついている……。もう取り消せない。']);
+      if (state.time > CANCEL_DEADLINE || state.flags.has(`readmsg:${action.clue}`)) {
+        return result(false, ['既読がついている……。もう取り消せない。']);
+      }
       state.flags.add(`unsent:${action.clue}`);
       return result(true, ['メッセージの送信を取り消した。……セーフ。'], COST.unsend);
     }
@@ -316,12 +328,31 @@ const act = (state: DayState, action: Action): ActionResult => {
       if (state.location !== 'door') return result(false, ['ドアの前にいない。']);
       if (state.finale) return result(true, [], 0, { kind: 'finale', finale: state.finale });
       if (state.flags.has('insulted')) return result(true, [], 0, demonOutcome(state));
-      const angry = unresolvedCauses(state);
+      const angry = [...unresolvedCauses(state), ...provokeCauses(state)];
       if (angry.length > 0) return result(true, [], 0, { kind: 'angry', causes: angry });
       return result(true, [], 0, { kind: 'home', lines: state.successLines });
     }
   }
 };
+
+/** 取り消し前の誤爆メッセージに既読をつける（以後は取り消せない） */
+const markMisfiresRead = (state: DayState): string[] => {
+  const hit = state.clues.filter(
+    (c) => c.unsendable && c.id && !state.flags.has(`unsent:${c.id}`) && !state.flags.has(`readmsg:${c.id}`),
+  );
+  hit.forEach((c) => state.flags.add(`readmsg:${c.id}`));
+  return hit.length ? ['……あ。最初に誤爆したメッセージに既読がついた。', 'もう、取り消せない。'] : [];
+};
+
+/** 余計なひと言を送っていたら、それ自体が新しい火種になる */
+const provokeCauses = (state: DayState): Cause[] =>
+  CHAT_TEMPLATES.filter((t) => t.provokeLines && state.flags.has(`provoked:${t.id}`)).map((t) => ({
+    id: `provoke:${t.id}`,
+    title: '火に油',
+    resolution: { all: [] },
+    angerLines: t.provokeLines!,
+    successLine: '',
+  }));
 
 /** 暴言を4種すべて送ったら、その日のフィナーレを決めて仕掛けを発動する */
 const triggerFinale = (state: DayState): Finale | null => {

@@ -831,6 +831,7 @@ button:disabled {
   border: 3px double #fff;
   background: #000;
   font-family: 'DotGothic16', ui-monospace, monospace;
+  white-space: pre-line;
 }
 .rpg-menu {
   display: grid;

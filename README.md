@@ -96,11 +96,11 @@ cd android && ./gradlew assembleDebug   # → android/app/build/outputs/apk/debu
 | 追加先 | 内容 |
 |---|---|
 | `src/data/items.ts` | 新しい商品（`source: 'konbini' \| 'mail' \| 'none'`）。`useLabel` を付けると持ち物画面で「使う」ボタンが出る。`useRequires` / `useResult` で「接着剤 → 割れたマグカップを直す」のような組み合わせも作れる |
-| `src/data/chat.ts` | 新しい定型文。`requires` で送信条件（例: 注文済み）を付けられる |
+| `src/data/chat.ts` | 新しい定型文。`requires` で送信条件（例: 注文済み）を付けられる。`onlyWith` はその原因がある日だけ出す定型文、`provokeLines` を付けると「余計なひと言」（送ると火種を消していても怒られる） |
 | `src/assets/manifest.ts` | 玄関前の見た目を変えるオーバーレイ（`visuals`）や手がかりのイラスト（`image`） |
 
 使える仕掛け: `startItems`（最初から持っている物）、`pickups`（玄関前で拾える物）、
-`unsendable`（0:00 の既読前なら送信取消できる誤爆メッセージ）、`homeAlone`（妻が不在の日）、
+`unsendable`（0:00 の既読前、かつ他のメッセージを送る前なら送信取消できる誤爆メッセージ）、`homeAlone`（妻が不在の日）、
 `startOrders`（キャンセルが必要な既存注文）、`hiddenWhen`（対処したら消える描写）、
 `conflictsWith`（同じ日に組み合わせないシナリオ）、`unread`（チャットの未読表示）。
 

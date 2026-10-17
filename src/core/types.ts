@@ -142,6 +142,13 @@ export interface ChatTemplate {
   insult?: boolean;
   /** 暴言を送ったあと、ドアの向こうの魔王が言うセリフ */
   demonLines?: string[];
+  /** この原因（cause id）がある日だけ送れる */
+  onlyWith?: string;
+  /**
+   * 余計なひと言（おふざけ枠）。送ると provoked:<id> が立ち、火種を全部消していても
+   * 帰宅した瞬間に怒りシーン。妻のセリフ
+   */
+  provokeLines?: string[];
 }
 
 export type Location = 'door' | 'town' | 'konbini' | 'trash' | 'bench';

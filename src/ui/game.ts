@@ -31,7 +31,7 @@ import { solve } from '../core/solver';
 import type { Action, AppId, Cause, ItemDef, ClueLocation, DayState, Location, RunState, SlotId, SpotId } from '../core/types';
 import { APP_BASE, APP_LABEL, CHAT_HISTORY, SLOT_BASE, SLOT_LABEL, SPOT_BASE, SPOT_LABEL } from '../data/base';
 import { CHAT_TEMPLATES } from '../data/chat';
-import { FINALES, FINALE_IDS, type Finale, type FinaleChoice, type FinaleId, type FinaleLine } from '../data/finales';
+import { FINALES, FINALE_IDS, type Finale, type FinaleChoice, type FinaleCounter, type FinaleId, type FinaleLine } from '../data/finales';
 import { ITEM_MAP, itemsAt } from '../data/items';
 import { SCENARIO_MAP } from '../data/scenarios';
 import { h, type Child } from './dom';
@@ -266,15 +266,33 @@ export class Game {
     const end = () => this.go({ name: 'gameover', reason: f.title, causes: [], finale: id });
     const outro = (scene?: SceneSpec) =>
       f.outro.length ? this.go({ name: 'talk', mood: 'finale', scene, lines: this.expand(f.outro), index: 0, after: end }) : end();
+    const pick = <T,>(xs: T[]): T => xs[Math.floor(Math.random() * xs.length)];
+    let hp = f.choice?.hp ?? 0;
+    let last: FinaleCounter | undefined;
     const choice = () => {
       if (!f.choice) return outro();
       const c = f.choice;
+      const gauge = c.hp ? `\n【あなたの こころのHP: ${Math.max(0, hp)} / ${c.hp}】` : '';
       this.go({
         name: 'choice',
-        prompt: c.prompt,
+        prompt: c.prompt + gauge,
         options: c.options,
-        onPick: (o) =>
-          this.go({ name: 'talk', mood: 'finale', lines: this.expand(o.reply), index: 0, after: () => (o.end ? outro() : choice()) }),
+        onPick: (o) => {
+          let lines = this.expand(pick(o.replies));
+          let next = () => (o.end ? outro() : choice());
+          if (!o.end && c.counters?.length) {
+            // 魔王の反撃。1ターンごとに必ず返ってくる
+            const counter = pick(c.counters.length > 1 ? c.counters.filter((x) => x !== last) : c.counters);
+            last = counter;
+            hp -= counter.damage;
+            lines = lines.concat(this.expand(counter.lines));
+            if (hp <= 0) {
+              lines = lines.concat(this.expand(c.knockout ?? []));
+              next = () => outro();
+            }
+          }
+          this.go({ name: 'talk', mood: 'finale', lines, index: 0, after: next });
+        },
       });
     };
     if (f.loop) {
@@ -814,6 +832,7 @@ export class Game {
     const day = this.day!;
     const bubble = (from: 'me' | 'wife', text: string, cls = '') => h('div', { class: `bubble ${from} ${cls}` }, text);
     const ME = '（あなた）';
+    const provoke = CHAT_TEMPLATES.filter((t) => t.provokeLines && canSendChat(day, t.id) || day.flags.has(`chat:${t.id}`));
     return [
       h(
         'div',
@@ -822,9 +841,9 @@ export class Game {
         chatTimeline(day).map((c) => {
           if (!c.text.startsWith(ME)) return bubble('wife', c.text, c.unread ? 'unread' : '');
           if (!c.unsendable) return bubble('me', c.text.slice(ME.length));
-          // 誤爆メッセージ: 既読になる 0:00 までは送信取消できる
+          // 誤爆メッセージ: 既読になる 0:00 まで（かつ追加で何か送るまで）は送信取消できる
           if (day.flags.has(`unsent:${c.id}`)) return h('div', { class: 'chat-system' }, 'メッセージの送信を取り消しました');
-          const read = day.time > CANCEL_DEADLINE;
+          const read = day.time > CANCEL_DEADLINE || day.flags.has(`readmsg:${c.id}`);
           return h(
             'div',
             { class: 'bubble-row me' },
@@ -840,12 +859,25 @@ export class Game {
         'div',
         { class: 'compose' },
         h('small', { class: 'dim' }, '定型文を送る（2分）'),
-        CHAT_TEMPLATES.filter((t) => !t.insult).map((t) => {
+        CHAT_TEMPLATES.filter((t) => !t.insult && !t.provokeLines).map((t) => {
           const sent = day.flags.has(`chat:${t.id}`);
           return h(
             'button',
             {
               class: 'template',
+              disabled: sent || !canSendChat(day, t.id),
+              onclick: () => this.act({ type: 'sendChat', template: t.id }, 'se_send'),
+            },
+            sent ? `✓ ${t.text}` : t.text,
+          );
+        }),
+        provoke.length ? h('small', { class: 'insult-label' }, '😏 余計なひと言（※おすすめしない）') : null,
+        provoke.map((t) => {
+          const sent = day.flags.has(`chat:${t.id}`);
+          return h(
+            'button',
+            {
+              class: 'template insult',
               disabled: sent || !canSendChat(day, t.id),
               onclick: () => this.act({ type: 'sendChat', template: t.id }, 'se_send'),
             },
