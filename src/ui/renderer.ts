@@ -54,7 +54,8 @@ export type Scene =
   | { kind: 'demon'; started: number }
   /** 無限玄関ループ: level が上がるほど玄関がおかしくなる */
   | { kind: 'loop'; level: number; started: number }
-  | { kind: 'home' }
+  /** grudging: 渋々許す日は無表情の妻（画像が無ければ笑顔で代用） */
+  | { kind: 'home'; grudging?: boolean }
   | { kind: 'clear' }
   | { kind: 'title' };
 
@@ -126,7 +127,7 @@ export class Renderer {
         this.drawLoop(s.level, s.started);
         break;
       case 'home':
-        this.drawImage('wife_smile', FULL);
+        this.drawImage(s.grudging && this.images.get('wife_sullen') ? 'wife_sullen' : 'wife_smile', FULL);
         break;
       case 'clear':
         this.drawImage('clear', FULL);

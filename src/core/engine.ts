@@ -1,6 +1,6 @@
 // ゲームの純粋ロジック。DOM・音・描画には一切触らない。
 import { CHAT_MAP, CHAT_TEMPLATES, COLD_REPLIES } from '../data/chat';
-import { FINALES, FINALE_IDS, type Finale } from '../data/finales';
+import { FINALES, FINALE_IDS, type Finale, type FinaleId } from '../data/finales';
 import { ITEM_MAP } from '../data/items';
 import { SCENARIOS } from '../data/scenarios';
 import {
@@ -87,6 +87,7 @@ export const buildDay = (day: number, scenarios: Scenario[], startTime: number, 
       ? scenarios.map((s) => s.successLine ?? 'おかえり。今日もお疲れさま')
       : scenarios.flatMap((s) => s.causes.map((c) => c.successLine)),
     homeAlone: scenarios.length > 0 && scenarios.every((s) => s.homeAlone),
+    grudging: scenarios.some((s) => s.causes.some((c) => c.grudging)),
     seed,
   };
 };
@@ -197,11 +198,12 @@ const act = (state: DayState, action: Action): ActionResult => {
       // 一度でも暴言を送ったら、以後は何を送っても取りつく島もない返事だけ（電話も来ない）
       const coldReply = () => COLD_REPLIES[state.chatLog.filter((m) => m.from === 'wife').length % COLD_REPLIES.length];
       const alreadyInsulted = state.flags.has('insulted');
-      if (t.insult) {
+      if (t.insult || t.finale) {
         state.flags.add('insulted');
         state.flags.add(`insult:${t.id}`);
         state.chatLog.push({ from: 'wife', text: alreadyInsulted ? coldReply() : t.replyIrrelevant || '既読' });
-        const finale = triggerFinale(state);
+        // 直行タイプ（「だったら自分で捨てろ」など）はそのフィナーレへ。それ以外は4種そろったら
+        const finale = t.finale ? applyFinale(state, t.finale) : triggerFinale(state);
         return result(
           true,
           [...send('……既読がついた。返事はない。電話も来ない。'), '背筋に、冷たいものが走った。', ...(finale?.onTrigger ?? []), ...(finale?.trap?.warp ?? [])],
@@ -366,7 +368,12 @@ const triggerFinale = (state: DayState): Finale | null => {
   if (state.finale) return null;
   const all = CHAT_TEMPLATES.filter((t) => t.insult).every((t) => state.flags.has(`insult:${t.id}`));
   if (!all) return null;
-  const id = FINALE_IDS[Math.min(FINALE_IDS.length - 1, Math.floor(state.seed * FINALE_IDS.length))];
+  return applyFinale(state, FINALE_IDS[Math.min(FINALE_IDS.length - 1, Math.floor(state.seed * FINALE_IDS.length))]);
+};
+
+/** フィナーレを確定させて仕掛けを発動する（すでに決まっていれば何もしない） */
+const applyFinale = (state: DayState, id: FinaleId): Finale | null => {
+  if (state.finale) return null;
   const finale = FINALES[id];
   state.finale = id;
   state.flags.add(`finale:${id}`);

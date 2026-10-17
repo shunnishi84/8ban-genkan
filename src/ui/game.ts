@@ -83,6 +83,7 @@ type Screen =
       mood: 'angry' | 'home' | 'demon' | 'finale';
       late?: boolean;
       alone?: boolean;
+      grudging?: boolean;
       /** 指定すると最初の行でこの背景にする。finale で省略すると直前の背景を引き継ぐ */
       scene?: SceneSpec;
       lines: Line[];
@@ -372,6 +373,7 @@ export class Game {
     this.audio.playSe('se_door');
     window.setTimeout(() => this.audio.playSe('se_success'), 300);
     const alone = this.day!.homeAlone;
+    const grudging = this.day!.grudging;
     const lines: Line[] = alone
       ? [
           { who: 'me', text: 'ただいま……' },
@@ -380,7 +382,7 @@ export class Game {
         ]
       : [
           { who: 'me', text: 'ただいま……' },
-          { who: 'wife', text: 'おかえり。' },
+          { who: 'wife', text: grudging ? '……おかえり。' : 'おかえり。' },
           ...successLines.map((text) => ({ who: 'wife' as const, text })),
         ];
     const cleared = advanceRun(this.run);
@@ -389,6 +391,7 @@ export class Game {
       name: 'talk',
       mood: 'home',
       alone,
+      grudging,
       lines,
       index: 0,
       after: () => (cleared ? this.go({ name: 'clear' }) : this.beginDay()),
@@ -497,7 +500,7 @@ export class Game {
             : s.mood === 'home'
             ? s.alone
               ? { kind: 'bg', image: 'bg_door_dark' }
-              : { kind: 'home' }
+              : { kind: 'home', grudging: s.grudging }
             : { kind: 'angry', started: performance.now(), image: s.late ? 'wife_dark' : 'wife_angry' },
         );
       }
@@ -881,7 +884,9 @@ export class Game {
     const day = this.day!;
     const bubble = (from: 'me' | 'wife', text: string, cls = '') => h('div', { class: `bubble ${from} ${cls}` }, text);
     const ME = '（あなた）';
-    const provoke = CHAT_TEMPLATES.filter((t) => t.provokeLines && (canSendChat(day, t.id) || day.flags.has(`chat:${t.id}`)));
+    const provoke = CHAT_TEMPLATES.filter(
+      (t) => (t.provokeLines || t.finale) && (canSendChat(day, t.id) || day.flags.has(`chat:${t.id}`)),
+    );
     return [
       h(
         'div',
@@ -909,7 +914,7 @@ export class Game {
         { class: 'compose' },
         h('small', { class: 'dim' }, '定型文を送る（2分）'),
         // 送れない定型文は出さない（条件を満たしたら現れる）。送信済みは ✓ 付きで残す
-        CHAT_TEMPLATES.filter((t) => !t.insult && !t.provokeLines && (canSendChat(day, t.id) || day.flags.has(`chat:${t.id}`))).map((t) => {
+        CHAT_TEMPLATES.filter((t) => !t.insult && !t.provokeLines && !t.finale && (canSendChat(day, t.id) || day.flags.has(`chat:${t.id}`))).map((t) => {
           const sent = day.flags.has(`chat:${t.id}`);
           return h(
             'button',

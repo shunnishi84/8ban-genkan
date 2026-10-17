@@ -442,6 +442,31 @@ item_kashiori / item_spa_ticket / item_av_subscription / item_gravure_book` と�
 
 ---
 
+## 8. 渋々許す妻（wife_sullen.png）— Gemini 用
+
+小言つきで許してくれる日（ゴミ出し忘れ、注文のキャンセル、AV の解約など）の帰宅画面。
+笑顔の `wife_smile.png` と同じ構図・同じ服で、表情だけ「無表情で渋々」にする。
+置くまでは笑顔の絵で代用される。
+
+| ファイル | 用途 | 添付する見本 |
+|---|---|---|
+| `wife_sullen.png` | 渋々許す日の「……おかえり。」 | `wife_smile.png` |
+
+```
+Use the attached image as the strict reference: redraw the exact same scene with the same
+woman (same face, short dark bob hair, cream long-sleeve top, floral apron), the same
+Japanese apartment entrance hallway behind her, the same camera angle, framing and
+vertical 9:16 composition. Change ONLY her expression and pose: a flat, expressionless,
+slightly sulky face, eyes half-lidded and looking a little to the side, mouth a small
+straight line, eyebrows level. Arms loosely crossed in front of the apron instead of hands
+clasped. She is forgiving her husband reluctantly — not angry, not smiling, just "fine,
+whatever." Slightly cooler, dimmer lighting than the reference.
+Japanese manga-style digital illustration, clean bold black outlines, flat cel shading,
+same art style as the reference. No text, no letters, no watermark.
+```
+
+---
+
 ## 置いたあとの確認
 
 1. `npm run dev` で起動

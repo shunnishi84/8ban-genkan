@@ -156,6 +156,25 @@ describe('新しい仕掛け', () => {
     if (o.kind === 'angry') expect(o.causes.map((c) => c.title)).toEqual(['火に油']);
   });
 
+  it('ゴミ出し忘れは解消しても小言つき（渋々許す日）', () => {
+    const s = day(['garbage_forgot']);
+    expect(s.grudging).toBe(true);
+    for (const a of solve(s)!) perform(s, a);
+    expect(s.successLines.join()).toContain('今度から');
+    expect(day(['ring_off', 'neighbor_curry']).grudging).toBe(false);
+  });
+
+  it('「だったら自分で捨てておいてくれよ」はゴミの日だけ送れて、送ると魔王城へ直行', () => {
+    expect(perform(day(['ring_off']), { type: 'sendChat', template: 'garbage_yourself' }).ok).toBe(false);
+    const s = day(['garbage_forgot']);
+    s.location = 'konbini';
+    expect(perform(s, { type: 'sendChat', template: 'garbage_yourself' }).ok).toBe(true);
+    expect(s.finale).toBe('castle');
+    expect(s.location).toBe('door');
+    expect(s.flags.has('phone_broken')).toBe(true);
+    expect(perform(s, { type: 'openDoor' }).outcome).toEqual({ kind: 'finale', finale: 'castle' });
+  });
+
   it('接着剤は割れたマグカップを持っていないと使えない', () => {
     const s = day(['dinner_unannounced']);
     s.location = 'konbini';

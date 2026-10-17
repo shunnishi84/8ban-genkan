@@ -63,6 +63,8 @@ export interface Cause {
   angerLines: string[];
   /** 解消して帰宅したときの妻の一言 */
   successLine: string;
+  /** 解消しても小言つきで渋々許す（帰宅時の妻が笑顔ではなく無表情になる） */
+  grudging?: boolean;
 }
 
 /** シナリオ開始時に持っている（拾える）アイテム */
@@ -149,6 +151,8 @@ export interface ChatTemplate {
    * 帰宅した瞬間に怒りシーン。妻のセリフ
    */
   provokeLines?: string[];
+  /** 送った瞬間にこのフィナーレへ直行する（暴言扱い） */
+  finale?: FinaleId;
 }
 
 export type Location = 'door' | 'town' | 'konbini' | 'trash' | 'bench';
@@ -171,6 +175,8 @@ export interface DayState {
   chatLog: { from: 'me' | 'wife'; text: string }[];
   successLines: string[];
   homeAlone: boolean;
+  /** 渋々許す火種がある日（帰宅時の妻が無表情） */
+  grudging: boolean;
   /** その日の乱数（0〜1）。フィナーレの抽選に使う。テストでは固定できる */
   seed: number;
   /** 暴言を4種すべて送ったときに決まるフィナーレ */

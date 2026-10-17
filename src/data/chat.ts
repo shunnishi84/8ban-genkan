@@ -49,9 +49,9 @@ export const CHAT_TEMPLATES: ChatTemplate[] = [
   },
   {
     id: 'garbage_done',
-    text: 'ゴミ、出しといたよ！',
+    text: 'ゴミ、出しといたよ。朝はごめん',
     requires: 'discarded:garbage_bag',
-    replyRelevant: 'えらい！',
+    replyRelevant: '……「出しといた」じゃなくて、朝の約束だったよね。',
     replyIrrelevant: '？ゴミは朝私が出したけど…何を捨てたの？ 電話するね',
   },
   {
@@ -108,6 +108,16 @@ export const CHAT_TEMPLATES: ChatTemplate[] = [
     requires: 'chat:kouhai_photo',
     replyRelevant: 'ふーん。……信じてあげる',
     replyIrrelevant: '佐藤さんって誰？？ 今すぐ電話します',
+  },
+  // ゴミ出し忘れの日だけ出る、最悪の逆ギレ。送った瞬間に魔王城へ直行
+  {
+    id: 'garbage_yourself',
+    text: 'だったら自分で捨てておいてくれよ',
+    onlyWith: 'garbage_forgot',
+    finale: 'castle',
+    replyRelevant: '…………は？',
+    replyIrrelevant: '…………は？',
+    demonLines: ['「自分で捨てておいてくれよ」。', '……ええ、捨ててあげる。何もかも。'],
   },
   // 後輩チャットの日だけ出る「余計なひと言」。送ると火に油
   {

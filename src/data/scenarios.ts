@@ -173,7 +173,8 @@ export const SCENARIOS: Scenario[] = [
           '朝からずっと、あの袋が玄関で私を見てたよ。',
           '明日から、あなたの枕元に置いとくね。',
         ],
-        successLine: 'ゴミ出してくれたんだ。えらいえらい。',
+        successLine: '……出したのね。でも、朝出してって言ったよね？ 今度からちゃんと朝に出して。',
+        grudging: true,
       },
     ],
     clues: [
@@ -203,6 +204,7 @@ export const SCENARIOS: Scenario[] = [
           'お小遣い、来月から3か月ゼロです。',
         ],
         successLine: 'キャンセルしたのね。…次やったらカード没収だからね。',
+        grudging: true,
       },
     ],
     clues: [
@@ -285,6 +287,7 @@ export const SCENARIOS: Scenario[] = [
           '明日からあなたはビニール傘で十分です。',
         ],
         successLine: '同じ傘、明日届くの？ ……まあ、許す。',
+        grudging: true,
       },
     ],
     clues: [
@@ -324,6 +327,7 @@ export const SCENARIOS: Scenario[] = [
         resolution: { all: ['ordered:limited_pudding', 'bought:konbini_pudding', 'chat:pudding'] },
         angerLines: ['プリンは？', '駅ナカ限定の、とろけるやつ。1か月前から言ってたよね？', 'あなたの冷蔵庫の段、今日から私のものです。'],
         successLine: 'コンビニプリンでつなぐ作戦ね。……明日の限定プリン、ふたつとも私のだから。',
+        grudging: true,
       },
     ],
     clues: [
@@ -365,6 +369,7 @@ export const SCENARIOS: Scenario[] = [
           '明日からあなたの朝ごはんは、自己責任です。',
         ],
         successLine: '……アイス、半分こなら許す。',
+        grudging: true,
       },
     ],
     clues: [
@@ -478,6 +483,7 @@ export const SCENARIOS: Scenario[] = [
           '家のタブレット、今日からリビングのど真ん中に置きます。',
         ],
         successLine: '8人で焼き鳥ね。……部長の隣で目が死んでる写真、保存しといた。',
+        grudging: true,
       },
     ],
     clues: [
@@ -499,6 +505,7 @@ export const SCENARIOS: Scenario[] = [
         resolution: { all: ['deleted:post_kowai', 'bought:sweets', 'chat:sns_kowai_sorry'] },
         angerLines: ['こわい？ ……ふふ。', '3万4千人が、あなたの奥さんはこわいって知ってるの。', 'じゃあ、期待に応えないとね。'],
         successLine: '……スイーツに免じて、今日は「こわくない嫁」でいてあげる。',
+        grudging: true,
       },
     ],
     clues: [
@@ -533,6 +540,7 @@ export const SCENARIOS: Scenario[] = [
         resolution: { all: ['deleted:post_meshi', 'bought:eggs', 'chat:sns_meshi_sorry'] },
         angerLines: ['マズい飯、7年間ありがとうございました。', '明日からは、お好きな外食をどうぞ。一生。', '……レシピ本、全部捨てといたから。'],
         successLine: '卵焼き、明日の朝ね。……マズかったら、私が投稿するから。',
+        grudging: true,
       },
     ],
     clues: [
@@ -567,6 +575,7 @@ export const SCENARIOS: Scenario[] = [
         resolution: { all: ['deleted:post_meiru', 'ordered:spa_ticket', 'chat:sns_meiru_sorry'] },
         angerLines: ['気が滅入る？ 奇遇ね。私もよ。', 'ため息、ついてあげましょうか。……はぁ〜〜〜〜〜。', '今夜から、空気の重さを思い知らせてあげる。'],
         successLine: 'スパ……。まあ、ため息はひとつ減ったかな。',
+        grudging: true,
       },
     ],
     clues: [
@@ -607,6 +616,7 @@ export const SCENARIOS: Scenario[] = [
           'テレビは今日から、リビングに一台もありません。',
         ],
         successLine: '……解約したならいいわ。リモコンは当分、私の管理です。',
+        grudging: true,
       },
     ],
     clues: [
@@ -633,6 +643,7 @@ export const SCENARIOS: Scenario[] = [
           '今日からあなたの寝床は、そのベッドの下です。',
         ],
         successLine: '資源ゴミの日、ちゃんと覚えてたんだ。……付箋のページ、私も見たけどね。',
+        grudging: true,
       },
     ],
     clues: [
