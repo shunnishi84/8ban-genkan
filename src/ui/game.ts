@@ -832,7 +832,7 @@ export class Game {
     const day = this.day!;
     const bubble = (from: 'me' | 'wife', text: string, cls = '') => h('div', { class: `bubble ${from} ${cls}` }, text);
     const ME = '（あなた）';
-    const provoke = CHAT_TEMPLATES.filter((t) => t.provokeLines && canSendChat(day, t.id) || day.flags.has(`chat:${t.id}`));
+    const provoke = CHAT_TEMPLATES.filter((t) => t.provokeLines && (canSendChat(day, t.id) || day.flags.has(`chat:${t.id}`)));
     return [
       h(
         'div',

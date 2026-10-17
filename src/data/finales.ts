@@ -253,7 +253,7 @@ export const FINALES: Record<FinaleId, Finale> = {
       { who: 'narr', text: 'ピンポーン。' },
       { who: 'other', name: 'インターホン', text: '……どちら様ですか？' },
       { who: 'me', text: '俺だよ、俺！' },
-      { who: 'other', name: 'インターホン', text: '当家に、夫はおりません。' },
+      { who: 'other', name: 'インターホン', text: '我が家は一人暮らしです。あんまり騒ぐと警察を呼びますよ。' },
       { who: 'narr', text: '表札は、いつの間にか妻の旧姓に変わっていた。' },
       { who: 'narr', text: '足元には布団一式と枕。そして『鍵を交換しました』の張り紙。' },
     ],
