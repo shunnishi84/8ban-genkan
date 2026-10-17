@@ -9,6 +9,13 @@ export const SCENARIOS: Scenario[] = [
   {
     id: 'dinner_unannounced',
     title: '飲み会を伝えてない',
+    chatReplies: {
+      '*': ['それより、ご飯の話は？ 作って待ってたんだけど。'],
+      coming_home: ['……ご飯、冷めてるけど。', '今から？ 先に寝るって言ったよね。', 'ご飯、ラップしてあるから。勝手にどうぞ。'],
+      'coming_home:after': ['……ご飯、明日の朝ね。気をつけて帰ってきて。'],
+      sorry_generic: ['何に謝ってるのか、自分で言ってみて。', '「ごめん」だけ？ 作ったご飯のことは？', '謝るくらいなら、飲み会の連絡くらいして。'],
+      love: ['愛してるなら、飲み会の連絡くらいして。', '……ご飯より先に言うこと、それ？'],
+    },
     causes: [
       {
         id: 'dinner_unannounced',
@@ -33,6 +40,10 @@ export const SCENARIOS: Scenario[] = [
   {
     id: 'shopping_forgot',
     title: '頼まれた買い物をしていない',
+    chatReplies: {
+      coming_home: ['はーい。メモのやつ、忘れてないよね？', 'はーい！ 洗剤は絶対いつものやつね！'],
+      sorry_generic: ['……ごめんって何？ まさか、メモのやつ忘れた？ 電話する'],
+    },
     causes: [
       {
         id: 'shopping_forgot',
@@ -67,6 +78,15 @@ export const SCENARIOS: Scenario[] = [
   {
     id: 'birthday_forgot',
     title: '妻の誕生日を忘れている',
+    chatReplies: {
+      '*': ['それより、今日が何の日か、先に言うことあるよね？'],
+      'love:after': ['……ありがと。ちゃんと覚えててよね、来年は。'],
+      coming_home: ['……今から？ 早く帰るって言ってたよね。', '今日が何の日か、わかってて言ってる？', 'ケーキのロウソク、もう溶けちゃったよ。'],
+      'coming_home:after': ['……待ってる。'],
+      sorry_generic: ['何に対してのごめん？ 今日が何の日か言ってみて。', '謝るってことは、忘れてたってことだよね。', '「ごめん」の前に「おめでとう」じゃないの？'],
+      love: ['……それだけ？ 今日、何の日だと思ってる？', '愛してるなら、今日の日付くらい覚えてて。'],
+      anniversary: ['記念日じゃなくて、誕生日。……本気で間違えてる？'],
+    },
     conflictsWith: ['anniversary_forgot'],
     visuals: ['window_garland'],
     causes: [
@@ -135,6 +155,15 @@ export const SCENARIOS: Scenario[] = [
   {
     id: 'anniversary_forgot',
     title: '結婚記念日を忘れている',
+    chatReplies: {
+      '*': ['話をそらさないで。今日、何の日だと思ってるの？'],
+      'love:after': ['……8年目も、よろしくね。'],
+      coming_home: ['……「今から」なんだ。今日、何の日だっけ？', 'ワイン冷やして待ってたんだけど。もうぬるいよ。', '7年目の今日に、その一言？'],
+      'coming_home:after': ['……グラス、出しとくね。'],
+      sorry_generic: ['ごめん、じゃなくて。何の日か答えて。', '謝るってことは、忘れてたんだ。7年目なのに。', '謝るくらいなら、カレンダーくらい見て。'],
+      love: ['愛してるなら、今日が何の日か言えるよね？', '……記念日に、それだけ？'],
+      birthday: ['誕生日じゃなくて、結婚記念日なんだけど。……わざと？'],
+    },
     conflictsWith: ['birthday_forgot'],
     visuals: ['window_candle'],
     causes: [
@@ -161,6 +190,12 @@ export const SCENARIOS: Scenario[] = [
   {
     id: 'garbage_forgot',
     title: 'ゴミ出し忘れ',
+    chatReplies: {
+      '*': ['それより、玄関のゴミ袋。'],
+      coming_home: ['帰ってくるなら、ゴミもどうにかしてきて。', 'ゴミ袋がお出迎えしてくれると思うよ。', '玄関、ゴミ袋と一緒に待ってるね。'],
+      sorry_generic: ['謝るくらいなら、朝ちゃんと出して。', 'ごめんでゴミは減らないんだけど。', '「ごめん」の前に、ゴミ袋持って。'],
+      love: ['愛してるなら、ゴミ出して。', '愛でゴミは消えないよ。'],
+    },
     pickups: [{ at: 'hallway', item: 'garbage_bag', label: 'ゴミ袋を持つ', visual: 'garbage_bag' }],
     visuals: ['garbage_bag'],
     causes: [
@@ -192,6 +227,12 @@ export const SCENARIOS: Scenario[] = [
   {
     id: 'card_overuse',
     title: 'カード使いすぎ通知',
+    chatReplies: {
+      '*': ['話をそらさないで。12万の説明は？'],
+      coming_home: ['帰ってきたら、12万の説明してね。', 'まず12万の話が先。', '12万円分、気をつけて帰ってきてね。'],
+      sorry_generic: ['ごめんで12万は戻ってこないよ。', '謝る前に、キャンセルできるか確認して。', '謝るってことは、心当たりがあるんだ。'],
+      love: ['12万円分の愛？ 重いね。', '愛してるなら、カード明細を見せて。'],
+    },
     startOrders: ['golf_club'],
     causes: [
       {
@@ -217,6 +258,10 @@ export const SCENARIOS: Scenario[] = [
   {
     id: 'liver_holiday',
     title: '休肝日の約束を破った',
+    chatReplies: {
+      coming_home: ['はーい！ 休肝日えらいね〜 まっすぐ帰ってきてね☺️', 'お茶いれて待ってる〜☺️'],
+      sorry_generic: ['え、何が？？ ……まさか、飲んだ？ 電話する'],
+    },
     startItems: [{ item: 'empty_can' }],
     causes: [
       {
@@ -252,6 +297,12 @@ export const SCENARIOS: Scenario[] = [
   {
     id: 'mother_in_law',
     title: '義母の手土産を用意してない',
+    chatReplies: {
+      '*': ['……それより、明日の手土産は？'],
+      coming_home: ['はーい。手土産、ちゃんと用意できた？', '帰ってきたら手土産見せてね。老舗のやつね。'],
+      sorry_generic: ['……まさか、手土産忘れた？ 謝る前に何とかして。', '謝るってことは、用意してないんだ。明日なんだけど。'],
+      love: ['愛してるなら、お母さんの手土産もよろしくね。'],
+    },
     causes: [
       {
         id: 'mother_in_law',
@@ -275,6 +326,12 @@ export const SCENARIOS: Scenario[] = [
   {
     id: 'umbrella_lost',
     title: '妻の傘を電車に忘れた',
+    chatReplies: {
+      '*': ['それより、私の傘は？'],
+      coming_home: ['傘、ちゃんと持って帰ってきてね。', '今から？ 私の傘も一緒に帰ってくるよね？'],
+      sorry_generic: ['……ごめんって何。まさか傘？', '謝るってことは、なくしたんだ。お気に入りだったのに。'],
+      love: ['愛してるなら、花柄の傘も一緒に連れて帰ってきて。'],
+    },
     visuals: ['wet_floor'],
     causes: [
       {
@@ -300,6 +357,12 @@ export const SCENARIOS: Scenario[] = [
   {
     id: 'ring_off',
     title: '結婚指輪を外したまま',
+    chatReplies: {
+      '*': ['……それより、指輪は？'],
+      coming_home: ['はーい。……指輪、してる？', '左手、ちゃんと見せてね。'],
+      sorry_generic: ['何に謝ってるの？ ……指輪？', 'ごめんって言うってことは、またしてないんだ。'],
+      love: ['愛してるなら、指輪くらいしてきて。', '……左手の薬指、見てから言って。'],
+    },
     startItems: [{ item: 'ring' }],
     causes: [
       {
@@ -320,6 +383,10 @@ export const SCENARIOS: Scenario[] = [
   {
     id: 'pudding_promise',
     title: '限定プリンの約束',
+    chatReplies: {
+      coming_home: ['プリン、忘れないでね😋', 'はーい！ プリンプリン〜😋'],
+      sorry_generic: ['……ごめんって、まさかプリン？', '謝る前に、コンビニ寄って。'],
+    },
     causes: [
       {
         id: 'pudding_promise',
@@ -339,6 +406,10 @@ export const SCENARIOS: Scenario[] = [
   {
     id: 'tie_lost',
     title: '妻からもらったネクタイがない',
+    chatReplies: {
+      coming_home: ['はーい！ ネクタイ姿、楽しみにしてる☺️'],
+      sorry_generic: ['何が？ ……ネクタイ、ちゃんとしてるよね？ 電話する'],
+    },
     causes: [
       {
         id: 'tie_lost',
@@ -358,6 +429,15 @@ export const SCENARIOS: Scenario[] = [
   {
     id: 'morning_fight',
     title: '朝、喧嘩して出てきた',
+    chatReplies: {
+      '*': ['朝のことは、なかったことになったの？'],
+      'love:after': ['……私も、朝は言いすぎた。'],
+      'sorry_generic:after': ['……もういいよ。私も、ごめん。'],
+      coming_home: ['……勝手にすれば。', '「もういい」って言ったよね。', '帰ってくるんだ。ふーん。'],
+      'coming_home:after': ['……気をつけて帰ってきて。'],
+      sorry_generic: ['朝もそれ言ってたよね。「悪かったって言ってるだろ」って。', '謝ればいいと思ってるでしょ。', '何が悪かったのか、言えるようになってから謝って。'],
+      love: ['朝あんなこと言っておいて？', '今さら？'],
+    },
     causes: [
       {
         id: 'morning_fight',
@@ -384,6 +464,15 @@ export const SCENARIOS: Scenario[] = [
   {
     id: 'wrong_send',
     title: '妻の悪口を妻に誤爆した',
+    chatReplies: {
+      'sorry_generic:after': ['ん……なにが……？（寝ぼけた返信）'],
+      'love:after': ['ん……わたしも……（寝ぼけた返信）'],
+      '*': ['それより「鬼軍曹」の説明は？'],
+      coming_home: ['……鬼軍曹が、お待ちしております。', '通知で起きた。「鬼軍曹かよｗ」……ね。', '口うるさい嫁で悪かったわね。気をつけて。'],
+      'coming_home:after': ['ん……きをつけて……（寝ぼけた返信）'],
+      sorry_generic: ['何がごめん？ 「鬼軍曹」のこと？', '謝るくらいなら最初から送らないで。……友達に、ね。', 'ごめんで「ｗ」は消えないよ。'],
+      love: ['鬼軍曹を愛してるの？ ふーん。', 'さっき「口うるさい」って言ってた人が？'],
+    },
     causes: [
       {
         id: 'wrong_send',
@@ -418,6 +507,12 @@ export const SCENARIOS: Scenario[] = [
   {
     id: 'broken_mug',
     title: '妻のマグカップを割って隠している',
+    chatReplies: {
+      '*': ['それより、私のマグカップは？'],
+      coming_home: ['青いマグカップ、知ってたら一緒に連れて帰ってきて。', '帰ってきたら、マグカップの話ね。'],
+      sorry_generic: ['……ごめんって、まさかマグカップ？', '謝るってことは、知ってるんだ。'],
+      love: ['あのマグカップも、あなたがくれたやつなんだけど。'],
+    },
     startItems: [{ item: 'broken_mug' }],
     causes: [
       {
@@ -447,6 +542,13 @@ export const SCENARIOS: Scenario[] = [
   {
     id: 'tv_interview',
     title: 'テレビのインタビューで妻の悪口',
+    chatReplies: {
+      '*': ['それより、テレビの「鬼」の件は？'],
+      coming_home: ['鬼の家に帰ってくるの？', '「うちの嫁は鬼です」……鬼がお待ちしております。', '全国放送の鬼より。気をつけてね。'],
+      'coming_home:after': ['……鬼、待ってる。'],
+      sorry_generic: ['謝るくらいなら、テレビで言わないで。', 'ごめんじゃ取り消せないよね。全国放送だよ？', '鬼に謝っても無駄だよ。'],
+      love: ['鬼を愛してるの？', 'テレビでそれ言ってくれたら、許したかもね。'],
+    },
     visuals: ['window_tv'],
     causes: [
       {
@@ -472,6 +574,12 @@ export const SCENARIOS: Scenario[] = [
   {
     id: 'kouhai_chat',
     title: '後輩女子との仲良しチャットがバレた',
+    chatReplies: {
+      '*': ['話をそらさないで。「また二人で」は？'],
+      coming_home: ['「また二人で」の説明を持って帰ってきて。', '佐藤さんのところじゃなくて、こっちに帰ってくるんだ？'],
+      sorry_generic: ['何に謝ってるの？ やましいことがあったってこと？', 'ごめんじゃなくて、説明して。'],
+      love: ['佐藤さんにも言ってる？', 'ハート付きで返したら？ 佐藤さんみたいに。'],
+    },
     causes: [
       {
         id: 'kouhai_chat',
@@ -497,6 +605,13 @@ export const SCENARIOS: Scenario[] = [
   {
     id: 'sns_kowai',
     title: 'SNSで「嫁がこわい」がバズった',
+    chatReplies: {
+      '*': ['それより、3.4万いいねの投稿は？'],
+      coming_home: ['ホラーの家に帰ってくるの？ 勇気あるね。', '玄関、開けるの怖いんでしょ？ 無理しなくていいよ。', '3.4万人が応援してるよ。「強く生きて」って。'],
+      'coming_home:after': ['……ホラー、ちょっとだけ休業してあげる。'],
+      sorry_generic: ['謝るくらいなら、最初からつぶやかないで。', 'ごめんで3.4万いいねは消えないよね。', '私に謝る前に、まず投稿どうにかしたら？'],
+      love: ['こわい嫁を愛してるの？ 3.4万人に言ってみたら？', 'それもつぶやけば？ バズるかもよ。'],
+    },
     conflictsWith: ['sns_meshi', 'sns_meiru'],
     causes: [
       {
@@ -532,6 +647,13 @@ export const SCENARIOS: Scenario[] = [
   {
     id: 'sns_meshi',
     title: 'SNSで「嫁の飯が不味い」がバズった',
+    chatReplies: {
+      '*': ['それより、トレンド入りした投稿は？ お母さんも見てるんだけど。'],
+      coming_home: ['マズい飯の家に帰ってくるの？', '外で食べてくれば？ 唯一の楽しみなんでしょ。', '今日もマズいご飯、用意しとくね。'],
+      'coming_home:after': ['……卵焼き、甘いのでいい？'],
+      sorry_generic: ['謝るくらいなら、最初からつぶやかないで。', 'お母さんにも謝ってくれる？ 電話きたんだけど。', 'ごめんでトレンドは消えないよ。'],
+      love: ['マズい飯を作る嫁を？', '「唯一の楽しみ」はどうしたの？'],
+    },
     conflictsWith: ['sns_kowai', 'sns_meiru'],
     causes: [
       {
@@ -567,6 +689,14 @@ export const SCENARIOS: Scenario[] = [
   {
     id: 'sns_meiru',
     title: 'SNSで「嫁といると気が滅入る」がバズった',
+    chatReplies: {
+      '*': ['それより、「気が滅入る」の投稿は？'],
+      'love:after': ['……ため息、ひとつ減ったかも。'],
+      coming_home: ['だから、帰ってこなくていいよ。', 'どこに帰るの？ 気が滅入る家に？', 'ため息ついて待ってるね。'],
+      'coming_home:after': ['……帰ってきていいよ。'],
+      sorry_generic: ['謝るくらいなら、最初からつぶやかないで。', 'ごめんでため息が減ると思う？', 'その「ごめん」、何いいねもらえるの？'],
+      love: ['気が滅入る相手を愛してるの？ 器用だね。', '空気が重い家に、愛があるんだ。'],
+    },
     conflictsWith: ['sns_kowai', 'sns_meshi'],
     causes: [
       {
@@ -603,6 +733,12 @@ export const SCENARIOS: Scenario[] = [
   {
     id: 'av_left_on',
     title: '昨夜アダルトビデオをつけっぱなしで寝落ちした',
+    chatReplies: {
+      '*': ['それより、テレビの「続きから再生」の件は？'],
+      coming_home: ['帰ってきたら、あの番組の話ね。', '「続きから再生」、しないでね。'],
+      sorry_generic: ['ごめんじゃなくて、まず解約して。', '謝るってことは、何のことかわかってるんだ。'],
+      love: ['……テレビの女優さんにも言ってた？'],
+    },
     startOrders: ['av_subscription'],
     causes: [
       {
@@ -630,6 +766,12 @@ export const SCENARIOS: Scenario[] = [
   {
     id: 'gravure_found',
     title: '隠していた水着グラビア写真集が見つかった',
+    chatReplies: {
+      '*': ['それより、玄関の写真集は？'],
+      coming_home: ['玄関に置いといたから。お出迎えしてくれると思うよ。', 'はーい。お友達（写真集）が玄関で待ってるよ。'],
+      sorry_generic: ['何に謝ってるの？ 写真集？ 隠してたこと？', 'ごめんで済むなら、付箋は要らないよね。'],
+      love: ['写真集の子にも言ってる？', '水着じゃない私に？'],
+    },
     pickups: [{ at: 'floor', item: 'gravure_book', label: '写真集を拾う', visual: 'item_gravure_book' }],
     visuals: ['item_gravure_book'],
     causes: [
@@ -687,6 +829,10 @@ export const SCENARIOS: Scenario[] = [
   {
     id: 'neighbor_curry',
     title: '異変なし: どこからかカレーの匂い',
+    chatReplies: {
+      coming_home: ['はーい！ 私ももうすぐ帰る〜', 'はーい！ こっちはまだ女子会中〜🍷'],
+      apology_dinner: ['ご飯？ 今日は私も友達と外だよ？ 誰と間違えてるの？ 電話する'],
+    },
     causes: [],
     successLine: 'おかえり〜。私も今帰ってきたとこ！',
     clues: [
@@ -698,6 +844,11 @@ export const SCENARIOS: Scenario[] = [
   {
     id: 'wife_away',
     title: '異変なし: 妻は実家に帰省中',
+    chatReplies: {
+      coming_home: ['はーい。私いないけど、鍵ちゃんと持ってる？', '実家だよ〜 冷蔵庫に作り置きあるからね'],
+      apology_dinner: ['え、ご飯？ 私、実家だけど……。誰のご飯の話？ 電話する'],
+      sorry_generic: ['何が？？ 私がいない間に何したの？ 電話する'],
+    },
     causes: [],
     homeAlone: true,
     visuals: ['window_dark'],

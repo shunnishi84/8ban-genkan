@@ -195,6 +195,68 @@ describe('新しい仕掛け', () => {
     expect(b.flags.has('undressed')).toBe(false);
   });
 
+  it('「今から帰るね」は状況に合わせた返事になる（帰ってこなくていいと言われた日に「はーい」は無い）', () => {
+    const replies = SCENARIO_MAP.sns_meiru.chatReplies!.coming_home;
+    const s = day(['sns_meiru']);
+    expect(perform(s, { type: 'sendChat', template: 'coming_home' }).cost).toBe(2);
+    expect(replies).toContain(s.chatLog.at(-1)!.text);
+  });
+
+  it('火種を消したあとは :after の返事', () => {
+    const s = day(['sns_meiru']);
+    for (const a of solve(s)!) if (a.type !== 'openDoor') perform(s, a);
+    perform(s, { type: 'sendChat', template: 'coming_home' });
+    expect(s.chatLog.at(-1)!.text).toBe('……帰ってきていいよ。');
+  });
+
+  it('事情を知っている妻に「ほんとにごめん…」だけ送ると、説教で時間を失う', () => {
+    const s = day(['tv_interview']);
+    const r = perform(s, { type: 'sendChat', template: 'sorry_generic' });
+    expect(SCENARIO_MAP.tv_interview.chatReplies!.sorry_generic).toContain(s.chatLog.at(-1)!.text);
+    expect(r.messages.join()).toContain('謝るだけなら誰でもできる');
+    expect(r.cost).toBe(10);
+  });
+
+  it('何も知らない妻への「ほんとにごめん…」は、これまでどおり「何が？？」で問い詰め', () => {
+    const s = day(['cabaret_lipstick']);
+    const r = perform(s, { type: 'sendChat', template: 'sorry_generic' });
+    expect(s.chatLog.at(-1)!.text).toBe('何が？？ ちょっと電話するね');
+    expect(r.messages.join()).toContain('しどろもどろ');
+  });
+
+  it('別件の謝罪を送ると「話をそらさないで」系の返事', () => {
+    const s = day(['tv_interview']);
+    perform(s, { type: 'sendChat', template: 'apology_dinner' });
+    expect(s.chatLog.at(-1)!.text).toContain('テレビ');
+  });
+
+  it('仲直りしたあとの「ほんとにごめん…」は電話も来ない', () => {
+    const s = day(['morning_fight']);
+    for (const a of solve(s)!) if (a.type !== 'openDoor') perform(s, a);
+    const t0 = s.time;
+    perform(s, { type: 'sendChat', template: 'sorry_generic' });
+    expect(s.time - t0).toBe(2);
+    expect(s.chatLog.at(-1)!.text).toBe('……もういいよ。私も、ごめん。');
+  });
+
+  it('妻が知らないまま片付いた日（誤爆を取り消した等）に謝っても「もういいよ」にはならない', () => {
+    const a = day(['wrong_send'], hm(23, 0));
+    perform(a, { type: 'unsend', clue: 'wrong_send' });
+    perform(a, { type: 'sendChat', template: 'sorry_generic' });
+    expect(a.chatLog.at(-1)!.text).toContain('寝ぼけた');
+
+    const b = day(['cabaret_lipstick']);
+    for (const x of solve(b)!) if (x.type !== 'openDoor') perform(b, x);
+    perform(b, { type: 'sendChat', template: 'sorry_generic' });
+    expect(b.chatLog.at(-1)!.text).toBe('何が？？ ちょっと電話するね');
+  });
+
+  it('日付をまたいでから「今から帰るね」は深夜の返事', () => {
+    const s = day(['cabaret_lipstick'], hm(24, 10));
+    perform(s, { type: 'sendChat', template: 'coming_home' });
+    expect(s.chatLog.at(-1)!.text).not.toBe('はーい。気をつけてね');
+  });
+
   it('接着剤は割れたマグカップを持っていないと使えない', () => {
     const s = day(['dinner_unannounced']);
     s.location = 'konbini';

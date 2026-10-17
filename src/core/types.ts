@@ -100,6 +100,12 @@ export interface Scenario {
   homeAlone?: boolean;
   /** 異変なしの日の帰宅セリフ */
   successLine?: string;
+  /**
+   * その日の状況に合わせた、定型文への妻の返事（定型文ID → 候補。ランダムに1つ）。
+   * 火種が未解消のあいだはこれを使う。`<定型文ID>:after` は火種を消したあとの返事。
+   * 異変なしの日は常にこれを使う。
+   */
+  chatReplies?: Record<string, string[]>;
 }
 
 export type ShopKind = 'konbini' | 'mail';

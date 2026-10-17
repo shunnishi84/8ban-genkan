@@ -145,3 +145,20 @@ describe('解消可能性', () => {
     }
   });
 });
+
+describe('状況に合わせた妻の返事（chatReplies）', () => {
+  it('定型文IDが実在し、その日の火種に「関係ある」定型文には付けていない（使われないので）', () => {
+    for (const s of SCENARIOS) {
+      const used = s.causes.flatMap((c) => flagsIn(c.resolution));
+      for (const [key, replies] of Object.entries(s.chatReplies ?? {})) {
+        const [id, phase] = key.split(':');
+        if (id === '*') continue;
+        expect(CHAT_MAP[id], `${s.id}: ${key}`).toBeDefined();
+        expect(phase === undefined || phase === 'after', `${s.id}: ${key}`).toBe(true);
+        expect(used, `${s.id}: ${key}`).not.toContain(`chat:${id}`);
+        expect(replies.length, `${s.id}: ${key}`).toBeGreaterThan(0);
+        if (phase === 'after') expect(s.causes.length, `${s.id}: ${key}`).toBeGreaterThan(0);
+      }
+    }
+  });
+});

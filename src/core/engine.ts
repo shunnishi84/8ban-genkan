@@ -1,8 +1,8 @@
 // ゲームの純粋ロジック。DOM・音・描画には一切触らない。
-import { CHAT_MAP, CHAT_TEMPLATES, COLD_REPLIES } from '../data/chat';
+import { CHAT_MAP, CHAT_TEMPLATES, AFTER_REPLIES, COLD_REPLIES, LATE_REPLIES } from '../data/chat';
 import { FINALES, FINALE_IDS, type Finale, type FinaleId } from '../data/finales';
 import { ITEM_MAP } from '../data/items';
-import { SCENARIOS } from '../data/scenarios';
+import { SCENARIOS, SCENARIO_MAP } from '../data/scenarios';
 import {
   CANCEL_DEADLINE,
   COST,
@@ -220,12 +220,21 @@ const act = (state: DayState, action: Action): ActionResult => {
         return result(true, send('……妙に静かだ。', '言わなくていいことを言った気がする。'), COST.sendChat);
       }
       const relevant = isChatRelevant(state, t.id);
-      const reply = relevant ? t.replyRelevant : t.replyIrrelevant;
+      // 関係ない定型文には、その日の状況に合わせた返事（無ければ定型文の既定の返事）
+      const situational = relevant ? undefined : situationalReply(state, t.id);
+      const reply = relevant ? t.replyRelevant : (situational?.text ?? t.replyIrrelevant);
       if (reply) state.chatLog.push({ from: 'wife', text: reply });
-      if (relevant || t.neutral) return result(true, send(), COST.sendChat);
+      if (relevant || t.neutral || situational?.after) return result(true, send(), COST.sendChat);
       return result(
         true,
-        [...exposed, '妻から電話がかかってきた……。', `しどろもどろの言い訳で ${COST.chatPenalty} 分を失った。`],
+        [
+          ...exposed,
+          '妻から電話がかかってきた……。',
+          // 事情を知っている妻からは説教、知らない妻からは問い詰め
+          situational && !situational.text.includes('電話')
+            ? `${LECTURE_OPENER[t.id] ?? '「で、何が言いたいの？」'}から始まる説教で ${COST.chatPenalty} 分を失った。`
+            : `しどろもどろの言い訳で ${COST.chatPenalty} 分を失った。`,
+        ],
         COST.sendChat + COST.chatPenalty,
       );
     }
@@ -355,6 +364,49 @@ const act = (state: DayState, action: Action): ActionResult => {
     }
   }
 };
+
+/**
+ * その日の状況に合わせた妻の返事。優先順:
+ * 1. 未解消の火種があるシナリオの返事（定型文ID → 無ければ `*` = 話をそらすなという返事）
+ * 2. 異変なしの日の返事
+ * 3. 火種を全部消したあとの返事（`<定型文ID>:after` → 妻が事情を知っていた日なら共通の AFTER_REPLIES）
+ * 4. 日付をまたいでいれば深夜の返事
+ * 候補が複数あるときは日ごとの seed で選ぶ。after は仲直りのあとなので電話も来ない。
+ */
+const situationalReply = (state: DayState, templateId: string): { text: string; after: boolean } | undefined => {
+  const scenarios = state.scenarioIds.map((id) => SCENARIO_MAP[id]).filter(Boolean);
+  const unresolved = (s: Scenario) => s.causes.some((c) => !evaluate(c.resolution, state.flags));
+  const open = scenarios.filter((s) => s.causes.length > 0 && unresolved(s));
+  const settled = scenarios.some((s) => s.causes.length > 0) && open.length === 0;
+  // 妻が事情を知っていた火種（`*` の返事がある）を消した日だけ、共通の仲直り後の返事を使う
+  const knew = settled && scenarios.some((s) => s.chatReplies?.['*']);
+  const pools: [(string[] | undefined)[], boolean][] = [
+    [open.map((s) => s.chatReplies?.[templateId]), false],
+    [open.map((s) => s.chatReplies?.['*']), false],
+    [scenarios.filter((s) => s.causes.length === 0).map((s) => s.chatReplies?.[templateId]), false],
+    [settled ? scenarios.map((s) => s.chatReplies?.[`${templateId}:after`]) : [], true],
+    [knew ? [AFTER_REPLIES[templateId]] : [], true],
+    [[state.time > MIDNIGHT ? LATE_REPLIES[templateId] : undefined], false],
+  ];
+  const n = state.chatLog.length;
+  for (const [pool, after] of pools) {
+    const options = pool.flatMap((p) => p ?? []);
+    if (options.length) {
+      const text = options[Math.floor(frac(Math.sin(state.seed * 9973 + n * 7.31 + 1) * 43758.5453) * options.length)];
+      return { text, after };
+    }
+  }
+  return undefined;
+};
+
+const frac = (x: number) => x - Math.floor(x);
+
+/** 事情を知っている妻に、関係ない謝罪や愛の言葉を送ったときの説教の始まり */
+const LECTURE_OPENER: Record<string, string> = {
+  sorry_generic: '「謝るだけなら誰でもできるよね？」',
+  love: '「その『愛してる』、今言う必要ある？」',
+};
+const MIDNIGHT = 24 * 60;
 
 /** 取り消し前の誤爆メッセージに既読をつける（以後は取り消せない） */
 const markMisfiresRead = (state: DayState): string[] => {

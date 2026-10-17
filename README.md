@@ -103,6 +103,7 @@ cd android && ./gradlew assembleDebug   # → android/app/build/outputs/apk/debu
 `unsendable`（0:00 の既読前、かつ他のメッセージを送る前なら送信取消できる誤爆メッセージ）、`homeAlone`（妻が不在の日）、
 `startOrders`（キャンセルが必要な既存注文）、`hiddenWhen`（対処したら消える描写）、
 `conflictsWith`（同じ日に組み合わせないシナリオ）、`unread`（チャットの未読表示）。
+`chatReplies`（「今から帰るね」「ほんとにごめん…」などへの、その日の状況に合わせた妻の返事。`*` は話をそらしたとき、`<定型文ID>:after` は火種を消したあと）。
 
 チャットの手がかりは本文の末尾に `（HH:MM）` か `（昨日）` を付ける。複数の火種が重なった日でも時刻順に並ぶ（テストで付け忘れを検出する）。
 
