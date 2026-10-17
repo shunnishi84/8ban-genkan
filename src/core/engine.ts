@@ -204,7 +204,7 @@ const act = (state: DayState, action: Action): ActionResult => {
         const finale = triggerFinale(state);
         return result(
           true,
-          [...send('……既読がついた。返事はない。電話も来ない。'), '背筋に、冷たいものが走った。', ...(finale?.onTrigger ?? [])],
+          [...send('……既読がついた。返事はない。電話も来ない。'), '背筋に、冷たいものが走った。', ...(finale?.onTrigger ?? []), ...(finale?.trap?.warp ?? [])],
           COST.sendChat,
         );
       }
@@ -318,6 +318,13 @@ const act = (state: DayState, action: Action): ActionResult => {
 
     case 'travel': {
       if (state.location === action.to) return result(true, []);
+      const trap = state.finale ? FINALES[state.finale].trap : undefined;
+      if (trap) {
+        // 結界の中: 玄関前から出られない。試すたびに違うメッセージ
+        const n = [...state.flags].filter((f) => f.startsWith('blocked:')).length;
+        state.flags.add(`blocked:${n}`);
+        return result(false, trap.blocked[n % trap.blocked.length]);
+      }
       const cost = TRAVEL[state.location][action.to];
       if (cost === undefined) return result(false, ['そこへは直接行けない。']);
       state.location = action.to;
@@ -364,6 +371,7 @@ const triggerFinale = (state: DayState): Finale | null => {
   state.finale = id;
   state.flags.add(`finale:${id}`);
   if (finale.breaksPhone) state.flags.add('phone_broken');
+  if (finale.trap) state.location = 'door';
   state.clues.push(...(finale.triggerClues ?? []));
   return finale;
 };

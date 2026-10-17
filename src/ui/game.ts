@@ -164,7 +164,10 @@ export class Game {
     const day = this.day;
     if (!day) return false;
     const before = day.time;
+    const from = day.location;
     const r = perform(day, action);
+    // 魔王城の結界などで場所が勝手に変わったら、開いていた画面を閉じて現在地を見せる
+    if (action.type !== 'travel' && day.location !== from) this.modal = null;
     if (se && r.ok) this.audio.playSe(se);
     if (action.type === 'sendChat' && r.cost > COST.sendChat) this.audio.playSe('se_phone_call');
     if (r.messages.length || r.cost) this.toast(r.messages, day.time - before);
@@ -641,7 +644,9 @@ export class Game {
         'div',
         { class: 'bar' },
         common,
-        btn('引き返す', cost('town'), () => this.travel('town')),
+        day.finale && FINALES[day.finale].trap
+          ? btn('引き返す', '結界', () => this.travel('town'), 'badge')
+          : btn('引き返す', cost('town'), () => this.travel('town')),
         btn('ドアを開ける', null, () => this.openModal({ kind: 'confirmDoor' }), 'danger'),
       );
     }

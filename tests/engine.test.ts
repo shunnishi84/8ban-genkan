@@ -285,6 +285,29 @@ describe('暴言4種コンプリートのフィナーレ', () => {
     expect(perform(s, { type: 'order', item: 'bouquet' }).ok).toBe(false);
   });
 
+  it('魔王城: 街にいても玄関前へワープさせられ、結界で引き返せない', () => {
+    const s = withSeed('castle');
+    s.location = 'konbini';
+    const msgs = ALL.flatMap((t) => perform(s, { type: 'sendChat', template: t }).messages);
+    expect(s.location).toBe('door');
+    expect(msgs.join()).toContain('玄関の前に立っていた');
+    const t0 = s.time;
+    const r1 = perform(s, { type: 'travel', to: 'town' });
+    const r2 = perform(s, { type: 'travel', to: 'town' });
+    expect(r1.ok).toBe(false);
+    expect(r1.messages.join()).toContain('結界');
+    expect(r2.messages).not.toEqual(r1.messages);
+    expect(s.location).toBe('door');
+    expect(s.time).toBe(t0);
+    expect(perform(s, { type: 'openDoor' }).outcome).toEqual({ kind: 'finale', finale: 'castle' });
+  });
+
+  it('魔王城以外のフィナーレでは引き返せる', () => {
+    const s = withSeed('court');
+    for (const t of ALL) perform(s, { type: 'sendChat', template: t });
+    expect(perform(s, { type: 'travel', to: 'town' }).ok).toBe(true);
+  });
+
   it('包囲網: 4つ目を送った瞬間に義母・義父・友達・上司の通知が届く', () => {
     const s = withSeed('siege');
     const before = visibleClues(s, 'notice').length;
