@@ -50,11 +50,17 @@ export const IMAGES = {
   /** 暴言を送った日の結末: 邪悪なオーラを放つ魔王化した妻（無ければ wife_angry を紫に染めて代用） */
   // 3:4 の一枚絵。隅の正座する夫まで見せるため、cover ではなく横幅いっぱいで描く（renderer.ts の drawDemon）
   wife_demon: { file: 'wife_demon.jpg', label: '魔王化した妻', color: '#2a0640' },
+  wife_demon_final: { file: 'wife_demon_final.jpg', label: '魔王（最終形態）', color: '#40060a' },
   wife_suspicious: { file: 'wife_suspicious.png', label: '腕組みの妻', color: '#5a4a4a', fit: 'cover' },
   /** wife_angry に炎が描き込まれていれば不要 */
   fire: { file: 'fire.png', label: '炎', color: '#ff5a1f' },
   // --- フィナーレの背景（無ければ bg_door_dark で代用） ---
   bg_court: { file: 'bg_court.jpg', label: '家庭裁判所', color: '#3b2a1e', fit: 'cover' },
+  // 家庭裁判のカメラ切り替え（話している人の席を映す）。無ければ bg_court
+  bg_court_judge: { file: 'bg_court_judge.jpg', label: '裁判長席', color: '#3b2a1e', fit: 'cover' },
+  bg_court_defense: { file: 'bg_court_defense.jpg', label: '弁護席', color: '#3b2a1e', fit: 'cover' },
+  bg_court_prosecutor: { file: 'bg_court_prosecutor.jpg', label: '検察席', color: '#3b2a1e', fit: 'cover' },
+  bg_court_witness: { file: 'bg_court_witness.jpg', label: '証言台', color: '#3b2a1e', fit: 'cover' },
   bg_siege: { file: 'bg_siege.jpg', label: '家族会議', color: '#2d2a33', fit: 'cover' },
   bg_lockout: { file: 'bg_lockout.jpg', label: '締め出し', color: '#161a22', fit: 'cover' },
   bg_exposed: { file: 'bg_exposed.jpg', label: 'マンション総出', color: '#1d2333', fit: 'cover' },

@@ -51,7 +51,8 @@ export type Scene =
   | { kind: 'door'; visuals: string[] }
   | { kind: 'bg'; image: ImageKey; fallback?: ImageKey }
   | { kind: 'angry'; started: number; image: 'wife_angry' | 'wife_dark' }
-  | { kind: 'demon'; started: number }
+  /** final: 魔王の最終形態（缶ビール3本＋暴言コンプリートの魔王城） */
+  | { kind: 'demon'; started: number; final?: boolean }
   /** 無限玄関ループ: level が上がるほど玄関がおかしくなる */
   | { kind: 'loop'; level: number; started: number }
   /** grudging: 渋々許す日は無表情の妻（画像が無ければ笑顔で代用） */
@@ -136,7 +137,7 @@ export class Renderer {
         this.drawAngry(s.started, s.image);
         break;
       case 'demon':
-        this.drawDemon(s.started);
+        this.drawDemon(s.started, s.final);
         break;
     }
   }
@@ -204,20 +205,25 @@ export class Renderer {
    * 暴言を送った日の結末: 邪悪なオーラを放つ魔王化した妻。
    * wife_demon 画像が無いあいだは wife_angry を紫に染めて代用する。
    */
-  private drawDemon(started: number) {
+  private drawDemon(started: number, final = false) {
     const t = (performance.now() - started) / 1000;
     const { ctx } = this;
+    // 最終形態は紫ではなく血のような赤と黒。光線は倍の速さで、稲妻も多い
+    const pal = final
+      ? { bg: '#0d0203', ray: ['rgba(200,10,30,0.28)', 'rgba(20,0,0,0.5)'], aura: [220, 20, 40], mid: 'rgba(120,0,10,0.4)', ember: 'rgba(255,60,40,0.85)', flash: '255,200,190', vig: 'rgba(15,0,0,0.9)', tint: 'rgba(170,20,30,0.85)' }
+      : { bg: '#07020d', ray: ['rgba(120,20,190,0.22)', 'rgba(40,0,70,0.35)'], aura: [190, 60, 255], mid: 'rgba(90,0,150,0.35)', ember: 'rgba(200,90,255,0.8)', flash: '235,220,255', vig: 'rgba(10,0,20,0.85)', tint: 'rgba(110,40,180,0.85)' };
     ctx.clearRect(0, 0, W, H);
-    ctx.fillStyle = '#07020d';
+    ctx.fillStyle = pal.bg;
     ctx.fillRect(0, 0, W, H);
 
     // 背後で回る闇の光線
     ctx.save();
     ctx.translate(W / 2, H * 0.42);
-    ctx.rotate(t * 0.35);
-    for (let i = 0; i < 14; i++) {
-      ctx.rotate((Math.PI * 2) / 14);
-      ctx.fillStyle = i % 2 ? 'rgba(120,20,190,0.22)' : 'rgba(40,0,70,0.35)';
+    ctx.rotate(t * (final ? 0.8 : 0.35));
+    const rays = final ? 22 : 14;
+    for (let i = 0; i < rays; i++) {
+      ctx.rotate((Math.PI * 2) / rays);
+      ctx.fillStyle = pal.ray[i % 2];
       ctx.beginPath();
       ctx.moveTo(0, 0);
       ctx.lineTo(-40, -H);
@@ -228,30 +234,43 @@ export class Renderer {
     ctx.restore();
 
     // 脈打つオーラ
-    const pulse = 0.55 + Math.sin(t * 5) * 0.2;
+    const pulse = 0.55 + Math.sin(t * (final ? 9 : 5)) * 0.2;
     const aura = ctx.createRadialGradient(W / 2, H * 0.45, 30, W / 2, H * 0.45, H * 0.55);
-    aura.addColorStop(0, `rgba(190,60,255,${pulse})`);
-    aura.addColorStop(0.5, 'rgba(90,0,150,0.35)');
+    aura.addColorStop(0, `rgba(${pal.aura.join(',')},${pulse})`);
+    aura.addColorStop(0.5, pal.mid);
     aura.addColorStop(1, 'rgba(0,0,0,0)');
     ctx.fillStyle = aura;
     ctx.fillRect(0, 0, W, H);
 
     // 妻（魔王）。震えは怒りより大きく
-    const shake = Math.min(1, t) * Math.sin(t * 55) * 5;
+    const shake = Math.min(1, t) * Math.sin(t * 55) * (final ? 9 : 5);
     const zoom = 1.02 + Math.min(t, 2) * 0.05;
     const r = { x: (W - W * zoom) / 2 + shake, y: (H - H * zoom) / 2 + Math.cos(t * 47) * 2, w: W * zoom, h: H * zoom };
-    const demon = this.images.get('wife_demon');
+    // 最終形態の絵が無ければ、いつもの魔王を赤黒く染めて代用する
+    const key = final && this.images.get('wife_demon_final') ? 'wife_demon_final' : 'wife_demon';
+    const demon = this.images.get(key);
     if (demon) {
       // 横幅いっぱい・縦は中央。上下の余白は回る光線とオーラが埋める
       const w = W * zoom;
       const h = (w * demon.naturalHeight) / demon.naturalWidth;
-      this.drawImage('wife_demon', { x: (W - w) / 2 + shake, y: (H - h) / 2 + Math.cos(t * 47) * 2, w, h });
+      const rect = { x: (W - w) / 2 + shake, y: (H - h) / 2 + Math.cos(t * 47) * 2, w, h };
+      this.drawImage(key, rect);
+      if (final && key === 'wife_demon') {
+        ctx.save();
+        ctx.globalCompositeOperation = 'multiply';
+        ctx.fillStyle = 'rgba(255,70,70,1)';
+        ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
+        ctx.globalCompositeOperation = 'screen';
+        ctx.fillStyle = `rgba(160,0,20,${0.18 + Math.sin(t * 9) * 0.08})`;
+        ctx.fillRect(0, 0, W, H);
+        ctx.restore();
+      }
     } else {
       this.drawImage('wife_angry', r);
       // 代用: 紫に染めて闇落ちさせる
       ctx.save();
       ctx.globalCompositeOperation = 'multiply';
-      ctx.fillStyle = 'rgba(110,40,180,0.85)';
+      ctx.fillStyle = pal.tint;
       ctx.fillRect(0, 0, W, H);
       ctx.globalCompositeOperation = 'screen';
       ctx.fillStyle = `rgba(150,40,255,${0.15 + Math.sin(t * 5) * 0.08})`;
@@ -265,27 +284,27 @@ export class Renderer {
       const x = (Math.sin(seed) * 0.5 + 0.5) * W + Math.sin(t * 2 + i) * 12;
       const y = H - (((t * (40 + (i % 7) * 12) + seed * 3) % (H + 40)));
       const size = 2 + (i % 4);
-      ctx.fillStyle = i % 3 ? 'rgba(200,90,255,0.8)' : 'rgba(30,0,40,0.9)';
+      ctx.fillStyle = i % 3 ? pal.ember : 'rgba(30,0,40,0.9)';
       ctx.beginPath();
       ctx.arc(x, y, size, 0, Math.PI * 2);
       ctx.fill();
     }
 
     // ときどき稲妻で画面が白く光る
-    const phase = t % 2.3;
+    const phase = t % (final ? 1.1 : 2.3);
     if (phase < 0.12) {
-      ctx.fillStyle = `rgba(235,220,255,${0.75 - phase * 6})`;
+      ctx.fillStyle = `rgba(${pal.flash},${0.75 - phase * 6})`;
       ctx.fillRect(0, 0, W, H);
     }
 
     // 画面の縁を闇で締める
     const vignette = ctx.createRadialGradient(W / 2, H / 2, H * 0.25, W / 2, H / 2, H * 0.75);
     vignette.addColorStop(0, 'rgba(0,0,0,0)');
-    vignette.addColorStop(1, 'rgba(10,0,20,0.85)');
+    vignette.addColorStop(1, pal.vig);
     ctx.fillStyle = vignette;
     ctx.fillRect(0, 0, W, H);
 
-    this.raf = requestAnimationFrame(() => this.drawDemon(started));
+    this.raf = requestAnimationFrame(() => this.drawDemon(started, final));
   }
 
   /** 無限玄関ループ: 段階的に「異変」を足していく（8番出口オマージュ） */

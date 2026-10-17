@@ -18,7 +18,10 @@ import {
   advanceRun,
   buildDay,
   canSendChat,
+  chatText,
   chatTimeline,
+  drunkLevel,
+  sentText,
   hasUnreadChat,
   newRun,
   perform,
@@ -137,6 +140,10 @@ export class Game {
   private fxPlayed: Line | null = null;
   /** 家庭裁判の最中（会話ウィンドウを法廷風にする） */
   private court = false;
+  /** 魔王が最終形態 */
+  private finalForm = false;
+  /** 酔いの霧（画面全体に重ねる） */
+  private fog: HTMLElement;
   private best = loadBest();
   private debug = new URLSearchParams(location.search).has('debug');
 
@@ -152,7 +159,8 @@ export class Game {
     this.renderer = new Renderer(root, images, (spot) => this.onSpot(spot));
     this.ui = h('div', { class: 'ui' });
     this.toastLayer = h('div', { class: 'toasts' });
-    root.append(this.ui, this.toastLayer);
+    this.fog = h('div', { class: 'drunk-fog' });
+    root.append(this.ui, this.fog, this.toastLayer);
     // 自動再生制限: 最初の操作で音を解禁する
     const unlock = () => this.audio.unlock();
     root.addEventListener('pointerdown', unlock, { once: true });
@@ -277,8 +285,24 @@ export class Game {
   // ---------------------------------------------------------------- フィナーレ（暴言4種コンプリート）
 
   private finaleScene(f: Finale): SceneSpec {
-    if (f.scene === 'demon' || f.scene === 'loop') return { kind: 'demon', started: performance.now() };
+    if (f.scene === 'demon' || f.scene === 'loop') return { kind: 'demon', started: performance.now(), final: this.finalForm };
     return { kind: 'bg', image: f.scene, fallback: 'bg_door_dark' };
+  }
+
+  /** 家庭裁判のカメラ: 話している人の席を映す（その絵が無ければ法廷全体） */
+  private courtCamera(line: Line): SceneSpec {
+    const n = line.name ?? '';
+    const image: ImageKey =
+      line.fx === 'guilty' || n.startsWith('裁判長')
+        ? 'bg_court_judge'
+        : n.startsWith('検察')
+          ? 'bg_court_prosecutor'
+          : n.startsWith('証人')
+            ? 'bg_court_witness'
+            : line.who === 'me'
+              ? 'bg_court_defense'
+              : 'bg_court';
+    return { kind: 'bg', image, fallback: 'bg_court' };
   }
 
   /** 証拠の行を、送った暴言1件ずつのカードに展開する */
@@ -286,13 +310,17 @@ export class Game {
     const insults = CHAT_TEMPLATES.filter((t) => t.insult);
     return lines.flatMap((l): Line[] =>
       l.evidence
-        ? insults.map((t, i) => ({ who: 'other', name: l.name, text: `証拠第${i + 1}号。`, card: t.text }))
+        ? insults.map((t, i) => ({ who: 'other', name: l.name, text: `証拠第${i + 1}号。`, card: sentText(this.day!, t.id) }))
         : [{ who: l.who, name: l.name, text: l.text, fx: l.fx, testimony: l.testimony }],
     );
   }
 
   private playFinale(id: FinaleId) {
-    const f = FINALES[id];
+    const base = FINALES[id];
+    // 缶ビール3本で暴言を送りきった日は、魔王が最終形態になっている
+    const ff = base.finalForm && drunkLevel(this.day!) >= 3 ? base.finalForm : undefined;
+    const f: Finale = ff && base.choice ? { ...base, intro: ff.intro, choice: { ...base.choice, ...ff } } : base;
+    this.finalForm = !!ff;
     this.court = f.choice?.style === 'court';
     this.audio.playSe('se_door');
     window.setTimeout(() => this.audio.playSe('se_demon'), 300);
@@ -480,6 +508,10 @@ export class Game {
 
   private render() {
     this.syncScene();
+    // 酔っているあいだは霧がかかって画面が揺れる（ビールの本数で強くなる）
+    const s = this.screen.name;
+    const level = this.day && ['intro', 'play', 'talk', 'choice', 'loop'].includes(s) ? drunkLevel(this.day) : 0;
+    for (const n of [1, 2, 3]) this.root.classList.toggle(`drunk-${n}`, level === n);
     this.ui.replaceChildren(h('div', { class: 'view' }, this.view()));
   }
 
@@ -492,7 +524,8 @@ export class Game {
     } else if (s.name === 'talk') {
       bgm = s.mood === 'demon' || s.mood === 'finale' ? 'bgm_demon' : s.mood === 'angry' ? 'bgm_angry' : 'bgm_home';
       if (s.mood === 'finale') {
-        if (s.index === 0 && s.scene) this.renderer.setScene(s.scene);
+        if (this.court) this.renderer.setScene(this.courtCamera(s.lines[s.index]));
+        else if (s.index === 0 && s.scene) this.renderer.setScene(s.scene);
       } else if (s.index === 0) {
         this.renderer.setScene(
           s.mood === 'demon'
@@ -506,6 +539,8 @@ export class Game {
       }
     } else if (s.name === 'choice') {
       bgm = 'bgm_demon';
+      // 尋問中は証言台を映す
+      if (this.court) this.renderer.setScene({ kind: 'bg', image: 'bg_court_witness', fallback: 'bg_court' });
     } else if (s.name === 'loop') {
       bgm = 'bgm_demon';
       this.renderer.setScene({ kind: 'loop', level: s.level, started: performance.now() });
@@ -624,7 +659,13 @@ export class Game {
     return h(
       'div',
       { class: 'hud' },
-      h('div', { class: 'hud-left' }, h('b', {}, `${day.day}日目`), h('small', {}, `連続帰宅 ${this.run.streak}/${GOAL_DAYS}`)),
+      h(
+        'div',
+        { class: 'hud-left' },
+        h('b', {}, `${day.day}日目`),
+        h('small', {}, `連続帰宅 ${this.run.streak}/${GOAL_DAYS}`),
+        drunkLevel(day) ? h('small', { class: 'drunk-meter' }, `酔い ${'🍺'.repeat(drunkLevel(day))}`) : null,
+      ),
       h('div', { class: `clock${day.time >= WARN_TIME ? ' warn' : ''}` }, formatTime(day.time)),
       this.muteButton(),
     );
@@ -934,7 +975,7 @@ export class Game {
               disabled: sent || !canSendChat(day, t.id),
               onclick: () => this.act({ type: 'sendChat', template: t.id }, 'se_send'),
             },
-            sent ? `✓ ${t.text}` : t.text,
+            sent ? `✓ ${sentText(day, t.id)}` : chatText(day, t),
           );
         }),
         provoke.length ? h('small', { class: 'insult-label' }, '😏 余計なひと言（※おすすめしない）') : null,
@@ -947,7 +988,7 @@ export class Game {
               disabled: sent || !canSendChat(day, t.id),
               onclick: () => this.act({ type: 'sendChat', template: t.id }, 'se_send'),
             },
-            sent ? `✓ ${t.text}` : t.text,
+            sent ? `✓ ${sentText(day, t.id)}` : chatText(day, t),
           );
         }),
         h('small', { class: 'insult-label' }, '😤 感情のままに送る（※おすすめしない）'),
@@ -960,7 +1001,7 @@ export class Game {
               disabled: sent,
               onclick: () => this.act({ type: 'sendChat', template: t.id }, 'se_send'),
             },
-            sent ? `✓ ${t.text}` : t.text,
+            sent ? `✓ ${sentText(day, t.id)}` : chatText(day, t),
           );
         }),
       ),

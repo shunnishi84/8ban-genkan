@@ -130,6 +130,11 @@ export interface ItemDef {
   /** 通販の注文履歴でキャンセル期限の代わりに出す説明（既定は「0:00 発送処理」） */
   cancelNote?: string;
   useMessage?: string;
+  /** 1日に買える上限（無ければ無制限） */
+  maxStock?: number;
+  /** 飲むと酔いが1段階進む（ビール）。useMessages は 1杯目, 2杯目, … のメッセージ */
+  drink?: boolean;
+  useMessages?: string[];
 }
 
 export interface ChatTemplate {
@@ -150,6 +155,8 @@ export interface ChatTemplate {
   insult?: boolean;
   /** 暴言を送ったあと、ドアの向こうの魔王が言うセリフ */
   demonLines?: string[];
+  /** 酔うほどひどくなる文面（酔い1, 2, 3段階目）。暴言用 */
+  drunkText?: string[];
   /** この原因（cause id）がある日だけ送れる */
   onlyWith?: string;
   /**

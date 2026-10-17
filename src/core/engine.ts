@@ -18,6 +18,7 @@ import {
 import { evaluate, flagsIn } from './requirement';
 import { shuffle, type Rng } from './rng';
 import type {
+  ChatTemplate,
   Action,
   ActionResult,
   Cause,
@@ -141,6 +142,23 @@ export const canSendChat = (state: DayState, templateId: string): boolean => {
   return !t.requires || evaluate(t.requires, state.flags);
 };
 
+/** 酔いの段階（飲んだ缶ビールの本数） */
+export const drunkLevel = (state: DayState): number => [...state.flags].filter((f) => f.startsWith('drunk:')).length;
+
+/** 今送ったらこうなる、という文面（暴言は酔うほどひどくなる） */
+export const chatText = (state: DayState, t: ChatTemplate): string => {
+  const level = Math.min(drunkLevel(state), t.drunkText?.length ?? 0);
+  return level > 0 ? t.drunkText![level - 1] : t.text;
+};
+
+/** 実際に送った文面 */
+export const sentText = (state: DayState, templateId: string): string => {
+  const t = CHAT_MAP[templateId];
+  const said = [...state.flags].find((f) => f.startsWith(`said:${templateId}:`));
+  const level = said ? Number(said.split(':')[2]) : 0;
+  return level > 0 && t.drunkText ? t.drunkText[Math.min(level, t.drunkText.length) - 1] : t.text;
+};
+
 export const hasUnreadChat = (state: DayState): boolean =>
   !state.flags.has('read:chat') && visibleClues(state, 'app:chat').some((c) => c.unread);
 
@@ -191,7 +209,9 @@ const act = (state: DayState, action: Action): ActionResult => {
       if (t.requires && !evaluate(t.requires, state.flags)) return result(false, ['まだそれを言える状況じゃない。']);
       if (t.onlyWith && !state.causes.some((c) => c.id === t.onlyWith)) return result(false, ['今それを言う意味がない。']);
       state.flags.add(`chat:${t.id}`);
-      state.chatLog.push({ from: 'me', text: t.text });
+      state.chatLog.push({ from: 'me', text: chatText(state, t) });
+      // 実際に送った文面（酔いの段階）を覚えておく。家庭裁判の証拠などで使う
+      state.flags.add(`said:${t.id}:${drunkLevel(state)}`);
       // 何か送るとトーク画面を開かれ、取り消し前の誤爆メッセージにも既読がつく
       const exposed = markMisfiresRead(state);
       const send = (...rest: string[]) => ['送信した。', ...exposed, ...rest];
@@ -269,6 +289,11 @@ const act = (state: DayState, action: Action): ActionResult => {
       const item = ITEM_MAP[action.item];
       if (state.location !== 'konbini') return result(false, ['コンビニにいない。']);
       if (!item || item.source !== 'konbini') return result(false, ['その商品はコンビニに置いていない。']);
+      if (item.maxStock) {
+        const n = [...state.flags].filter((f) => f.startsWith(`buy:${item.id}:`)).length;
+        if (n >= item.maxStock) return result(false, ['店員「お客さん……今日はもう、そのへんにしときましょう」', 'これ以上は売ってもらえなかった。']);
+        state.flags.add(`buy:${item.id}:${n + 1}`);
+      }
       state.inventory.push(item.id);
       state.flags.add(`bought:${item.id}`);
       return result(true, [`「${item.name}」を買った。`], COST.buy);
@@ -296,6 +321,12 @@ const act = (state: DayState, action: Action): ActionResult => {
         state.inventory[state.inventory.indexOf(item.useRequires)] = item.useResult;
       }
       state.flags.add(`used:${item.id}`);
+      if (item.drink) {
+        const level = drunkLevel(state) + 1;
+        state.flags.add(`drunk:${level}`);
+        const msgs = item.useMessages ?? [];
+        return result(true, [msgs[Math.min(level, msgs.length) - 1] ?? `${item.name}を飲んだ。`], COST.use);
+      }
       // 脱いだまま替えのシャツに着替えたら、ちゃんと服を着たことになる
       if (item.slot === 'shirt' && item.id === 'spare_shirt') state.flags.delete('undressed');
       return result(true, [item.useMessage ?? `${item.name}を使った。`], COST.use);

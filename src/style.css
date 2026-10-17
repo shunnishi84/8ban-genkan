@@ -1264,3 +1264,94 @@ button:disabled {
   justify-content: flex-end;
   margin: 0.4em 0 0.6em;
 }
+
+/* ---------------------------------------------------------------- 酔い（缶ビール） */
+.drunk-fog {
+  position: absolute;
+  inset: -10%;
+  z-index: 4;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 1.2s;
+  background:
+    radial-gradient(ellipse 60% 40% at 30% 40%, rgba(255, 236, 200, 0.55), transparent 70%),
+    radial-gradient(ellipse 50% 45% at 72% 65%, rgba(255, 220, 170, 0.5), transparent 70%),
+    radial-gradient(ellipse 70% 35% at 50% 15%, rgba(255, 245, 225, 0.45), transparent 70%);
+  filter: blur(6px);
+  animation: fogdrift 9s ease-in-out infinite alternate;
+}
+.drunk-1 .drunk-fog {
+  opacity: 0.35;
+}
+.drunk-2 .drunk-fog {
+  opacity: 0.6;
+}
+.drunk-3 .drunk-fog {
+  opacity: 0.85;
+}
+@keyframes fogdrift {
+  0% {
+    transform: translate(-4%, 2%) scale(1);
+  }
+  100% {
+    transform: translate(4%, -3%) scale(1.08);
+  }
+}
+/* 画面がゆらゆら揺れる。ビールの本数で大きく・速くなる */
+.drunk-1 .stage,
+.drunk-1 .ui {
+  animation: sway 6s ease-in-out infinite;
+  --sway: 0.8deg;
+  --swayx: 4px;
+}
+.drunk-2 .stage,
+.drunk-2 .ui {
+  animation: sway 4.5s ease-in-out infinite;
+  --sway: 1.6deg;
+  --swayx: 8px;
+}
+.drunk-3 .stage,
+.drunk-3 .ui {
+  animation: sway 3.2s ease-in-out infinite;
+  --sway: 2.6deg;
+  --swayx: 13px;
+}
+.drunk-2 .stage {
+  filter: blur(0.6px) saturate(1.2);
+}
+.drunk-3 .stage {
+  filter: blur(1.2px) saturate(1.35) hue-rotate(-8deg);
+}
+/* .stage は縦中央寄せの translateY を持っているので、揺れもそれに重ねる */
+.drunk-1 .stage,
+.drunk-2 .stage,
+.drunk-3 .stage {
+  animation-name: sway-stage;
+}
+@keyframes sway {
+  0%,
+  100% {
+    transform: translateX(0) rotate(0);
+  }
+  25% {
+    transform: translateX(var(--swayx)) rotate(var(--sway));
+  }
+  75% {
+    transform: translateX(calc(var(--swayx) * -1)) rotate(calc(var(--sway) * -1));
+  }
+}
+@keyframes sway-stage {
+  0%,
+  100% {
+    transform: translateY(-50%) translateX(0) rotate(0);
+  }
+  25% {
+    transform: translateY(-50%) translateX(var(--swayx)) rotate(var(--sway));
+  }
+  75% {
+    transform: translateY(-50%) translateX(calc(var(--swayx) * -1)) rotate(calc(var(--sway) * -1));
+  }
+}
+.drunk-meter {
+  color: #f2c14e;
+}

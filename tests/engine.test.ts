@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { GOAL_DAYS, hm } from '../src/core/config';
-import { advanceRun, buildDay, chatTimeline, chooseScenarios, newRun, perform, startDay, visibleClues } from '../src/core/engine';
+import { advanceRun, buildDay, chatText, chatTimeline, drunkLevel, sentText, chooseScenarios, newRun, perform, startDay, visibleClues } from '../src/core/engine';
 import { seeded } from '../src/core/rng';
 import { solve } from '../src/core/solver';
 import { SCENARIO_MAP } from '../src/data/scenarios';
-import { COLD_REPLIES } from '../src/data/chat';
+import { CHAT_MAP, COLD_REPLIES } from '../src/data/chat';
 import { FINALES, FINALE_IDS, type FinaleId } from '../src/data/finales';
 
 const day = (ids: string[], start = hm(23, 0)) => buildDay(1, ids.map((id) => SCENARIO_MAP[id]), start);
@@ -255,6 +255,33 @@ describe('新しい仕掛け', () => {
     const s = day(['cabaret_lipstick'], hm(24, 10));
     perform(s, { type: 'sendChat', template: 'coming_home' });
     expect(s.chatLog.at(-1)!.text).not.toBe('はーい。気をつけてね');
+  });
+
+  it('缶ビールは1日3本まで。飲むたびに酔いが進む', () => {
+    const s = day(['neighbor_curry']);
+    s.location = 'konbini';
+    for (let i = 0; i < 3; i++) expect(perform(s, { type: 'buy', item: 'beer' }).ok).toBe(true);
+    expect(perform(s, { type: 'buy', item: 'beer' }).ok).toBe(false);
+    expect(drunkLevel(s)).toBe(0);
+    perform(s, { type: 'use', item: 'beer' });
+    perform(s, { type: 'use', item: 'beer' });
+    expect(drunkLevel(s)).toBe(2);
+    expect(s.inventory.filter((i) => i === 'beer')).toHaveLength(1);
+  });
+
+  it('暴言は酔うほどひどい文面になり、送った文面が証拠として残る', () => {
+    const s = day(['neighbor_curry']);
+    s.location = 'konbini';
+    const oni = CHAT_MAP.insult_oni;
+    expect(chatText(s, oni)).toBe(oni.text);
+    perform(s, { type: 'sendChat', template: 'insult_oni' });
+    for (let i = 0; i < 3; i++) perform(s, { type: 'buy', item: 'beer' });
+    for (let i = 0; i < 3; i++) perform(s, { type: 'use', item: 'beer' });
+    expect(chatText(s, oni)).toBe(oni.drunkText![2]);
+    expect(sentText(s, 'insult_oni')).toBe(oni.text);
+    perform(s, { type: 'sendChat', template: 'insult_gunsou' });
+    expect(sentText(s, 'insult_gunsou')).toBe(CHAT_MAP.insult_gunsou.drunkText![2]);
+    expect(s.chatLog.find((m) => m.from === 'me' && m.text === CHAT_MAP.insult_gunsou.drunkText![2])).toBeDefined();
   });
 
   it('接着剤は割れたマグカップを持っていないと使えない', () => {

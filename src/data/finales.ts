@@ -75,6 +75,11 @@ export interface Finale {
   /** 無限玄関ループ: ドアを開けるたびに出るメッセージ（この回数だけループする） */
   loop?: string[];
   intro: FinaleLine[];
+  /**
+   * 最終形態（缶ビールを3本飲んでから暴言を全部送った日）。intro・反撃・HP を差し替える。
+   * 背景の魔王も赤黒い最終形態になる
+   */
+  finalForm?: { intro: FinaleLine[]; counters: FinaleCounter[]; hp: number; knockout: FinaleLine[] };
   choice?: {
     prompt: string;
     options: FinaleChoice[];
@@ -182,6 +187,28 @@ export const FINALES: Record<FinaleId, Finale> = {
       ],
       knockout: [
         { who: 'narr', text: 'あなたの　こころは　おれた……。' },
+        { who: 'narr', text: 'あなたは　げんかんで　しずかに　せいざした。' },
+      ],
+    },
+    finalForm: {
+      intro: [
+        { who: 'narr', text: '門の向こうから、地鳴りのような気配がする。' },
+        { who: 'narr', text: 'ギギギ……ガシャァァン！！ 門が、内側から吹き飛んだ。' },
+        { who: 'wife', text: '……お酒のチカラを借りないと、何も言えないのね。' },
+        { who: 'wife', text: '「おにーよめー！！」……全部、スクショしてあるから。' },
+        { who: 'narr', text: 'まおうは　さいしゅうけいたいに　へんしんした！！' },
+      ],
+      hp: 100,
+      counters: [
+        { damage: 45, lines: [{ who: 'narr', text: 'まおうは　「よっぱらいの　ぼうげん」を　1つずつ　ろうどくした！　45の　ダメージ！' }] },
+        { damage: 40, lines: [{ who: 'wife', text: '飲んだ缶、3本。レシートもあるわよ。' }, { who: 'narr', text: 'しょうこを　つきつけられた！　40の　ダメージ！' }] },
+        { damage: 35, lines: [{ who: 'narr', text: 'まおうは　あしたの　あさの　「ふつかよい」を　よげんした！　35の　ダメージ！' }] },
+        { damage: 50, lines: [{ who: 'narr', text: 'まおうの　さいしゅうおうぎ　「むごんの　せいざ　ようせい」！　50の　ダメージ！' }] },
+        { damage: 30, lines: [{ who: 'wife', text: '休肝日、向こう1年ね。' }, { who: 'narr', text: 'れいぞうこの　ビールが　すべて　ふういんされた！　30の　ダメージ！' }] },
+      ],
+      knockout: [
+        { who: 'narr', text: 'あなたの　こころは　こなごなに　くだけた……。' },
+        { who: 'narr', text: 'よいも　いっしゅんで　さめた。' },
         { who: 'narr', text: 'あなたは　げんかんで　しずかに　せいざした。' },
       ],
     },

@@ -192,6 +192,7 @@ export const CHAT_TEMPLATES: ChatTemplate[] = [
   {
     id: 'insult_oni',
     text: 'うるせえ、この鬼嫁',
+    drunkText: ['うるせえんだよ、この鬼嫁！ 角でも生えてんのか？', 'うるっせぇ〜〜！ 鬼嫁！ 節分に豆まいてやろうか！', 'おにーよめー！！ 鬼ヶ島に帰れ〜〜ｗｗｗ 桃太郎よんでくるぞ〜〜'],
     insult: true,
     replyRelevant: '',
     replyIrrelevant: '既読',
@@ -205,6 +206,7 @@ export const CHAT_TEMPLATES: ChatTemplate[] = [
   {
     id: 'insult_komakai',
     text: 'いちいち細けえんだよ！ほっとけ！',
+    drunkText: ['いちいち細けえんだよ！ 小姑か！', 'こまけぇ〜〜！ 電卓かお前は！ 家計簿と結婚しろ！', 'こまかすぎて顕微鏡いるわｗｗ ミジンコかよ〜〜 ほっとけほっとけ〜〜'],
     insult: true,
     replyRelevant: '',
     replyIrrelevant: '既読',
@@ -218,6 +220,7 @@ export const CHAT_TEMPLATES: ChatTemplate[] = [
   {
     id: 'insult_kaachan',
     text: 'お前は俺の母ちゃんか！説教ならよそでやれ',
+    drunkText: ['お前は俺の母ちゃんか！ 説教ならよそでやれ！', '母ちゃん2号かよ！ 本物の母ちゃんのほうがまだ優しいわ！', 'かーちゃーん！！ おこづかいちょーだーい！！ ｗｗｗ 説教はおことわりでーす'],
     insult: true,
     replyRelevant: '',
     replyIrrelevant: '既読',
@@ -230,6 +233,7 @@ export const CHAT_TEMPLATES: ChatTemplate[] = [
   {
     id: 'insult_gunsou',
     text: '黙って寝てろ、この鬼軍曹',
+    drunkText: ['黙って寝てろ、この鬼軍曹！ 敬礼でもしとけ！', 'イエッサー！ 鬼軍曹どの〜！ 本日は帰還しないであります！', 'ぐんそーどのー！！ ほんじつはー 無断外泊をー 決行するでありまーーす！！ｗｗ'],
     insult: true,
     replyRelevant: '',
     replyIrrelevant: '既読',

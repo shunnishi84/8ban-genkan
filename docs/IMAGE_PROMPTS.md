@@ -467,6 +467,106 @@ same art style as the reference. No text, no letters, no watermark.
 
 ---
 
+## 9. 逆転裁判風の法廷（カメラ切り替え）＋ 魔王の最終形態 — Gemini 用
+
+家庭裁判では、話している人の席にカメラが切り替わる（法廷バトルゲーム風）。
+置いていない視点は `bg_court.jpg`（法廷全体）で代用される。どれも縦 9:16。
+
+| ファイル | 映すもの | 添付する見本 |
+|---|---|---|
+| `bg_court.jpg` | 法廷全体（作り直し。今の「リビングの即席法廷」を本格的な法廷に） | `wife_suspicious.png` |
+| `bg_court_judge.jpg` | 裁判長席の妻（木槌） | `wife_suspicious.png` |
+| `bg_court_defense.jpg` | 弁護席の主人公（被告人が自分で弁護） | `hero.png` |
+| `bg_court_prosecutor.jpg` | 検察席の義母 | `bg_court.jpg`（今のもの。義母の顔合わせ用） |
+| `bg_court_witness.jpg` | 証言台の妻 | `wife_suspicious.png` |
+| `wife_demon_final.jpg` | 魔王の最終形態（缶ビール3本で暴言を全部送った日の魔王城） | `wife_demon.jpg` |
+
+共通の雰囲気: 日本の法廷バトル・アドベンチャーゲーム風。暖色の木目の法廷、緑のカーペット、
+正面から見たはっきりした構図、キャラクターは腰から上で大きく、背景はシンプル。
+**文字は入れない**（法廷のプレートや書類は無地か読めないぼかし）。
+
+### 9-1. bg_court.jpg（添付: wife_suspicious.png）
+```
+Vertical 9:16. A grand Japanese courtroom in the style of a classic anime courtroom
+battle adventure game: warm polished wooden walls and benches, a raised judge's bench
+in the center back with a blank round emblem on the wall above it, a witness stand in
+the middle facing the judge, the defense desk on the left and the prosecution desk on the
+right facing each other, green carpet, rows of gallery seats in the foreground seen
+from behind. The judge seated at the high bench is the woman from the attached reference
+(same face, short dark bob hair), wearing a black judge's robe, holding a wooden gavel,
+stern expression. Bright, clean, slightly dramatic lighting from above.
+Japanese anime-style digital illustration, clean bold black outlines, flat cel shading,
+vivid but warm colors. No text, no letters, no logos, no watermark.
+```
+
+### 9-2. bg_court_judge.jpg（添付: wife_suspicious.png）
+```
+Vertical 9:16. Close-up view of the judge's bench in a classic anime courtroom battle
+game, seen straight on from slightly below. The judge is the woman from the attached
+reference (same face, short dark bob hair), wearing a black judge's robe over a floral
+apron collar peeking out, seated behind the tall wooden bench, raising a wooden gavel,
+one eyebrow raised, unimpressed. Behind her: warm wooden wall panels and a blank round
+emblem. She fills the upper half of the frame; the lower third is the bench front, plain
+and empty (dialogue box will overlay there).
+Japanese anime-style digital illustration, clean bold black outlines, flat cel shading.
+No text, no letters, no logos, no watermark.
+```
+
+### 9-3. bg_court_defense.jpg（添付: hero.png）
+```
+Vertical 9:16. The defense desk view of a classic anime courtroom battle game, seen from
+the front at a slight angle. The man from the attached reference (same face, same tired
+salaryman look, white dress shirt and loosened tie) stands behind the wooden defense desk
+alone, both hands slammed on the desk, sweating nervously, leaning forward, trying to
+look confident but clearly panicking. Behind him: warm wooden wall panels and a window
+with soft light. The lower third is the desk front, plain (dialogue box overlays there).
+Japanese anime-style digital illustration, clean bold black outlines, flat cel shading,
+comedic. No text, no letters, no logos, no watermark.
+```
+
+### 9-4. bg_court_prosecutor.jpg（添付: 今の bg_court.jpg）
+```
+Vertical 9:16. The prosecution desk view of a classic anime courtroom battle game, seen
+from the front at a slight angle (mirror of a defense-desk view). The prosecutor is the
+elderly mother-in-law from the attached image (same face, gray hair, cardigan), standing
+behind the wooden prosecution desk with a calm, polite, terrifying smile, one finger
+pointing sharply forward at the viewer, a neat stack of printed papers on the desk.
+Behind her: warm wooden wall panels. The lower third is the desk front, plain
+(dialogue box overlays there).
+Japanese anime-style digital illustration, clean bold black outlines, flat cel shading.
+No text, no letters, no logos, no watermark.
+```
+
+### 9-5. bg_court_witness.jpg（添付: wife_suspicious.png）
+```
+Vertical 9:16. The witness stand view of a classic anime courtroom battle game, seen
+straight on. The witness is the woman from the attached reference (same face, short dark
+bob hair, floral apron), standing at a small wooden witness stand with both hands on it,
+arms tense, looking straight at the viewer with cold, hurt, accusing eyes. Behind her:
+a plain warm wooden wall, softly blurred. The lower third is the stand front, plain
+(dialogue box overlays there).
+Japanese anime-style digital illustration, clean bold black outlines, flat cel shading.
+No text, no letters, no logos, no watermark.
+```
+
+### 9-6. wife_demon_final.jpg（添付: wife_demon.jpg）
+```
+Use the attached image as the strict character reference (same woman, same face, same
+short dark bob hair, same floral apron, same comedic demon-lord concept). Draw her FINAL
+FORM: bigger and more ominous. Much larger curved black horns with glowing red cracks,
+a tattered dark crown floating above her head, glowing red eyes, a long black cape made of
+swirling shadow flowing from her shoulders, the floral apron now dark crimson with
+glowing patterns, floating around her: a ladle, a household account book and a
+smartphone, each wreathed in red flame-like aura. Background: a dark throne-room of a
+demon castle with red lightning and black smoke. Color palette shifts from purple to deep
+crimson and black. Still comedic over-the-top fantasy, NOT gory, no blood, no weapons
+other than the household items. Vertical 3:4 composition, same framing as the reference.
+Japanese manga-style digital illustration, clean bold black outlines, flat cel shading.
+No text, no letters, no watermark.
+```
+
+---
+
 ## 置いたあとの確認
 
 1. `npm run dev` で起動

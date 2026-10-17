@@ -61,7 +61,23 @@ export const ITEMS: ItemDef[] = [
   { id: 'detergent_generic', name: '洗剤 詰め替え（ノーブランド）', desc: '…いつものとは違うやつ。', source: 'konbini', price: 358, slot: 'bag' },
   { id: 'vinyl_umbrella', name: 'ビニール傘', desc: '透明。花柄ではない。', source: 'konbini', price: 550, slot: 'bag' },
   { id: 'snack_box', name: 'お菓子詰め合わせ', desc: 'コンビニ感がにじみ出ている。', source: 'konbini', price: 698, slot: 'bag' },
-  { id: 'beer', name: '缶ビール', desc: 'まだ飲む気か。', source: 'konbini', price: 248, slot: 'bag', discardable: true },
+  {
+    id: 'beer',
+    name: '缶ビール',
+    desc: 'まだ飲む気か。（1日3本まで）',
+    source: 'konbini',
+    price: 248,
+    slot: 'bag',
+    discardable: true,
+    maxStock: 3,
+    drink: true,
+    useLabel: '飲む',
+    useMessages: [
+      'プシュッ。……ぷはぁ。なんだか気が大きくなってきた。',
+      'プシュッ。……ぐびぐび。地面が、ちょっと揺れている。',
+      'プシュッ。……ぷはぁ〜〜。世界がぐるぐる回っている。怖いものなんて、何もない。',
+    ],
+  },
 
   // --- 通販（ポチッとマート）。特急便は 23:59 までの注文で翌朝着 ---
   { id: 'detergent_refill', name: 'サラサラ・ボタニカル 詰め替え 大容量', desc: '妻指定のブランド。コンビニには売っていない。', source: 'mail', price: 1280, slot: 'bag' },
