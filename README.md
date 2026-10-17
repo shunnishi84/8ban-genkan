@@ -154,7 +154,7 @@ cd android && ./gradlew assembleDebug   # → android/app/build/outputs/apk/debu
 | kouhai_notice.jpg | 後輩女子からの通知（Gemini で生成、文字化けした本文は上から描き直し） | ✅ |
 | castle_gate.png | 魔王城フィナーレで玄関ドアに重ねる門（Gemini で生成） | ✅ |
 | bg_court.jpg / bg_siege.jpg / bg_exposed.jpg | 家庭裁判・家族会議・公開処刑のフィナーレ背景（Gemini で生成） | ✅ |
-| bg_lockout.jpg | 締め出しフィナーレの背景 | — |
+| bg_lockout.jpg | 締め出しフィナーレの背景（Gemini で生成、張り紙の謎文字は「鍵を交換しました。」に描き直し） | ✅ |
 | item_sweets / wine / konbini_pudding / navy_tie / detergent_generic / vinyl_umbrella / snack_box / beer .png | 持ち物アイコン（コンビニ。Gemini のシートから切り出し） | ✅ |
 | item_detergent_refill / pair_glass / umbrella_same / limited_pudding / kashiori / spa_ticket / av_subscription / gravure_book .png | 持ち物アイコン（通販など。Gemini のシートから切り出し） | ✅ |
 
