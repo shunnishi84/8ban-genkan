@@ -859,7 +859,8 @@ export class Game {
         'div',
         { class: 'compose' },
         h('small', { class: 'dim' }, '定型文を送る（2分）'),
-        CHAT_TEMPLATES.filter((t) => !t.insult && !t.provokeLines).map((t) => {
+        // 送れない定型文は出さない（条件を満たしたら現れる）。送信済みは ✓ 付きで残す
+        CHAT_TEMPLATES.filter((t) => !t.insult && !t.provokeLines && (canSendChat(day, t.id) || day.flags.has(`chat:${t.id}`))).map((t) => {
           const sent = day.flags.has(`chat:${t.id}`);
           return h(
             'button',
