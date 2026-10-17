@@ -15,7 +15,29 @@ export interface FinaleLine {
   text: string;
   /** true のとき、送った暴言を「証拠」として1件ずつ大きなカードで見せる行に展開する */
   evidence?: boolean;
+  /** この行を出すときの演出（家庭裁判の逆転裁判風エフェクトなど） */
+  fx?: FinaleFx;
+  /** 証言（緑の文字で出す） */
+  testimony?: boolean;
 }
+
+/**
+ * 演出の種類。
+ * objection/holdit/takethat: 「異議あり！」「待った！」「くらえ！」の吹き出し、
+ * testimony/crossexam: 「証言開始」「尋問開始」の帯、gavel: 木槌3連打、slam: 机バン、
+ * penalty: 信頼度ゲージが削れる、shock: 衝撃の走るフラッシュ、guilty: 「有罪」の判決
+ */
+export type FinaleFx =
+  | 'objection'
+  | 'holdit'
+  | 'takethat'
+  | 'testimony'
+  | 'crossexam'
+  | 'gavel'
+  | 'slam'
+  | 'penalty'
+  | 'shock'
+  | 'guilty';
 
 export interface FinaleChoice {
   label: string;
@@ -61,11 +83,18 @@ export interface Finale {
     /** こころのHP。反撃で 0 になったら knockout を見せて先へ進む */
     hp?: number;
     knockout?: FinaleLine[];
+    /** 見た目。rpg はドラクエ風のコマンド（既定）、court は逆転裁判風のボタンとゲージ */
+    style?: 'rpg' | 'court';
+    /** HP の呼び名（既定は「こころのHP」） */
+    gauge?: string;
   };
   outro: FinaleLine[];
 }
 
 const judge = '裁判長（妻）';
+const prosecutor = '検察官（義母）';
+const gallery = '傍聴席（ご近所）';
+const witness = '証人（妻）';
 
 export const FINALES: Record<FinaleId, Finale> = {
   // A → C: スマホ爆散 → 魔王城で RPG
@@ -214,46 +243,128 @@ export const FINALES: Record<FinaleId, Finale> = {
     onTrigger: ['……どこかで、木槌の音がした気がする。'],
     intro: [
       { who: 'narr', text: 'ドアを開けると、そこは法廷だった。' },
-      { who: 'other', name: judge, text: '開廷します。' },
-      { who: 'other', name: '検察官（義母）', text: '被告人は本日、以下の4件の暴言を送信しました。' },
-      { who: 'other', name: '検察官（義母）', text: '', evidence: true },
-      { who: 'other', name: '傍聴席（ご近所）', text: 'ざわ……ざわ……' },
-      { who: 'other', name: judge, text: '被告人、何か言うことは？' },
+      { who: 'other', name: judge, text: 'これより、被告人の家庭裁判を開廷します。', fx: 'gavel' },
+      { who: 'other', name: prosecutor, text: '検察側、準備完了しております。' },
+      { who: 'other', name: judge, text: '弁護側は？' },
+      { who: 'me', text: '……弁護人が、いません。' },
+      { who: 'other', name: judge, text: 'では被告人が自分で弁護しなさい。' },
+      { who: 'other', name: prosecutor, text: '証拠を提出します。被告人が本日送信したメッセージ、4件です。', fx: 'slam' },
+      { who: 'other', name: prosecutor, text: '', evidence: true },
+      { who: 'other', name: gallery, text: 'ざわ……ざわ……' },
+      { who: 'other', name: judge, text: '静粛に！', fx: 'gavel' },
+      { who: 'other', name: judge, text: '続いて、証人の証言に移ります。証人は……私です。' },
+      { who: 'narr', text: '裁判長は、すたすたと証人席へ移動した。' },
+      { who: 'other', name: witness, text: 'では、証言します。', fx: 'testimony' },
+      { who: 'other', name: witness, testimony: true, text: '夫は毎晩「今から帰る」と送ってきて、1時間後に帰ってきます。' },
+      { who: 'other', name: witness, testimony: true, text: '今日は、私のことを「鬼嫁」「鬼軍曹」「母ちゃん」と呼びました。' },
+      { who: 'other', name: witness, testimony: true, text: '私は、ただ夕飯を作って待っていただけです。' },
+      { who: 'other', name: judge, text: '……では被告人、尋問を始めなさい。', fx: 'crossexam' },
     ],
     choice: {
-      prompt: '弁護人席は、空っぽだ。',
+      prompt: '証言のムジュンを突け！',
+      style: 'court',
+      gauge: '信頼度',
+      hp: 100,
       options: [
         {
-          label: '異議あり！',
-          end: true,
+          label: 'ゆさぶる',
           replies: [
-            [{ who: 'other', name: judge, text: '却下。' }],
-            [{ who: 'other', name: judge, text: '被告人、ここはあなたの法廷ではありません。却下。' }],
+            [
+              { who: 'me', text: '「ただ待っていただけ」……本当ですか？', fx: 'holdit' },
+              { who: 'other', name: witness, testimony: true, text: 'ええ。あなたの分のハンバーグを、ゴミ箱の前で。' },
+              { who: 'narr', text: '……墓穴を掘った。' },
+            ],
+            [
+              { who: 'me', text: '「1時間後」というのは、さすがに大げさでは？', fx: 'holdit' },
+              { who: 'other', name: witness, testimony: true, text: '先週の平均は1時間12分。全部記録してあります。', fx: 'shock' },
+            ],
+            [
+              { who: 'me', text: 'その夕飯のメニューは、何でしたか？', fx: 'holdit' },
+              { who: 'other', name: witness, testimony: true, text: 'あなたの好物の唐揚げ。……だったもの。' },
+              { who: 'narr', text: '今は、もう冷たい。' },
+            ],
           ],
         },
         {
-          label: '黙秘',
-          end: true,
+          label: 'つきつける',
           replies: [
-            [{ who: 'other', name: judge, text: '却下。' }],
-            [{ who: 'other', name: '検察官（義母）', text: '黙っていれば済むと思って……。' }, { who: 'other', name: judge, text: '却下。' }],
+            [
+              { who: 'me', text: 'これを見てください！', fx: 'takethat' },
+              { who: 'narr', text: 'あなたは スマホの スクショを つきつけた。' },
+              { who: 'other', name: judge, text: '……これは、被告人が送った暴言では？' },
+              { who: 'other', name: prosecutor, text: '自ら証拠を追加してくださるなんて。', fx: 'slam' },
+            ],
+            [
+              { who: 'me', text: 'この結婚指輪が、僕の愛の証拠です！', fx: 'takethat' },
+              { who: 'other', name: witness, testimony: true, text: '……それ、先月「なくした」って言ってたやつよね？', fx: 'shock' },
+            ],
+            [
+              { who: 'me', text: '僕の給与明細です！ 毎日頑張って働いています！', fx: 'takethat' },
+              { who: 'other', name: prosecutor, text: 'お小遣いの使い道、ちょうど伺いたかったところです。', fx: 'slam' },
+            ],
+          ],
+        },
+        {
+          label: '異議あり！',
+          replies: [
+            [
+              { who: 'me', text: '証人の証言は、感情的すぎます！', fx: 'objection' },
+              { who: 'other', name: prosecutor, text: '誰のせいで感情的になったと？', fx: 'objection' },
+              { who: 'other', name: judge, text: '検察側の異議を認めます。' },
+            ],
+            [
+              { who: 'me', text: '「鬼軍曹」は……愛称です！', fx: 'objection' },
+              { who: 'other', name: witness, testimony: true, text: 'へえ。じゃあ明日からあなたは「二等兵」ね。' },
+            ],
+            [
+              { who: 'me', text: '…………。', fx: 'objection' },
+              { who: 'other', name: judge, text: '……で、続きは？' },
+              { who: 'me', text: '……ありません。' },
+            ],
           ],
         },
         {
           label: '土下座',
-          end: true,
           replies: [
-            [{ who: 'other', name: judge, text: '……却下。' }],
-            [{ who: 'other', name: '傍聴席（ご近所）', text: '（ひそひそ）' }, { who: 'other', name: judge, text: '玄関でもう見飽きました。却下。' }],
+            [
+              { who: 'narr', text: 'あなたは 法廷の床に 額をこすりつけた。' },
+              { who: 'other', name: judge, text: 'それは玄関でもう見飽きました。' },
+            ],
+            [
+              { who: 'narr', text: 'あなたは 土下座した。' },
+              { who: 'other', name: gallery, text: '（ひそひそ……また土下座よ……）' },
+            ],
           ],
         },
       ],
+      counters: [
+        { damage: 25, lines: [{ who: 'other', name: judge, text: '被告人の主張には、根拠がありません！', fx: 'penalty' }] },
+        {
+          damage: 30,
+          lines: [
+            { who: 'other', name: prosecutor, text: 'やれやれ……裁判長、これ以上は時間の無駄かと。', fx: 'slam' },
+            { who: 'other', name: judge, text: 'ペナルティです！', fx: 'penalty' },
+          ],
+        },
+        { damage: 20, lines: [{ who: 'other', name: judge, text: '次にふざけたら、お小遣いを減額します！', fx: 'penalty' }] },
+        {
+          damage: 25,
+          lines: [
+            { who: 'other', name: gallery, text: '（ブーイング）' },
+            { who: 'other', name: judge, text: '静粛に！ ……被告人、ペナルティです！', fx: 'penalty' },
+          ],
+        },
+      ],
+      knockout: [
+        { who: 'narr', text: '信頼度が、底をついた。' },
+        { who: 'other', name: judge, text: '……もう十分でしょう。判決を言い渡します。' },
+        { who: 'narr', text: '有罪', fx: 'guilty' },
+      ],
     },
     outro: [
-      { who: 'other', name: judge, text: '判決を言い渡します。' },
-      { who: 'other', name: judge, text: '被告人を、無期限の家事当番に処す。' },
-      { who: 'narr', text: 'カーン！' },
-      { who: 'other', name: '傍聴席（ご近所）', text: '（拍手）' },
+      { who: 'other', name: judge, text: '被告人を、無期限の家事当番に処す。これにて閉廷！', fx: 'gavel' },
+      { who: 'other', name: gallery, text: '（拍手）' },
+      { who: 'other', name: witness, text: '……明日のゴミ出し、よろしくね。' },
     ],
   },
 

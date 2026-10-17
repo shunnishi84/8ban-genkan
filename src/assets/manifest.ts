@@ -168,6 +168,12 @@ export const SE = {
   se_success: { file: 'se_success.mp3', beep: 1040, volume: 0.5 },
   se_late: { file: 'se_late.mp3', beep: 150, volume: 0.6 },
   se_demon: { file: 'se_demon.mp3', beep: 70, volume: 0.8 },
+  // 家庭裁判（逆転裁判風）
+  se_objection: { file: 'se_objection.mp3', beep: 1480, volume: 0.6 },
+  se_gavel: { file: 'se_gavel.mp3', beep: 240, volume: 0.6 },
+  se_slam: { file: 'se_slam.mp3', beep: 90, volume: 0.7 },
+  se_penalty: { file: 'se_penalty.mp3', beep: 160, volume: 0.6 },
+  se_guilty: { file: 'se_guilty.mp3', beep: 60, volume: 0.8 },
 } satisfies Record<string, AudioEntry>;
 
 export type BgmKey = keyof typeof BGM;

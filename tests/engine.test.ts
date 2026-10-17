@@ -5,7 +5,7 @@ import { seeded } from '../src/core/rng';
 import { solve } from '../src/core/solver';
 import { SCENARIO_MAP } from '../src/data/scenarios';
 import { COLD_REPLIES } from '../src/data/chat';
-import { FINALE_IDS, type FinaleId } from '../src/data/finales';
+import { FINALES, FINALE_IDS, type FinaleId } from '../src/data/finales';
 
 const day = (ids: string[], start = hm(23, 0)) => buildDay(1, ids.map((id) => SCENARIO_MAP[id]), start);
 
@@ -306,6 +306,13 @@ describe('暴言4種コンプリートのフィナーレ', () => {
     const s = withSeed('court');
     for (const t of ALL) perform(s, { type: 'sendChat', template: t });
     expect(perform(s, { type: 'travel', to: 'town' }).ok).toBe(true);
+  });
+
+  it('家庭裁判: どのコマンドを選んでも、信頼度が尽きて必ず有罪になる', () => {
+    const c = FINALES.court.choice!;
+    expect(c.options.every((o) => !o.end)).toBe(true);
+    expect(Math.min(...c.counters!.map((x) => x.damage))).toBeGreaterThan(0);
+    expect(c.knockout!.some((l) => l.fx === 'guilty')).toBe(true);
   });
 
   it('包囲網: 4つ目を送った瞬間に義母・義父・友達・上司の通知が届く', () => {

@@ -31,7 +31,7 @@ import { solve } from '../core/solver';
 import type { Action, AppId, Cause, ItemDef, ClueLocation, DayState, Location, RunState, SlotId, SpotId } from '../core/types';
 import { APP_BASE, APP_LABEL, CHAT_HISTORY, SLOT_BASE, SLOT_LABEL, SPOT_BASE, SPOT_LABEL } from '../data/base';
 import { CHAT_TEMPLATES } from '../data/chat';
-import { FINALES, FINALE_IDS, type Finale, type FinaleChoice, type FinaleCounter, type FinaleId, type FinaleLine } from '../data/finales';
+import { FINALES, FINALE_IDS, type Finale, type FinaleChoice, type FinaleCounter, type FinaleFx, type FinaleId, type FinaleLine } from '../data/finales';
 import { ITEM_MAP, itemsAt } from '../data/items';
 import { SCENARIO_MAP } from '../data/scenarios';
 import { h, type Child } from './dom';
@@ -44,6 +44,31 @@ type Line = {
   name?: string;
   /** 大きなカードで見せる文字（家庭裁判の証拠など） */
   card?: string;
+  fx?: FinaleFx;
+  testimony?: boolean;
+  /** 家庭裁判の信頼度ゲージ（この行を出している間の値。lost は今削れた分） */
+  gauge?: Gauge;
+};
+
+type Gauge = { label: string; now: number; max: number; lost?: number };
+
+/** 逆転裁判風の吹き出し・帯の文字 */
+const FX_TEXT: Partial<Record<FinaleFx, string>> = {
+  objection: '異議あり！',
+  holdit: '待った！',
+  takethat: 'くらえ！',
+  testimony: '〜 証言開始 〜',
+  crossexam: '〜 尋問開始 〜',
+};
+const FX_SE: Partial<Record<FinaleFx, SeKey>> = {
+  objection: 'se_objection',
+  holdit: 'se_objection',
+  takethat: 'se_objection',
+  gavel: 'se_gavel',
+  slam: 'se_slam',
+  shock: 'se_slam',
+  penalty: 'se_penalty',
+  guilty: 'se_guilty',
 };
 
 type SceneSpec = Parameters<Renderer['setScene']>[0];
@@ -64,7 +89,7 @@ type Screen =
       index: number;
       after: () => void;
     }
-  | { name: 'choice'; prompt: string; options: FinaleChoice[]; onPick: (o: FinaleChoice) => void }
+  | { name: 'choice'; prompt: string; options: FinaleChoice[]; onPick: (o: FinaleChoice) => void; court?: boolean; gauge?: Gauge }
   | { name: 'loop'; level: number }
   | { name: 'gameover'; reason: string; causes: Cause[]; finale?: FinaleId }
   | { name: 'clear' };
@@ -107,6 +132,10 @@ export class Game {
   private day: DayState | null = null;
   private screen: Screen = { name: 'title' };
   private modal: Modal | null = null;
+  /** 演出の効果音を鳴らし終えた行（同じ行を描き直しても二度鳴らさない） */
+  private fxPlayed: Line | null = null;
+  /** 家庭裁判の最中（会話ウィンドウを法廷風にする） */
+  private court = false;
   private best = loadBest();
   private debug = new URLSearchParams(location.search).has('debug');
 
@@ -257,12 +286,13 @@ export class Game {
     return lines.flatMap((l): Line[] =>
       l.evidence
         ? insults.map((t, i) => ({ who: 'other', name: l.name, text: `証拠第${i + 1}号。`, card: t.text }))
-        : [{ who: l.who, name: l.name, text: l.text }],
+        : [{ who: l.who, name: l.name, text: l.text, fx: l.fx, testimony: l.testimony }],
     );
   }
 
   private playFinale(id: FinaleId) {
     const f = FINALES[id];
+    this.court = f.choice?.style === 'court';
     this.audio.playSe('se_door');
     window.setTimeout(() => this.audio.playSe('se_demon'), 300);
     this.recordBest();
@@ -275,22 +305,36 @@ export class Game {
     const choice = () => {
       if (!f.choice) return outro();
       const c = f.choice;
-      const gauge = c.hp ? `\n【あなたの こころのHP: ${Math.max(0, hp)} / ${c.hp}】` : '';
+      const court = c.style === 'court';
+      // 家庭裁判はゲージを絵で出す。それ以外（魔王城）は文字で出す
+      const gauge = (now: number, lost?: number): Gauge | undefined =>
+        court && c.hp ? { label: c.gauge ?? 'こころのHP', now: Math.max(0, now), max: c.hp, lost } : undefined;
+      const text = !court && c.hp ? `\n【あなたの ${c.gauge ?? 'こころのHP'}: ${Math.max(0, hp)} / ${c.hp}】` : '';
       this.go({
         name: 'choice',
-        prompt: c.prompt + gauge,
+        prompt: c.prompt + text,
         options: c.options,
+        court,
+        gauge: gauge(hp),
         onPick: (o) => {
-          let lines = this.expand(pick(o.replies));
+          const before = hp;
+          let lines = this.expand(pick(o.replies)).map((l) => ({ ...l, gauge: gauge(before) }));
           let next = () => (o.end ? outro() : choice());
           if (!o.end && c.counters?.length) {
-            // 魔王の反撃。1ターンごとに必ず返ってくる
+            // 相手の反撃。1ターンごとに必ず返ってくる
             const counter = pick(c.counters.length > 1 ? c.counters.filter((x) => x !== last) : c.counters);
             last = counter;
             hp -= counter.damage;
-            lines = lines.concat(this.expand(counter.lines));
+            // ゲージは penalty の行で削れる（無ければ最初の行で）
+            const hit = Math.max(0, counter.lines.findIndex((l) => l.fx === 'penalty'));
+            lines = lines.concat(
+              this.expand(counter.lines).map((l, i) => ({
+                ...l,
+                gauge: i < hit ? gauge(before) : gauge(hp, i === hit ? counter.damage : undefined),
+              })),
+            );
             if (hp <= 0) {
-              lines = lines.concat(this.expand(c.knockout ?? []));
+              lines = lines.concat(this.expand(c.knockout ?? []).map((l) => ({ ...l, gauge: gauge(hp) })));
               next = () => outro();
             }
           }
@@ -1036,17 +1080,77 @@ export class Game {
       else s.after();
     };
     const who = line.name ?? { me: 'あなた', wife: '妻', narr: '', other: '' }[line.who];
+    const fx = line.fx;
+    if (fx && this.fxPlayed !== line) {
+      // 演出の効果音は、その行を最初に出したときだけ
+      this.fxPlayed = line;
+      const se = FX_SE[fx];
+      if (se) this.audio.playSe(se);
+      if (fx === 'gavel') [260, 520].forEach((ms) => window.setTimeout(() => this.audio.playSe('se_gavel'), ms));
+      if (fx === 'guilty') window.setTimeout(() => this.audio.playSe('se_guilty'), 600);
+    }
+    const guilty = fx === 'guilty';
     return [
       h(
         'div',
-        { class: `talk ${s.mood}`, onclick: next },
+        { class: `talk ${s.mood}${s.mood === 'finale' && this.court ? ' court' : ''}${fx ? ` is-${fx}` : ''}`, onclick: next },
+        line.gauge ? this.viewGauge(line.gauge) : null,
+        fx && FX_TEXT[fx]
+          ? fx === 'testimony' || fx === 'crossexam'
+            ? h('div', { class: 'fx-banner' }, FX_TEXT[fx])
+            : h('div', { class: `fx-bubble ${fx}` }, h('span', {}, FX_TEXT[fx]))
+          : null,
+        fx === 'gavel' ? h('div', { class: 'fx-gavel' }, ['カン！', 'カン！', 'カン！'].map((t) => h('span', {}, t))) : null,
+        guilty ? h('div', { class: 'fx-guilty' }, h('span', {}, '有'), h('span', {}, '罪')) : null,
         line.card ? h('div', { class: 'evidence' }, h('small', {}, '送信済みメッセージ（スクリーンショット）'), h('p', {}, line.card)) : null,
-        h('div', { class: `speech ${line.who}` }, who ? h('b', {}, who) : null, h('p', {}, line.text), h('small', { class: 'dim' }, '▼ タップ')),
+        guilty
+          ? null
+          : h(
+              'div',
+              { class: `speech ${line.who}${line.testimony ? ' testimony' : ''}` },
+              who ? h('b', {}, who) : null,
+              h('p', {}, line.text),
+              h('small', { class: 'dim' }, '▼ タップ'),
+            ),
       ),
     ];
   }
 
+  /** 逆転裁判風の信頼度ゲージ。lost があれば削れた分を赤く点滅させる */
+  private viewGauge(g: Gauge): HTMLElement {
+    const pct = (n: number) => `${(Math.max(0, n) / g.max) * 100}%`;
+    return h(
+      'div',
+      { class: `gauge${g.lost ? ' hit' : ''}` },
+      h('small', {}, g.label),
+      h(
+        'div',
+        { class: 'gauge-bar' },
+        h('i', { class: 'gauge-fill', style: `width:${pct(g.now)}` }),
+        g.lost ? h('i', { class: 'gauge-lost', style: `left:${pct(g.now)};width:${pct(Math.min(g.lost, g.max - g.now))}` }) : null,
+      ),
+    );
+  }
+
   private viewChoice(s: Extract<Screen, { name: 'choice' }>): Child[] {
+    if (s.court) {
+      // 逆転裁判風: 青いボタンを縦に並べる
+      return [
+        h(
+          'div',
+          { class: 'talk finale choice court' },
+          s.gauge ? this.viewGauge(s.gauge) : null,
+          h('div', { class: 'court-prompt' }, s.prompt),
+          h(
+            'div',
+            { class: 'court-menu' },
+            s.options.map((o) =>
+              h('button', { class: 'court-cmd', onclick: () => (this.audio.playSe('se_tap'), s.onPick(o)) }, o.label),
+            ),
+          ),
+        ),
+      ];
+    }
     return [
       h(
         'div',
