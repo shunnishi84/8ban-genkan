@@ -1307,7 +1307,7 @@ export class Game {
     const anim = step.anim ?? 'none';
     const fx: Child[] = [];
     // 主人公の機体のまわりに散らばる爆発の位置
-    const BOOMS = [[8, 40], [22, 50], [4, 58], [26, 36], [14, 62], [18, 44], [10, 50]];
+    const BOOMS = [[72, 50], [60, 60], [78, 68], [56, 46], [68, 72], [64, 54], [74, 60]];
     const boom = (i: number, cls = 'boom') =>
       h('i', { class: cls, style: `--i:${i};--x:${BOOMS[i][0]}%;--y:${BOOMS[i][1]}%` });
     if (anim === 'attack') {
@@ -1330,8 +1330,9 @@ export class Game {
       h(
         'div',
         { class: `battle anim-${anim}${hpAt(s.step, 'hero') <= 0 ? ' hero-down' : ''}`, onclick: next },
-        h('div', { class: 'b-hud' }, hpPanel('hero'), hpPanel('wife')),
-        h('div', { class: 'b-field' }, unit('hero'), unit('wife'), fx),
+        // 味方（主人公）は右、敵（妻）は左
+        h('div', { class: 'b-hud' }, hpPanel('wife'), hpPanel('hero')),
+        h('div', { class: 'b-field' }, unit('wife'), unit('hero'), fx),
         step.attackName ? h('div', { class: `b-attack is-${step.speaker}` }, step.attackName) : null,
         h(
           'div',

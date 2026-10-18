@@ -1393,8 +1393,11 @@ button:disabled {
   box-shadow: 0 0 0 2px #000;
   color: #fff;
 }
+/* 味方（主人公）は右側。敵（妻）は左側 */
 .b-hp.is-wife {
   background: rgba(80, 10, 30, 0.85);
+}
+.b-hp.is-hero {
   text-align: right;
 }
 .b-hp small {
@@ -1419,7 +1422,7 @@ button:disabled {
   inset: 0 auto 0 0;
   background: linear-gradient(#9cff7a, #2fae3a);
 }
-.b-hp.is-wife .b-hp-bar i {
+.b-hp.is-hero .b-hp-bar i {
   right: 0;
   left: auto;
 }
@@ -1447,14 +1450,14 @@ button:disabled {
   filter: drop-shadow(0 8px 6px rgba(0, 0, 0, 0.5));
 }
 .b-unit.is-hero {
-  left: 2%;
-  top: 40%;
+  right: 2%;
+  top: 50%;
   width: 40%;
   animation: hover 1.6s ease-in-out infinite;
 }
 .b-unit.is-wife {
-  right: -2%;
-  top: 22%;
+  left: -2%;
+  top: 30%;
   width: 60%;
   animation: hover 2.2s ease-in-out infinite reverse;
 }
@@ -1511,7 +1514,7 @@ button:disabled {
 @keyframes atkname {
   0% {
     opacity: 0;
-    transform: translateX(-60%) skewX(-12deg);
+    transform: translateX(60%) skewX(-12deg);
   }
   15%,
   75% {
@@ -1526,7 +1529,7 @@ button:disabled {
 @keyframes atkname-r {
   0% {
     opacity: 0;
-    transform: translateX(60%) skewX(-12deg) scale(1.3);
+    transform: translateX(-60%) skewX(-12deg) scale(1.3);
   }
   15%,
   80% {
@@ -1577,12 +1580,12 @@ button:disabled {
 /* 演出: ミサイル → 着弾の煙 */
 .missile {
   position: absolute;
-  left: 36%;
-  top: calc(50% + var(--i) * 6px - 18px);
+  left: 58%;
+  top: calc(60% + var(--i) * 6px - 18px);
   width: 22px;
   height: 7px;
   border-radius: 4px;
-  background: linear-gradient(90deg, rgba(255, 160, 40, 0), #ffd27a 60%, #fff);
+  background: linear-gradient(270deg, rgba(255, 160, 40, 0), #ffd27a 60%, #fff);
   opacity: 0;
   animation: missile 0.55s calc(var(--i) * 0.12s) ease-in forwards;
 }
@@ -1593,13 +1596,13 @@ button:disabled {
   }
   100% {
     opacity: 1;
-    transform: translate(130px, calc(-20px + var(--i) * 4px));
+    transform: translate(-130px, calc(-20px + var(--i) * 4px));
   }
 }
 .puff {
   position: absolute;
-  left: calc(66% + var(--i) * 4%);
-  top: calc(38% + var(--i) * 5%);
+  left: calc(16% + var(--i) * 4%);
+  top: calc(44% + var(--i) * 5%);
   width: 34px;
   height: 34px;
   border-radius: 50%;
@@ -1632,8 +1635,8 @@ button:disabled {
 }
 .aura {
   position: absolute;
-  right: 0;
-  top: 15%;
+  left: 0;
+  top: 24%;
   width: 70%;
   aspect-ratio: 1;
   border-radius: 50%;
@@ -1653,7 +1656,7 @@ button:disabled {
 .converge {
   position: absolute;
   inset: -40%;
-  background: repeating-conic-gradient(from 0deg at 70% 45%, rgba(255, 255, 255, 0.55) 0 1deg, transparent 1deg 9deg);
+  background: repeating-conic-gradient(from 0deg at 30% 45%, rgba(255, 255, 255, 0.55) 0 1deg, transparent 1deg 9deg);
   animation: converge 0.7s linear infinite;
   mix-blend-mode: screen;
 }
@@ -1686,9 +1689,9 @@ button:disabled {
 }
 .beam {
   position: absolute;
-  right: 26%;
-  left: 14%;
-  top: 48%;
+  left: 26%;
+  right: 14%;
+  top: 58%;
   height: 0;
   border-radius: 40px;
   background: linear-gradient(#fff, #fff) center / 100% 34% no-repeat,
@@ -1700,7 +1703,7 @@ button:disabled {
 @keyframes beam {
   0% {
     height: 0;
-    clip-path: inset(0 0 0 100%);
+    clip-path: inset(0 100% 0 0);
   }
   20% {
     height: 70px;
@@ -1784,13 +1787,13 @@ button:disabled {
   animation: dmg 1.6s ease-out forwards;
 }
 .b-damage.is-wife {
-  right: 18%;
-  top: 14%;
+  left: 22%;
+  top: 24%;
   animation-delay: 0.1s;
 }
 .b-damage.is-hero {
-  left: 12%;
-  top: 28%;
+  right: 12%;
+  top: 38%;
   color: #ffe14d;
   font-size: 3em;
   animation-delay: 1.3s;

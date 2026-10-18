@@ -155,7 +155,7 @@ cd android && ./gradlew assembleDebug   # → android/app/build/outputs/apk/debu
 | tv_capture.jpg | テレビ取材の画面（Gemini で生成、テロップの文字化けは上から描き直し） | ✅ |
 | kouhai_notice.jpg | 後輩女子からの通知（Gemini で生成、文字化けした本文は上から描き直し） | ✅ |
 | group_photo.jpg | 後輩チャットの日にチャットへ貼る飲み会の集合写真（Gemini で生成） | ✅ |
-| bg_battle.jpg / robot_hero.png / robot_wife.png / pilot_hero.png / pilot_wife.png | スーパー夫婦大戦（ロボット大戦風フィナーレ）の背景・機体・顔（無ければ代用） | — |
+| bg_battle.jpg / robot_hero.png / robot_wife.png / pilot_hero.png / pilot_wife.png | スーパー夫婦大戦（ロボット大戦風フィナーレ）の背景・機体・顔（Gemini で生成。主人公の機体は左右反転） | ✅ |
 | castle_gate.png | 魔王城フィナーレで玄関ドアに重ねる門（Gemini で生成） | ✅ |
 | bg_court.jpg / bg_siege.jpg / bg_exposed.jpg | 家庭裁判（法廷全体）・家族会議・公開処刑のフィナーレ背景（Gemini で生成） | ✅ |
 | bg_court_judge / defense / prosecutor / witness .jpg | 家庭裁判のカメラ切り替え（Gemini で生成。無ければ bg_court で代用） | ✅ |

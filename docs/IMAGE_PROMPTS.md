@@ -600,14 +600,15 @@ warm cheerful colors, comedic. No text, no letters, no signs with writing, no wa
 ## 11. スーパー夫婦大戦（ロボット大戦風フィナーレ）— Gemini 用
 
 暴言を4種送ったあとのフィナーレのひとつ。90年代のロボットSRPGの戦闘シーン風に、
-左に主人公の機体、右に妻の巨大な機体が向かい合い、下のメッセージ欄にパイロットの顔が出る。
+ロボット大戦と同じく味方（主人公）は右側から左へ攻撃し、敵（妻の巨大な機体）は左側。下のメッセージ欄にパイロットの顔が出る。
+機体の向きが逆に生成されても、取り込むときに左右反転すればよい（robot_hero.png は反転して左向きにしてある）。
 置いていない絵は、機体は四角＋名前、顔は既存の `hero.png` / `wife_angry.png`、背景は `bg_town.jpg` で代用される。
 
 | ファイル | 用途 | 添付する見本 |
 |---|---|---|
 | `bg_battle.jpg` | 戦闘の背景（縦 9:16） | `bg_town.jpg` |
-| `robot_hero.png` | 主人公の機体「サラリーマンガーZ」（右向き・白背景） | `hero.png` |
-| `robot_wife.png` | 妻の機体「グレートワイフ」（左向き・白背景） | `wife_demon.jpg` |
+| `robot_hero.png` | 主人公の機体「サラリーマンガーZ」（画面右に置くので左向き・白背景） | `hero.png` |
+| `robot_wife.png` | 妻の機体「グレートワイフ」（画面左に置くので右向き・白背景） | `wife_demon.jpg` |
 | `pilot_hero.png` | メッセージ欄の主人公の顔（正方形） | `hero.png` |
 | `pilot_wife.png` | メッセージ欄の妻の顔（正方形） | `wife_suspicious.png` |
 
