@@ -969,7 +969,11 @@ export class Game {
             bubble('me', c.text.slice(ME.length)),
           );
         }),
-        day.chatLog.map((m) => bubble(m.from, m.text)),
+        day.chatLog.map((m) =>
+          m.image && this.images.get(m.image as ImageKey)
+            ? h('div', { class: `bubble ${m.from} photo` }, this.illust(m.image, 'chat-photo'), m.text.replace(/^【写真】/, ''))
+            : bubble(m.from, m.text),
+        ),
       ),
       h(
         'div',

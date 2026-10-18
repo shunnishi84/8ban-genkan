@@ -99,6 +99,9 @@ export const CHAT_TEMPLATES: ChatTemplate[] = [
   {
     id: 'kouhai_photo',
     text: '【写真】今日の飲み会の集合写真。課の8人で焼き鳥だったよ',
+    // 飲み会の集合写真は、後輩とのチャットがバレた日にしか手元にない（出番もない）
+    onlyWith: 'kouhai_chat',
+    image: 'group_photo',
     replyRelevant: '……部長の隣で目が死んでるね',
     replyIrrelevant: '急に写真？ 何かあったの？ 電話するね',
   },

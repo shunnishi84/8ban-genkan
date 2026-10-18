@@ -145,6 +145,13 @@ describe('新しい仕掛け', () => {
     expect(perform(s, { type: 'openDoor' }).outcome.kind).toBe('home');
   });
 
+  it('飲み会の集合写真は後輩チャットの日にしか送れず、送ると写真つきで残る', () => {
+    expect(perform(day(['ramen_receipt']), { type: 'sendChat', template: 'kouhai_photo' }).ok).toBe(false);
+    const s = day(['kouhai_chat']);
+    expect(perform(s, { type: 'sendChat', template: 'kouhai_photo' }).ok).toBe(true);
+    expect(s.chatLog.find((m) => m.from === 'me')?.image).toBe('group_photo');
+  });
+
   it('AV つけっぱなしの日だけ「とぼける」が送れて、送ると火に油', () => {
     expect(perform(day(['ring_off']), { type: 'sendChat', template: 'av_nanino' }).ok).toBe(false);
     const s = day(['av_left_on'], hm(23, 0));

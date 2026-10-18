@@ -567,6 +567,36 @@ No text, no letters, no watermark.
 
 ---
 
+## 10. 飲み会の集合写真（group_photo.jpg）— Gemini 用
+
+後輩チャットの日に「【写真】今日の飲み会の集合写真」を送ると、チャットに貼られる写真。
+妻の返事は「……部長の隣で目が死んでるね」なので、**主人公は部長の隣で目が死んでいる**のがオチ。
+後輩の佐藤さんは端のほうで、ふつうに楽しそうにしているだけ（二人きり感はゼロ）。
+
+| ファイル | 用途 | 添付する見本 |
+|---|---|---|
+| `group_photo.jpg` | チャットに貼る集合写真（横 4:3） | `hero.png`（主人公）、`kouhai_notice.jpg`（佐藤さんのアイコン） |
+
+```
+Use the attached images as character references: the man in "hero.png" is the main
+character (same face, tired salaryman look, white dress shirt, loosened navy tie), and the
+young woman in the round avatar of "kouhai_notice.jpg" is his junior coworker Sato (same
+face, brown hair in a bun, navy office jacket).
+Horizontal 4:3. A casual smartphone group photo of 8 Japanese office coworkers at a
+small, cozy yakitori izakaya at night: wooden counter and table, paper lanterns, plates of
+yakitori skewers and edamame, mugs of beer. Everyone is squeezed into the frame, some
+making peace signs. In the center sits a stern, balding middle-aged section chief with a
+big laugh and his arm around the main character's shoulder; the main character is
+squished right next to him, forcing a smile with completely dead, empty eyes. Sato is at
+the far right edge of the group, smiling normally with a peace sign, clearly just one of
+the group — nothing romantic. Slightly tilted framing and warm flash lighting like a real
+phone photo.
+Japanese manga-style digital illustration, clean bold black outlines, flat cel shading,
+warm cheerful colors, comedic. No text, no letters, no signs with writing, no watermark.
+```
+
+---
+
 ## 置いたあとの確認
 
 1. `npm run dev` で起動

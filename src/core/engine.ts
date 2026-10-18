@@ -211,7 +211,7 @@ const act = (state: DayState, action: Action): ActionResult => {
       if (t.requires && !evaluate(t.requires, state.flags)) return result(false, ['まだそれを言える状況じゃない。']);
       if (t.onlyWith && !state.causes.some((c) => c.id === t.onlyWith)) return result(false, ['今それを言う意味がない。']);
       state.flags.add(`chat:${t.id}`);
-      state.chatLog.push({ from: 'me', text: chatText(state, t) });
+      state.chatLog.push({ from: 'me', text: chatText(state, t), image: t.image });
       // 実際に送った文面（酔いの段階）を覚えておく。家庭裁判の証拠などで使う
       state.flags.add(`said:${t.id}:${drunkLevel(state)}`);
       // 何か送るとトーク画面を開かれ、取り消し前の誤爆メッセージにも既読がつく

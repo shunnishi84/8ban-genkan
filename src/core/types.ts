@@ -162,6 +162,8 @@ export interface ChatTemplate {
   demonLines?: string[];
   /** 酔うほどひどくなる文面（酔い1, 2, 3段階目）。暴言用 */
   drunkText?: string[];
+  /** 送ると一緒に貼られる写真（manifest の画像キー） */
+  image?: string;
   /** この原因（cause id）がある日だけ送れる */
   onlyWith?: string;
   /**
@@ -190,7 +192,7 @@ export interface DayState {
   /** 通販の注文（item -> 状態） */
   orders: Record<string, 'express' | 'late' | 'canceled' | 'existing'>;
   /** その日に送ったチャット（妻の返信込み）。過去ログ・手がかりは含まない */
-  chatLog: { from: 'me' | 'wife'; text: string }[];
+  chatLog: { from: 'me' | 'wife'; text: string; image?: string }[];
   successLines: string[];
   homeAlone: boolean;
   /** 渋々許す火種がある日（帰宅時の妻が無表情） */

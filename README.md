@@ -154,6 +154,7 @@ cd android && ./gradlew assembleDebug   # → android/app/build/outputs/apk/debu
 | item_cake / ice_cream / glue / broken_mug / fixed_mug / onsen_ticket / golf_club / empty_can / ring / mint .png | 持ち物アイコン | ✅ |
 | tv_capture.jpg | テレビ取材の画面（Gemini で生成、テロップの文字化けは上から描き直し） | ✅ |
 | kouhai_notice.jpg | 後輩女子からの通知（Gemini で生成、文字化けした本文は上から描き直し） | ✅ |
+| group_photo.jpg | 後輩チャットの日にチャットへ貼る飲み会の集合写真（無ければ文字だけ） | — |
 | castle_gate.png | 魔王城フィナーレで玄関ドアに重ねる門（Gemini で生成） | ✅ |
 | bg_court.jpg / bg_siege.jpg / bg_exposed.jpg | 家庭裁判（法廷全体）・家族会議・公開処刑のフィナーレ背景（Gemini で生成） | ✅ |
 | bg_court_judge / defense / prosecutor / witness .jpg | 家庭裁判のカメラ切り替え（Gemini で生成。無ければ bg_court で代用） | ✅ |

@@ -1357,3 +1357,14 @@ button:disabled {
 .drunk-meter {
   color: #f2c14e;
 }
+/* チャットに貼った写真（飲み会の集合写真など） */
+.bubble.photo {
+  max-width: 86%;
+  padding: 0.35em 0.35em 0.55em;
+}
+.chat-photo {
+  display: block;
+  width: 100%;
+  margin-bottom: 0.35em;
+  border-radius: 12px;
+}

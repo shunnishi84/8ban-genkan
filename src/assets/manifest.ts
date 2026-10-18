@@ -102,6 +102,7 @@ export const IMAGES = {
   // 手がかりに添えるイラスト
   tv_capture: { file: 'tv_capture.jpg', label: 'テレビの画面', color: '#33415c' },
   kouhai_notice: { file: 'kouhai_notice.jpg', label: '後輩の通知', color: '#f2a7c3' },
+  group_photo: { file: 'group_photo.jpg', label: '飲み会の集合写真', color: '#c98a4a' },
 } satisfies Record<string, ImageEntry>;
 
 /** アイテムID → 一覧に出すイラスト */
