@@ -9,6 +9,7 @@ export const SCENARIOS: Scenario[] = [
   {
     id: 'dinner_unannounced',
     title: '飲み会を伝えてない',
+    asleep: 'テーブルに、ラップのかかった夕飯。……寝室は真っ暗だ。明日の朝、ちゃんと全部食べよう。',
     chatReplies: {
       '*': ['それより、ご飯の話は？ 作って待ってたんだけど。'],
       coming_home: ['……ご飯、冷めてるけど。', '今から？ 先に寝るって言ったよね。', 'ご飯、ラップしてあるから。勝手にどうぞ。'],
@@ -464,6 +465,7 @@ export const SCENARIOS: Scenario[] = [
   {
     id: 'wrong_send',
     title: '妻の悪口を妻に誤爆した',
+    asleep: '寝室から、静かな寝息が聞こえる。……誤爆は、誰にも読まれずに闇へ消えた。',
     chatReplies: {
       'sorry_generic:after': ['ん……なにが……？（寝ぼけた返信）'],
       'love:after': ['ん……わたしも……（寝ぼけた返信）'],
@@ -804,6 +806,7 @@ export const SCENARIOS: Scenario[] = [
   {
     id: 'ramen_receipt',
     title: '異変なし: 夜の蝶',
+    asleep: 'リビングの灯りだけ、つけておいてくれていた。……ラーメンの匂いは、明日の朝までに消えるだろうか。',
     causes: [],
     startItems: [{ item: 'ramen_receipt' }],
     successLine: 'おかえり。ラーメンの匂いする〜。お疲れさま',

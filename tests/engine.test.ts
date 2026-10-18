@@ -284,6 +284,15 @@ describe('新しい仕掛け', () => {
     expect(s.chatLog.find((m) => m.from === 'me' && m.text === CHAT_MAP.insult_gunsou.drunkText![2])).toBeDefined();
   });
 
+  it('妻が先に寝ている日は、無事に帰っても妻のセリフではなくナレーション', () => {
+    const s = day(['wrong_send', 'garbage_forgot'], hm(23, 0));
+    expect(s.asleepLines).toHaveLength(1);
+    expect(s.successLines.join()).not.toContain('早く寝ちゃった');
+    expect(s.successLines.join()).toContain('今度から');
+    expect(day(['ramen_receipt']).asleepLines).toHaveLength(1);
+    expect(day(['neighbor_curry']).asleepLines).toHaveLength(0);
+  });
+
   it('接着剤は割れたマグカップを持っていないと使えない', () => {
     const s = day(['dinner_unannounced']);
     s.location = 'konbini';

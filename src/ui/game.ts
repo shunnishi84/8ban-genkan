@@ -402,7 +402,17 @@ export class Game {
     window.setTimeout(() => this.audio.playSe('se_success'), 300);
     const alone = this.day!.homeAlone;
     const grudging = this.day!.grudging;
-    const lines: Line[] = alone
+    const asleep = this.day!.asleepLines;
+    const lines: Line[] = asleep.length && !alone
+      ? [
+          // 妻は先に寝ている: 誰も出てこない。ほかの火種への一言は翌朝に聞く
+          { who: 'me', text: 'ただいま……（小声）' },
+          { who: 'narr', text: '……返事はない。妻は、もう寝ているようだ。' },
+          ...asleep.map((text) => ({ who: 'narr' as const, text })),
+          { who: 'narr', text: '……今日も、平穏な1日だった。' },
+          ...(successLines.length ? [{ who: 'narr' as const, text: '──翌朝。' }, ...successLines.map((text) => ({ who: 'wife' as const, text }))] : []),
+        ]
+      : alone
       ? [
           { who: 'me', text: 'ただいま……' },
           { who: 'narr', text: 'シーン……。返事はない。' },
@@ -418,7 +428,7 @@ export class Game {
     this.go({
       name: 'talk',
       mood: 'home',
-      alone,
+      alone: alone || asleep.length > 0,
       grudging,
       lines,
       index: 0,

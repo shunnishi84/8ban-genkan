@@ -84,9 +84,11 @@ export const buildDay = (day: number, scenarios: Scenario[], startTime: number, 
     inventory: scenarios.flatMap((s) => (s.startItems ?? []).map((i) => i.item)),
     orders,
     chatLog: [],
+    // 妻が先に寝ているシナリオの一言は、寝ている妻からは聞けないのでナレーションに回す
     successLines: normal
-      ? scenarios.map((s) => s.successLine ?? 'おかえり。今日もお疲れさま')
-      : scenarios.flatMap((s) => s.causes.map((c) => c.successLine)),
+      ? scenarios.filter((s) => !s.asleep).map((s) => s.successLine ?? 'おかえり。今日もお疲れさま')
+      : scenarios.filter((s) => !s.asleep).flatMap((s) => s.causes.map((c) => c.successLine)),
+    asleepLines: scenarios.flatMap((s) => (s.asleep ? [s.asleep] : [])),
     homeAlone: scenarios.length > 0 && scenarios.every((s) => s.homeAlone),
     grudging: scenarios.some((s) => s.causes.some((c) => c.grudging)),
     seed,
