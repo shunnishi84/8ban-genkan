@@ -35,6 +35,11 @@ export interface BattleStep {
   damage?: { to: 'hero' | 'wife'; value: number };
   /** 映す機体（既定は話している側。ナレーションは妻）。攻撃のコマは自動で2カット */
   cam?: 'hero' | 'wife';
+  /**
+   * どちらの攻撃ターンか（既定は話している側）。背景のスクロール向きが決まる:
+   * 主人公のターンは右から左、妻のターン（主人公が攻撃を受ける）は左から右
+   */
+  turn?: 'hero' | 'wife';
 }
 
 export interface FinaleLine {
@@ -478,11 +483,11 @@ export const FINALES: Record<FinaleId, Finale> = {
       steps: [
         { speaker: 'hero', text: 'いくぞ！ 今日こそ言わせてもらう！' },
         { speaker: 'hero', text: 'くらえっ！ 言い訳ミサイル！！', attackName: '言い訳ミサイル', anim: 'attack' },
-        { speaker: 'wife', text: '……今、何かした？', anim: 'zero', damage: { to: 'wife', value: 0 } },
+        { speaker: 'wife', text: '……今、何かした？', anim: 'zero', damage: { to: 'wife', value: 0 }, turn: 'hero' },
         { speaker: 'hero', text: 'そ、そんな……全弾命中したはずなのに……！' },
         { speaker: 'wife', text: '次は、こっちの番ね。', anim: 'charge' },
         { speaker: 'wife', text: '家計簿……バスタァァァーーッ！！', attackName: '超次元家計簿バスター', anim: 'finisher', heroHp: 0, damage: { to: 'hero', value: 9999 } },
-        { speaker: 'hero', text: 'うわあああああーーーっ！！', anim: 'shotdown' },
+        { speaker: 'hero', text: 'うわあああああーーーっ！！', anim: 'shotdown', turn: 'wife' },
         { speaker: 'narr', text: 'サラリーマンガーZは　撃墜された。' },
       ],
     },

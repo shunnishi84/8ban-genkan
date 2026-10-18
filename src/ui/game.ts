@@ -144,6 +144,8 @@ export class Game {
   private fxPlayed: Line | null = null;
   /** 戦闘のコマの効果音を鳴らし終えたか */
   private battlePlayed: unknown = null;
+  /** 横スクロール用につないだ戦闘背景（data URL） */
+  private stripUrl: string | null = null;
   /** 家庭裁判の最中（会話ウィンドウを法廷風にする） */
   private court = false;
   /** 魔王が最終形態 */
@@ -1368,10 +1370,20 @@ export class Game {
         ? null
         : (this.illust(`pilot_${step.speaker}`, 'b-face') ??
           this.illust(step.speaker === 'hero' ? 'hero' : 'wife_angry', 'b-face fallback'));
+    // 背景は流れ続ける（主人公のターンは右→左、妻のターンは左→右）
+    const turn = step.turn ?? (step.speaker === 'narr' ? 'wife' : step.speaker);
+    const strip = this.battleStrip();
     return [
       h(
         'div',
         { class: `battle anim-${anim}`, onclick: next },
+        strip
+          ? h(
+              'div',
+              { class: 'b-bg' },
+              h('div', { class: `b-bg-track scroll-${turn === 'hero' ? 'left' : 'right'}` }, h('img', { src: strip, alt: '' }), h('img', { src: strip, alt: '' })),
+            )
+          : null,
         // 味方（主人公）は右、敵（妻）は左
         h('div', { class: 'b-hud' }, hpPanel('wife'), hpPanel('hero')),
         h('div', { class: 'b-field' }, shots.map(([cam, part], i) => shot(cam, part, i))),
@@ -1390,6 +1402,26 @@ export class Game {
         ),
       ),
     ];
+  }
+
+  /**
+   * 横スクロール用の背景。縦長の bg_battle をそのまま並べると継ぎ目が出るので、
+   * 左右反転したものと横に並べて、端どうしがつながる1枚にする（一度だけ作る）
+   */
+  private battleStrip(): string | null {
+    if (this.stripUrl) return this.stripUrl;
+    const img = this.images.get('bg_battle');
+    if (!img) return null;
+    const c = document.createElement('canvas');
+    c.width = img.naturalWidth * 2;
+    c.height = img.naturalHeight;
+    const g = c.getContext('2d')!;
+    g.drawImage(img, 0, 0);
+    g.translate(c.width, 0);
+    g.scale(-1, 1);
+    g.drawImage(img, 0, 0);
+    this.stripUrl = c.toDataURL('image/jpeg', 0.85);
+    return this.stripUrl;
   }
 
   private viewLoop(level: number): Child[] {
