@@ -145,6 +145,16 @@ describe('新しい仕掛け', () => {
     expect(perform(s, { type: 'openDoor' }).outcome.kind).toBe('home');
   });
 
+  it('AV つけっぱなしの日だけ「とぼける」が送れて、送ると火に油', () => {
+    expect(perform(day(['ring_off']), { type: 'sendChat', template: 'av_nanino' }).ok).toBe(false);
+    const s = day(['av_left_on'], hm(23, 0));
+    for (const a of solve(s)!) if (a.type !== 'openDoor') perform(s, a);
+    expect(perform(s, { type: 'sendChat', template: 'av_drama' }).ok).toBe(true);
+    const o = perform(s, { type: 'openDoor' }).outcome;
+    expect(o.kind).toBe('angry');
+    if (o.kind === 'angry') expect(o.causes.map((c) => c.title)).toEqual(['火に油']);
+  });
+
   it('後輩の日だけ「余計なひと言」が送れて、送ると火種を消していても怒られる', () => {
     expect(perform(day(['ring_off']), { type: 'sendChat', template: 'kouhai_kawaii' }).ok).toBe(false);
     const s = day(['kouhai_chat'], hm(23, 0));

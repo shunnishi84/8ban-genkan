@@ -119,6 +119,39 @@ export const CHAT_TEMPLATES: ChatTemplate[] = [
     replyIrrelevant: '…………は？',
     demonLines: ['「自分で捨てておいてくれよ」。', '……ええ、捨ててあげる。何もかも。'],
   },
+  // AV つけっぱなしの日だけ出る「とぼける」。バレているのでもちろん火に油
+  {
+    id: 'av_drama',
+    text: '最近のドラマは、ああいうシーンがあるんだよ',
+    onlyWith: 'av_left_on',
+    replyRelevant: 'へえ。「ミッドナイトシアター＋」のドラマね。',
+    replyIrrelevant: 'へえ。「ミッドナイトシアター＋」のドラマね。',
+    provokeLines: ['「最近のドラマ」。', '……じゃあ、そのドラマのタイトル、読み上げてあげようか？', '「続きから再生」、今ここで一緒に観る？'],
+  },
+  {
+    id: 'av_nanino',
+    text: '何の話？',
+    onlyWith: 'av_left_on',
+    replyRelevant: '……何の話か、帰ってきたら教えてあげる。',
+    replyIrrelevant: '……何の話か、帰ってきたら教えてあげる。',
+    provokeLines: ['「何の話？」って聞いたよね。', '視聴履歴、全部スクショしておいたから。', '何の話か、朝までじっくり説明してあげる。'],
+  },
+  {
+    id: 'av_neko',
+    text: '寝てる間にリモコン踏んじゃったのかも',
+    onlyWith: 'av_left_on',
+    replyRelevant: '踏んだら、月額プランに加入するんだ。',
+    replyIrrelevant: '踏んだら、月額プランに加入するんだ。',
+    provokeLines: ['リモコンを踏んだら、', '会員登録して、作品を選んで、音量を32にするのね。', '……器用な足ね。明日から靴下二重にしてあげる。'],
+  },
+  {
+    id: 'av_shakai',
+    text: 'あれは社会派のドキュメンタリーだよ。勉強のため',
+    onlyWith: 'av_left_on',
+    replyRelevant: '社会派。……何を勉強してたの？',
+    replyIrrelevant: '社会派。……何を勉強してたの？',
+    provokeLines: ['社会派ドキュメンタリー。', '……じゃあ、帰ったら感想文を原稿用紙5枚で提出してね。', '私が採点するから。'],
+  },
   // 後輩チャットの日だけ出る「余計なひと言」。送ると火に油
   {
     id: 'kouhai_kawaii',
