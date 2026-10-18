@@ -231,7 +231,7 @@ export const FINALES: Record<FinaleId, Finale> = {
         { who: 'narr', text: '門の向こうから、地鳴りのような気配がする。' },
         { who: 'narr', text: 'ギギギ……ガシャァァン！！ 門が、内側から吹き飛んだ。' },
         { who: 'wife', text: '……お酒のチカラを借りないと、何も言えないのね。' },
-        { who: 'wife', text: '「おにーよめー！！」……全部、スクショしてあるから。' },
+        { who: 'wife', text: '酔っぱらいの暴言、4件。……全部、スクショしてあるから。' },
         { who: 'narr', text: 'まおうは　さいしゅうけいたいに　へんしんした！！' },
       ],
       hp: 100,
@@ -319,7 +319,7 @@ export const FINALES: Record<FinaleId, Finale> = {
       { who: 'narr', text: '裁判長は、すたすたと証人席へ移動した。' },
       { who: 'other', name: witness, text: 'では、証言します。', fx: 'testimony' },
       { who: 'other', name: witness, testimony: true, text: '夫は毎晩「今から帰る」と送ってきて、1時間後に帰ってきます。' },
-      { who: 'other', name: witness, testimony: true, text: '今日は、私のことを「鬼嫁」「鬼軍曹」「母ちゃん」と呼びました。' },
+      { who: 'other', name: witness, testimony: true, text: '今日は、私に4回も暴言を送ってきました。全部、証拠として提出済みです。' },
       { who: 'other', name: witness, testimony: true, text: '私は、ただ夕飯を作って待っていただけです。' },
       { who: 'other', name: judge, text: '……では被告人、尋問を始めなさい。', fx: 'crossexam' },
     ],
@@ -376,8 +376,8 @@ export const FINALES: Record<FinaleId, Finale> = {
               { who: 'other', name: judge, text: '検察側の異議を認めます。' },
             ],
             [
-              { who: 'me', text: '「鬼軍曹」は……愛称です！', fx: 'objection' },
-              { who: 'other', name: witness, testimony: true, text: 'へえ。じゃあ明日からあなたは「二等兵」ね。' },
+              { who: 'me', text: 'あのメッセージは……全部、愛情の裏返しです！', fx: 'objection' },
+              { who: 'other', name: witness, testimony: true, text: 'へえ。じゃあ明日から、私も裏返しの愛情で接するわね。' },
             ],
             [
               { who: 'me', text: '…………。', fx: 'objection' },

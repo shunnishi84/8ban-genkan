@@ -16,7 +16,7 @@ import {
   startTimeFor,
 } from './config';
 import { evaluate, flagsIn } from './requirement';
-import { shuffle, type Rng } from './rng';
+import { seeded, shuffle, type Rng } from './rng';
 import type {
   ChatTemplate,
   Action,
@@ -91,6 +91,7 @@ export const buildDay = (day: number, scenarios: Scenario[], startTime: number, 
     asleepLines: scenarios.flatMap((s) => (s.asleep ? [s.asleep] : [])),
     homeAlone: scenarios.length > 0 && scenarios.every((s) => s.homeAlone),
     grudging: scenarios.some((s) => s.causes.some((c) => c.grudging)),
+    insultIds: pickInsults(seed),
     seed,
   };
 };
@@ -141,7 +142,18 @@ export const canSendChat = (state: DayState, templateId: string): boolean => {
   const t = CHAT_MAP[templateId];
   if (!t || state.flags.has(`chat:${templateId}`)) return false;
   if (t.onlyWith && !state.causes.some((c) => c.id === t.onlyWith)) return false;
+  if (t.insult && !state.insultIds.includes(t.id)) return false;
   return !t.requires || evaluate(t.requires, state.flags);
+};
+
+/** 1日に出る暴言の数 */
+export const INSULTS_PER_DAY = 4;
+
+/** その日の暴言を全種からランダムに選ぶ（日ごとの seed で決まる。並びは定義順） */
+const pickInsults = (seed: number): string[] => {
+  const all = CHAT_TEMPLATES.filter((t) => t.insult).map((t) => t.id);
+  const chosen = new Set(shuffle(seeded(Math.floor(seed * 2 ** 31) ^ 0x5bd1e995), all).slice(0, INSULTS_PER_DAY));
+  return all.filter((id) => chosen.has(id));
 };
 
 /** 酔いの段階（飲んだ缶ビールの本数） */
@@ -210,6 +222,7 @@ const act = (state: DayState, action: Action): ActionResult => {
       if (state.flags.has(`chat:${t.id}`)) return result(false, ['それはもう送った。']);
       if (t.requires && !evaluate(t.requires, state.flags)) return result(false, ['まだそれを言える状況じゃない。']);
       if (t.onlyWith && !state.causes.some((c) => c.id === t.onlyWith)) return result(false, ['今それを言う意味がない。']);
+      if (t.insult && !state.insultIds.includes(t.id)) return result(false, ['……今日は、その言葉は出てこない。']);
       state.flags.add(`chat:${t.id}`);
       state.chatLog.push({ from: 'me', text: chatText(state, t), image: t.image });
       // 実際に送った文面（酔いの段階）を覚えておく。家庭裁判の証拠などで使う
@@ -472,7 +485,7 @@ const provokeCauses = (state: DayState): Cause[] =>
 /** 暴言を4種すべて送ったら、その日のフィナーレを決めて仕掛けを発動する */
 const triggerFinale = (state: DayState): Finale | null => {
   if (state.finale) return null;
-  const all = CHAT_TEMPLATES.filter((t) => t.insult).every((t) => state.flags.has(`insult:${t.id}`));
+  const all = state.insultIds.every((id) => state.flags.has(`insult:${id}`));
   if (!all) return null;
   return applyFinale(state, FINALE_IDS[Math.min(FINALE_IDS.length - 1, Math.floor(state.seed * FINALE_IDS.length))]);
 };

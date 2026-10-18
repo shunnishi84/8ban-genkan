@@ -318,7 +318,7 @@ export class Game {
 
   /** 証拠の行を、送った暴言1件ずつのカードに展開する */
   private expand(lines: FinaleLine[]): Line[] {
-    const insults = CHAT_TEMPLATES.filter((t) => t.insult);
+    const insults = CHAT_TEMPLATES.filter((t) => t.insult && this.day!.insultIds.includes(t.id));
     return lines.flatMap((l): Line[] =>
       l.evidence
         ? insults.map((t, i) => ({ who: 'other', name: l.name, text: `証拠第${i + 1}号。`, card: sentText(this.day!, t.id) }))
@@ -1040,7 +1040,7 @@ export class Game {
           );
         }),
         h('small', { class: 'insult-label' }, '😤 感情のままに送る（※おすすめしない）'),
-        CHAT_TEMPLATES.filter((t) => t.insult).map((t) => {
+        CHAT_TEMPLATES.filter((t) => t.insult && day.insultIds.includes(t.id)).map((t) => {
           const sent = day.flags.has(`chat:${t.id}`);
           return h(
             'button',

@@ -197,6 +197,8 @@ export interface DayState {
   chatLog: { from: 'me' | 'wife'; text: string; image?: string }[];
   successLines: string[];
   homeAlone: boolean;
+  /** その日に送れる暴言（全種からランダムに4つ）。4つ全部送るとフィナーレ */
+  insultIds: string[];
   /** 渋々許す火種がある日（帰宅時の妻が無表情） */
   grudging: boolean;
   /** 妻が先に寝ている日の、帰宅時のナレーション（空なら妻は起きている） */

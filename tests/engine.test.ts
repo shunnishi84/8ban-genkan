@@ -4,10 +4,16 @@ import { advanceRun, buildDay, chatText, chatTimeline, drunkLevel, sentText, cho
 import { seeded } from '../src/core/rng';
 import { solve } from '../src/core/solver';
 import { SCENARIO_MAP } from '../src/data/scenarios';
-import { CHAT_MAP, COLD_REPLIES } from '../src/data/chat';
+import { CHAT_MAP, CHAT_TEMPLATES, COLD_REPLIES } from '../src/data/chat';
 import { FINALES, FINALE_IDS, type FinaleId } from '../src/data/finales';
 
-const day = (ids: string[], start = hm(23, 0)) => buildDay(1, ids.map((id) => SCENARIO_MAP[id]), start);
+// 暴言は毎日ランダムに4つ選ばれるが、テストでは定番の4つに固定する（ランダム選択そのものは別にテスト）
+const CLASSIC_INSULTS = ['insult_oni', 'insult_komakai', 'insult_kaachan', 'insult_gunsou'];
+const day = (ids: string[], start = hm(23, 0)) => {
+  const s = buildDay(1, ids.map((id) => SCENARIO_MAP[id]), start);
+  s.insultIds = [...CLASSIC_INSULTS];
+  return s;
+};
 
 describe('時計', () => {
   it('午前1:00を過ぎると原因に関係なくゲームオーバー', () => {
@@ -430,6 +436,36 @@ describe('暴言（おふざけ枠）', () => {
   it('暴言は電話ペナルティなしの2分（その代わり取り返しがつかない）', () => {
     const s = day(['neighbor_curry']);
     expect(perform(s, { type: 'sendChat', template: 'insult_kaachan' }).cost).toBe(2);
+  });
+});
+
+describe('暴言のランダム選択', () => {
+  it('暴言は全部で10種あり、毎日そのうち4つが日ごとに変わる', () => {
+    const all = CHAT_TEMPLATES.filter((t) => t.insult);
+    expect(all).toHaveLength(10);
+    const sets = new Set<string>();
+    for (let i = 0; i < 40; i++) {
+      const s = buildDay(1, [SCENARIO_MAP.neighbor_curry], hm(23, 0), i / 40);
+      expect(s.insultIds).toHaveLength(4);
+      for (const id of s.insultIds) expect(CHAT_MAP[id]?.insult).toBe(true);
+      sets.add(s.insultIds.join());
+    }
+    expect(sets.size).toBeGreaterThan(10);
+  });
+
+  it('その日に選ばれていない暴言は送れず、選ばれた4つを全部送るとフィナーレ', () => {
+    const s = buildDay(1, [SCENARIO_MAP.neighbor_curry], hm(23, 0), 0.37);
+    const off = CHAT_TEMPLATES.find((t) => t.insult && !s.insultIds.includes(t.id))!;
+    expect(perform(s, { type: 'sendChat', template: off.id }).ok).toBe(false);
+    for (const id of s.insultIds) expect(perform(s, { type: 'sendChat', template: id }).ok).toBe(true);
+    expect(s.finale).toBeDefined();
+  });
+
+  it('暴言にはどれも酔いの3段階と魔王のセリフがある', () => {
+    for (const t of CHAT_TEMPLATES.filter((x) => x.insult)) {
+      expect(t.drunkText, t.id).toHaveLength(3);
+      expect(t.demonLines?.length, t.id).toBeGreaterThan(1);
+    }
   });
 });
 
