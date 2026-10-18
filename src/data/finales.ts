@@ -33,6 +33,8 @@ export interface BattleStep {
   wifeHp?: number;
   /** 被弾した側に出すダメージ数値 */
   damage?: { to: 'hero' | 'wife'; value: number };
+  /** 映す機体（既定は話している側。ナレーションは妻）。攻撃のコマは自動で2カット */
+  cam?: 'hero' | 'wife';
 }
 
 export interface FinaleLine {

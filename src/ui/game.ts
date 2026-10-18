@@ -1286,10 +1286,10 @@ export class Game {
       // 効果音はそのコマを最初に出したときだけ
       this.battlePlayed = step;
       const se = (key: SeKey, ms: number) => window.setTimeout(() => this.audio.playSe(key), ms);
-      if (step.anim === 'attack') [0, 120, 240, 360, 480, 600].forEach((ms) => se('se_send', ms)), [900, 1050, 1200].forEach((ms) => se('se_slam', ms));
+      if (step.anim === 'attack') [0, 120, 240, 360, 480, 600].forEach((ms) => se('se_send', ms)), [1450, 1600, 1750].forEach((ms) => se('se_slam', ms));
       if (step.anim === 'zero') se('se_tap', 0);
       if (step.anim === 'charge') se('se_demon', 0);
-      if (step.anim === 'finisher') se('se_objection', 0), se('se_demon', 500), [900, 1150, 1400, 1650].forEach((ms) => se('se_slam', ms));
+      if (step.anim === 'finisher') se('se_objection', 0), se('se_demon', 400), [1300, 1550, 1800, 2050].forEach((ms) => se('se_slam', ms));
       if (step.anim === 'shotdown') [300, 700, 1100].forEach((ms) => se('se_guilty', ms));
     }
     const next = () => {
@@ -1314,32 +1314,55 @@ export class Game {
             style: `--from:${pct(before)};--to:${pct(now)};width:${pct(now)}`,
           }),
         ),
-        h('b', {}, `HP ${now} / ${u.hp}`),
+        // 減ったコマでは、ゲージが減り切ってから数値が切り替わる
+        now < before
+          ? h('b', {}, 'HP ', h('span', { class: 'hp-swap' }, h('span', { class: 'hp-old' }, String(before)), h('span', { class: 'hp-new' }, String(now))), ` / ${u.hp}`)
+          : h('b', {}, `HP ${now} / ${u.hp}`),
       );
     };
+    const anim = step.anim ?? 'none';
+    const heroDown = hpAt(s.step, 'hero') <= 0;
     const unit = (who: 'hero' | 'wife') =>
       h(
         'div',
         { class: `b-unit is-${who}` },
         this.illust(`robot_${who}`, 'b-unit-img') ?? h('div', { class: 'b-unit-box' }, b[who].unit),
       );
-    const anim = step.anim ?? 'none';
-    const fx: Child[] = [];
     // 主人公の機体のまわりに散らばる爆発の位置
-    const BOOMS = [[72, 50], [60, 60], [78, 68], [56, 46], [68, 72], [64, 54], [74, 60]];
+    const BOOMS = [[58, 40], [44, 52], [66, 60], [40, 36], [54, 66], [50, 46], [62, 50]];
     const boom = (i: number, cls = 'boom') =>
       h('i', { class: cls, style: `--i:${i};--x:${BOOMS[i][0]}%;--y:${BOOMS[i][1]}%` });
-    if (anim === 'attack') {
-      fx.push([0, 1, 2, 3, 4, 5].map((i) => h('i', { class: 'missile', style: `--i:${i}` })));
-      fx.push([0, 1, 2, 3].map((i) => h('i', { class: 'puff', style: `--i:${i}` })));
-    }
-    if (anim === 'charge') fx.push(h('i', { class: 'aura' }), h('i', { class: 'converge' }));
-    if (anim === 'finisher') {
-      fx.push(h('i', { class: 'beam' }));
-      fx.push([0, 1, 2, 3, 4, 5].map((i) => boom(i)));
-    }
-    if (anim === 'shotdown') fx.push([0, 1, 2, 3, 4, 5, 6].map((i) => boom(i, 'boom big')));
-    if (step.damage) fx.push(h('b', { class: `b-damage is-${step.damage.to}` }, String(step.damage.value)));
+    /**
+     * カメラ: ロボット大戦のように、1カットに映るのは片方の機体だけ。
+     * 攻撃のコマは「撃つ側のカット → 画面が切り替わって被弾する側のカット」の2カット構成。
+     */
+    type Cam = 'hero' | 'wife';
+    type Part = 'solo' | 'fire' | 'hit';
+    const twoShot = anim === 'attack' || anim === 'finisher';
+    const attacker: Cam = anim === 'attack' ? 'hero' : 'wife';
+    const solo: Cam = step.cam ?? (step.speaker === 'narr' ? 'wife' : step.speaker);
+    const shots: [Cam, Part][] = twoShot
+      ? [
+          [attacker, 'fire'],
+          [attacker === 'hero' ? 'wife' : 'hero', 'hit'],
+        ]
+      : [[solo, 'solo']];
+    const shot = (cam: Cam, part: Part, i: number) => {
+      const fx: Child[] = [];
+      if (anim === 'attack' && part === 'fire') fx.push([0, 1, 2, 3, 4, 5].map((k) => h('i', { class: 'missile out', style: `--i:${k}` })));
+      if (anim === 'attack' && part === 'hit') {
+        fx.push([0, 1, 2, 3, 4, 5].map((k) => h('i', { class: 'missile in', style: `--i:${k}` })));
+        fx.push([0, 1, 2, 3].map((k) => h('i', { class: 'puff', style: `--i:${k}` })));
+      }
+      if (anim === 'charge') fx.push(h('i', { class: 'aura' }), h('i', { class: 'converge' }));
+      if (anim === 'finisher' && part === 'fire') fx.push(h('i', { class: 'aura' }), h('i', { class: 'beam out' }));
+      if (anim === 'finisher' && part === 'hit') fx.push(h('i', { class: 'beam in' }), [0, 1, 2, 3, 4, 5].map((k) => boom(k)));
+      if (anim === 'shotdown') fx.push([0, 1, 2, 3, 4, 5, 6].map((k) => boom(k, 'boom big')));
+      if (step.damage && step.damage.to === cam && part !== 'fire') fx.push(h('b', { class: `b-damage is-${cam}` }, String(step.damage.value)));
+      // 撃墜後のコマでは主人公の機体はもういない
+      const gone = cam === 'hero' && heroDown && anim !== 'finisher' && anim !== 'shotdown';
+      return h('div', { class: `b-shot cam-${cam} part-${part}${twoShot ? ` cut-${i + 1}` : ''}` }, gone ? null : unit(cam), fx);
+    };
     const portrait =
       step.speaker === 'narr'
         ? null
@@ -1348,10 +1371,10 @@ export class Game {
     return [
       h(
         'div',
-        { class: `battle anim-${anim}${hpAt(s.step, 'hero') <= 0 ? ' hero-down' : ''}`, onclick: next },
+        { class: `battle anim-${anim}`, onclick: next },
         // 味方（主人公）は右、敵（妻）は左
         h('div', { class: 'b-hud' }, hpPanel('wife'), hpPanel('hero')),
-        h('div', { class: 'b-field' }, unit('wife'), unit('hero'), fx),
+        h('div', { class: 'b-field' }, shots.map(([cam, part], i) => shot(cam, part, i))),
         step.attackName ? h('div', { class: `b-attack is-${step.speaker}` }, step.attackName) : null,
         h(
           'div',
