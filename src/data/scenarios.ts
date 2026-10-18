@@ -774,7 +774,19 @@ export const SCENARIOS: Scenario[] = [
       sorry_generic: ['何に謝ってるの？ 写真集？ 隠してたこと？', 'ごめんで済むなら、付箋は要らないよね。'],
       love: ['写真集の子にも言ってる？', '水着じゃない私に？'],
     },
-    pickups: [{ at: 'floor', item: 'gravure_book', label: '写真集を拾う', visual: 'item_gravure_book' }],
+    pickups: [
+      {
+        at: 'floor',
+        item: 'gravure_book',
+        label: '写真集を拾う',
+        visual: 'item_gravure_book',
+        reveal: {
+          title: '『夏、渚で。』',
+          image: 'gravure_page',
+          text: '拾い上げると、付箋のページがひとりでに開いた。……ここに付箋を貼ったのは、自分だ。',
+        },
+      },
+    ],
     visuals: ['item_gravure_book'],
     causes: [
       {

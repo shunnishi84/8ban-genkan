@@ -1816,3 +1816,11 @@ button:disabled {
     opacity: 1;
   }
 }
+/* 拾ったものを大きく見せる（写真集の付箋のページなど） */
+.reveal-img {
+  display: block;
+  width: 100%;
+  margin-bottom: 0.6em;
+  border-radius: 8px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+}

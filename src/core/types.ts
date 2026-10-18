@@ -79,6 +79,8 @@ export interface Pickup {
   label: string;
   /** 拾ったら消える描画オーバーレイ */
   visual?: string;
+  /** 拾ったときに大きく見せる絵と一言（写真集の付箋のページなど） */
+  reveal?: { title: string; image: string; text: string };
 }
 
 export interface Scenario {

@@ -105,6 +105,8 @@ type Modal =
   | { kind: 'items'; slot: SlotId }
   | { kind: 'phone'; app: AppId | null }
   | { kind: 'confirmDoor' }
+  /** 拾ったものを大きく見せる（写真集の付箋のページなど） */
+  | { kind: 'reveal'; title: string; image: string; text: string }
   | { kind: 'confirmQuit' };
 
 const INTRO_FLAVOR = [
@@ -814,7 +816,18 @@ export class Game {
           [
             this.clueTexts(`spot:${m.spot}`, SPOT_BASE[m.spot]),
             pickups.map((p) =>
-              h('button', { class: 'btn', onclick: () => this.act({ type: 'pickup', item: p.item }, 'se_tap') && this.closeModal() }, `${p.label}（1分）`),
+              h(
+                'button',
+                {
+                  class: 'btn',
+                  onclick: () => {
+                    if (!this.act({ type: 'pickup', item: p.item }, 'se_tap')) return;
+                    if (p.reveal) this.openModal({ kind: 'reveal', ...p.reveal });
+                    else this.closeModal();
+                  },
+                },
+                `${p.label}（1分）`,
+              ),
             ),
           ],
           () => this.closeModal(),
@@ -822,6 +835,12 @@ export class Game {
       }
       case 'items':
         return this.sheet('持ち物', this.viewItems(m.slot), () => this.closeModal());
+      case 'reveal':
+        return this.sheet(
+          m.title,
+          [this.illust(m.image, 'reveal-img'), h('p', { class: 'desc' }, m.text)],
+          () => this.closeModal(),
+        );
       case 'phone':
         return this.viewPhone(m.app);
       case 'confirmDoor':

@@ -671,6 +671,42 @@ Japanese anime-style, clean bold black outlines, flat cel shading. No text, no w
 
 ---
 
+## 12. 写真集（アイコンの作り直し ＋ 付箋のページ）— Gemini 用
+
+「隠していた水着グラビア写真集が見つかった」日の絵。どちらも**成人女性が明るいビーチで笑顔、性的なポーズはなし**の健全なグラビア風にする。
+
+| ファイル | 用途 | 添付する見本 |
+|---|---|---|
+| `item_gravure_book.png` | 持ち物アイコン兼、玄関マットの上の写真集（作り直し。表紙で水着の写真集だとわかるように） | 今の `item_gravure_book.png`（絵柄合わせ） |
+| `gravure_page.jpg` | 拾ったときに開く「付箋のページ」（横 4:3） | 新しい `item_gravure_book.png`（表紙の女性と同じ人にするため） |
+
+### 12-1. item_gravure_book.png（添付: 今の item_gravure_book.png）
+```
+A single game item icon: a closed glossy photo book lying slightly tilted, in the same
+art style as the attached icon. The front cover is a bright summer gravure photo: a
+smiling adult Japanese woman in her twenties wearing a simple bikini, standing on a
+sunny beach with blue sea, a parasol and a straw hat, waving cheerfully. Tasteful,
+wholesome swimsuit photo, no suggestive pose. The cover title area is a plain colored
+band with no letters. Plain pure white background, nothing else in the frame.
+Japanese manga-style digital illustration, clean bold black outlines, flat cel shading,
+simple and readable at small size. No text, no letters, no watermark.
+```
+
+### 12-2. gravure_page.jpg（添付: 新しい item_gravure_book.png）
+```
+Horizontal 4:3. Close-up of the photo book from the attached image lying open on a worn
+doormat at a Japanese apartment entrance at night, seen from above. The right page is a
+full-page photo of the same smiling adult woman in a simple bikini, sitting on a beach
+towel under a parasol, smiling warmly at the camera with a peace sign. Tasteful and
+wholesome, no suggestive pose. The left page has a smaller photo of the sea and sky.
+A bright yellow sticky note is stuck on the top edge of the right page, sticking out
+like a bookmark (blank, no writing). Soft cool light from the entrance lamp.
+Japanese manga-style digital illustration, clean bold black outlines, flat cel shading,
+comedic. No text, no letters, no watermark.
+```
+
+---
+
 ## 置いたあとの確認
 
 1. `npm run dev` で起動
