@@ -707,6 +707,27 @@ comedic. No text, no letters, no watermark.
 
 ---
 
+## 13. 料理本『サルでも出来る簡単レシピ』（item_saru_recipe.png）— Gemini 用
+
+メシマズでバズった日にコンビニで買える「火に油」アイテムのアイコン。無ければ四角＋ラベルで表示される。
+
+| ファイル | 用途 | 添付する見本 |
+|---|---|---|
+| `item_saru_recipe.png` | 持ち物アイコン（白背景で作れば、こちらで切り抜く） | `item_snack_box.png`（絵柄合わせ） |
+
+```
+A single game item icon in the same art style as the attached icon: a thin, cheap-looking
+paperback cookbook standing slightly tilted. The bright yellow cover shows a cute cartoon
+monkey wearing a white chef's hat and a little apron, proudly holding up a frying pan with
+a perfect fried egg, with a big confident grin. A blank orange band runs across the top
+of the cover where the title would be (no letters). A small promotional sash wraps the
+bottom of the book (also blank). Plain pure white background, nothing else in the frame.
+Japanese manga-style digital illustration, clean bold black outlines, flat cel shading,
+simple and readable at small size, comedic. No text, no letters, no watermark.
+```
+
+---
+
 ## 置いたあとの確認
 
 1. `npm run dev` で起動

@@ -33,6 +33,16 @@ export const ITEMS: ItemDef[] = [
     useLabel: '口に放り込む',
     useMessage: 'ガリガリ噛み砕いた。息がミントの暴風になった。',
   },
+  // メシマズでバズった日に買うと、送った瞬間に火に油
+  {
+    id: 'saru_recipe',
+    name: 'サルでも出来る簡単レシピ（料理本）',
+    desc: 'レジ横の新刊コーナーに平積みされていた料理本。帯には「料理が苦手なあの人に！」',
+    source: 'konbini',
+    price: 990,
+    slot: 'bag',
+    discardable: true,
+  },
   { id: 'konbini_pudding', name: 'なめらかプリン', desc: 'コンビニのプリン。これはこれでおいしい。', source: 'konbini', price: 198, slot: 'bag' },
   {
     id: 'navy_tie',

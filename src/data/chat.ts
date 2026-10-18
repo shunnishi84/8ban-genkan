@@ -122,6 +122,20 @@ export const CHAT_TEMPLATES: ChatTemplate[] = [
     replyIrrelevant: '…………は？',
     demonLines: ['「自分で捨てておいてくれよ」。', '……ええ、捨ててあげる。何もかも。'],
   },
+  // メシマズでバズった日に料理本を買うと出る、最悪のフォロー。送ると火に油
+  {
+    id: 'meshi_recipe',
+    text: 'お詫びに料理本買ったよ！『サルでも出来る簡単レシピ』。これで一緒に練習しよう',
+    onlyWith: 'sns_meshi',
+    requires: 'bought:saru_recipe',
+    replyRelevant: '…………サル。',
+    replyIrrelevant: '…………サル。',
+    provokeLines: [
+      '『サルでも出来る簡単レシピ』。',
+      '……トレンド入りした次の日に、これを妻に渡すのね。',
+      'いいわ。明日から、ご飯はあなたが作って。サルでも出来るんでしょう？',
+    ],
+  },
   // AV つけっぱなしの日だけ出る「とぼける」。バレているのでもちろん火に油
   {
     id: 'av_drama',

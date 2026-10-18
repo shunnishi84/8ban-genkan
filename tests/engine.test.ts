@@ -152,6 +152,23 @@ describe('新しい仕掛け', () => {
     expect(s.chatLog.find((m) => m.from === 'me')?.image).toBe('group_photo');
   });
 
+  it('メシマズの日に料理本を買って伝えると、火種を消していても火に油', () => {
+    const s = day(['sns_meshi'], hm(23, 0));
+    expect(perform(s, { type: 'sendChat', template: 'meshi_recipe' }).ok).toBe(false);
+    for (const a of solve(s)!) if (a.type !== 'openDoor') perform(s, a);
+    s.location = 'konbini';
+    perform(s, { type: 'buy', item: 'saru_recipe' });
+    expect(perform(s, { type: 'sendChat', template: 'meshi_recipe' }).ok).toBe(true);
+    s.location = 'door';
+    const o = perform(s, { type: 'openDoor' }).outcome;
+    expect(o.kind).toBe('angry');
+    if (o.kind === 'angry') expect(o.causes.map((c) => c.title)).toEqual(['火に油']);
+    const other = day(['ring_off']);
+    other.location = 'konbini';
+    perform(other, { type: 'buy', item: 'saru_recipe' });
+    expect(perform(other, { type: 'sendChat', template: 'meshi_recipe' }).ok).toBe(false);
+  });
+
   it('AV つけっぱなしの日だけ「とぼける」が送れて、送ると火に油', () => {
     expect(perform(day(['ring_off']), { type: 'sendChat', template: 'av_nanino' }).ok).toBe(false);
     const s = day(['av_left_on'], hm(23, 0));

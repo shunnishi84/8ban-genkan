@@ -99,6 +99,7 @@ export const IMAGES = {
   item_spa_ticket: { file: 'item_spa_ticket.png', label: 'スパ券', color: '#c9a86a' },
   item_av_subscription: { file: 'item_av_subscription.png', label: '月額プラン', color: '#3a2d5c' },
   item_gravure_book: { file: 'item_gravure_book.png', label: '写真集', color: '#5fb7d4' },
+  item_saru_recipe: { file: 'item_saru_recipe.png', label: '料理本', color: '#f2b03a' },
   // 手がかりに添えるイラスト
   tv_capture: { file: 'tv_capture.jpg', label: 'テレビの画面', color: '#33415c' },
   kouhai_notice: { file: 'kouhai_notice.jpg', label: '後輩の通知', color: '#f2a7c3' },
@@ -148,6 +149,7 @@ export const ITEM_ICONS: Partial<Record<string, ImageKey>> = {
   spa_ticket: 'item_spa_ticket',
   av_subscription: 'item_av_subscription',
   gravure_book: 'item_gravure_book',
+  saru_recipe: 'item_saru_recipe',
 };
 
 export type ImageKey = keyof typeof IMAGES;
