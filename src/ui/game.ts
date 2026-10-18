@@ -182,9 +182,12 @@ export class Game {
 
   private go(screen: Screen) {
     if (screen.name !== this.screen.name) this.toastLayer.replaceChildren();
+    // ドアを開けた瞬間（帰宅・怒り・魔王・法廷など）に、酔いは一気にさめる
+    const sobered = this.screen.name === 'play' && screen.name !== 'play' && !!this.day && drunkLevel(this.day) > 0;
     this.screen = screen;
     this.modal = null;
     this.render();
+    if (sobered) this.toast(['……酔いが、一気にさめた。'], 0);
   }
 
   private startRun() {
@@ -527,9 +530,10 @@ export class Game {
 
   private render() {
     this.syncScene();
-    // 酔っているあいだは霧がかかって画面が揺れる（ビールの本数で強くなる）
-    const s = this.screen.name;
-    const level = this.day && ['intro', 'play', 'talk', 'choice', 'loop'].includes(s) ? drunkLevel(this.day) : 0;
+    // 酔っているあいだは霧がかかって画面が揺れる（ビールの本数で強くなる）。
+    // 揺れるのは外を歩いている間（玄関前・街・コンビニ・ゴミ捨て場）だけ。ドアの向こうでは酔いがさめている
+    const drunkPlaces: Location[] = ['door', 'town', 'konbini', 'trash'];
+    const level = this.day && this.screen.name === 'play' && drunkPlaces.includes(this.day.location) ? drunkLevel(this.day) : 0;
     for (const n of [1, 2, 3]) this.root.classList.toggle(`drunk-${n}`, level === n);
     this.ui.replaceChildren(h('div', { class: 'view' }, this.view()));
   }
