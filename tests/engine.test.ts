@@ -423,7 +423,16 @@ describe('暴言4種コンプリートのフィナーレ', () => {
     expect(r.outcome).toEqual({ kind: 'finale', finale: 'court' });
   });
 
-  it('6本すべてが seed で選ばれうる', () => {
+  it('スーパー夫婦大戦: 主人公の攻撃はノーダメージ、妻の必殺技で HP 0 になって撃墜される', () => {
+    const b = FINALES.robot.battle!;
+    const zero = b.steps.find((x) => x.damage?.to === 'wife');
+    expect(zero?.damage?.value).toBe(0);
+    const fin = b.steps.find((x) => x.anim === 'finisher');
+    expect(fin?.heroHp).toBe(0);
+    expect(b.steps.findIndex((x) => x.anim === 'shotdown')).toBeGreaterThan(b.steps.indexOf(fin!));
+  });
+
+  it('7本すべてが seed で選ばれうる', () => {
     for (const id of FINALE_IDS) {
       const s = withSeed(id);
       for (const t of ALL) perform(s, { type: 'sendChat', template: t });

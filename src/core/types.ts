@@ -237,7 +237,7 @@ export type Outcome =
   | { kind: 'angry'; causes: Cause[] }
   /** 暴言を送っていた: 火種の有無に関係なく、魔王化した妻が待っている */
   | { kind: 'demon'; lines: string[] }
-  /** 暴言を4種すべて送った: 6本からランダムに選ばれたフィナーレ */
+  /** 暴言を4種すべて送った: 7本からランダムに選ばれたフィナーレ */
   | { kind: 'finale'; finale: FinaleId }
   | { kind: 'home'; lines: string[] };
 

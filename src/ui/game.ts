@@ -95,6 +95,8 @@ type Screen =
     }
   | { name: 'choice'; prompt: string; options: FinaleChoice[]; onPick: (o: FinaleChoice) => void; court?: boolean; gauge?: Gauge }
   | { name: 'loop'; level: number }
+  /** ロボット大戦風の戦闘。step は今のコマ */
+  | { name: 'battle'; finale: Finale; step: number; after: () => void }
   | { name: 'gameover'; reason: string; causes: Cause[]; finale?: FinaleId }
   | { name: 'clear' };
 
@@ -138,6 +140,8 @@ export class Game {
   private modal: Modal | null = null;
   /** 演出の効果音を鳴らし終えた行（同じ行を描き直しても二度鳴らさない） */
   private fxPlayed: Line | null = null;
+  /** 戦闘のコマの効果音を鳴らし終えたか */
+  private battlePlayed: unknown = null;
   /** 家庭裁判の最中（会話ウィンドウを法廷風にする） */
   private court = false;
   /** 魔王が最終形態 */
@@ -286,7 +290,7 @@ export class Game {
 
   private finaleScene(f: Finale): SceneSpec {
     if (f.scene === 'demon' || f.scene === 'loop') return { kind: 'demon', started: performance.now(), final: this.finalForm };
-    return { kind: 'bg', image: f.scene, fallback: 'bg_door_dark' };
+    return { kind: 'bg', image: f.scene, fallback: f.scene === 'bg_battle' ? 'bg_town' : 'bg_door_dark' };
   }
 
   /** 家庭裁判のカメラ: 話している人の席を映す（その絵が無ければ法廷全体） */
@@ -375,7 +379,8 @@ export class Game {
       this.go({ name: 'loop', level: 1 });
       return;
     }
-    this.go({ name: 'talk', mood: 'finale', scene: this.finaleScene(f), lines: this.expand(f.intro), index: 0, after: choice });
+    const afterIntro = f.battle ? () => this.go({ name: 'battle', finale: f, step: 0, after: () => outro() }) : choice;
+    this.go({ name: 'talk', mood: 'finale', scene: this.finaleScene(f), lines: this.expand(f.intro), index: 0, after: afterIntro });
   }
 
   /** 無限玄関ループ: ドアを開けるたびに1段ずつおかしくなる。最後は魔王 */
@@ -551,6 +556,8 @@ export class Game {
       bgm = 'bgm_demon';
       // 尋問中は証言台を映す
       if (this.court) this.renderer.setScene({ kind: 'bg', image: 'bg_court_witness', fallback: 'bg_court' });
+    } else if (s.name === 'battle') {
+      bgm = 'bgm_demon';
     } else if (s.name === 'loop') {
       bgm = 'bgm_demon';
       this.renderer.setScene({ kind: 'loop', level: s.level, started: performance.now() });
@@ -603,6 +610,8 @@ export class Game {
         return this.viewChoice(s);
       case 'loop':
         return this.viewLoop(s.level);
+      case 'battle':
+        return this.viewBattle(s);
       case 'gameover':
         return this.viewGameOver(s.reason, s.causes);
       case 'clear':
@@ -1236,6 +1245,104 @@ export class Game {
             s.options.map((o) =>
               h('button', { class: 'rpg-cmd', onclick: () => (this.audio.playSe('se_tap'), s.onPick(o)) }, `▶ ${o.label}`),
             ),
+          ),
+        ),
+      ),
+    ];
+  }
+
+  /**
+   * ロボット大戦風の戦闘画面。上に両者の HP、中央に向かい合う機体、下にパイロットの顔とセリフ。
+   * コマごとの演出（ミサイル・ノーダメージ・溜め・極太ビーム・撃墜）は CSS アニメーション。
+   */
+  private viewBattle(s: Extract<Screen, { name: 'battle' }>): Child[] {
+    const b = s.finale.battle!;
+    const step = b.steps[s.step];
+    const hpAt = (i: number, who: 'hero' | 'wife'): number => {
+      let hp = b[who].hp;
+      for (const x of b.steps.slice(0, i + 1)) hp = (who === 'hero' ? x.heroHp : x.wifeHp) ?? hp;
+      return hp;
+    };
+    if (this.battlePlayed !== step) {
+      // 効果音はそのコマを最初に出したときだけ
+      this.battlePlayed = step;
+      const se = (key: SeKey, ms: number) => window.setTimeout(() => this.audio.playSe(key), ms);
+      if (step.anim === 'attack') [0, 120, 240, 360, 480, 600].forEach((ms) => se('se_send', ms)), [900, 1050, 1200].forEach((ms) => se('se_slam', ms));
+      if (step.anim === 'zero') se('se_tap', 0);
+      if (step.anim === 'charge') se('se_demon', 0);
+      if (step.anim === 'finisher') se('se_objection', 0), se('se_demon', 500), [900, 1150, 1400, 1650].forEach((ms) => se('se_slam', ms));
+      if (step.anim === 'shotdown') [300, 700, 1100].forEach((ms) => se('se_guilty', ms));
+    }
+    const next = () => {
+      this.audio.playSe('se_tap');
+      if (s.step + 1 < b.steps.length) this.go({ ...s, step: s.step + 1 });
+      else s.after();
+    };
+    const hpPanel = (who: 'hero' | 'wife') => {
+      const u = b[who];
+      const now = hpAt(s.step, who);
+      const before = s.step > 0 ? hpAt(s.step - 1, who) : now;
+      const pct = (n: number) => `${(n / u.hp) * 100}%`;
+      return h(
+        'div',
+        { class: `b-hp is-${who}` },
+        h('small', {}, u.unit),
+        h(
+          'div',
+          { class: 'b-hp-bar' },
+          h('i', {
+            class: now < before ? 'drain' : '',
+            style: `--from:${pct(before)};--to:${pct(now)};width:${pct(now)}`,
+          }),
+        ),
+        h('b', {}, `HP ${now} / ${u.hp}`),
+      );
+    };
+    const unit = (who: 'hero' | 'wife') =>
+      h(
+        'div',
+        { class: `b-unit is-${who}` },
+        this.illust(`robot_${who}`, 'b-unit-img') ?? h('div', { class: 'b-unit-box' }, b[who].unit),
+      );
+    const anim = step.anim ?? 'none';
+    const fx: Child[] = [];
+    // 主人公の機体のまわりに散らばる爆発の位置
+    const BOOMS = [[8, 40], [22, 50], [4, 58], [26, 36], [14, 62], [18, 44], [10, 50]];
+    const boom = (i: number, cls = 'boom') =>
+      h('i', { class: cls, style: `--i:${i};--x:${BOOMS[i][0]}%;--y:${BOOMS[i][1]}%` });
+    if (anim === 'attack') {
+      fx.push([0, 1, 2, 3, 4, 5].map((i) => h('i', { class: 'missile', style: `--i:${i}` })));
+      fx.push([0, 1, 2, 3].map((i) => h('i', { class: 'puff', style: `--i:${i}` })));
+    }
+    if (anim === 'charge') fx.push(h('i', { class: 'aura' }), h('i', { class: 'converge' }));
+    if (anim === 'finisher') {
+      fx.push(h('i', { class: 'beam' }));
+      fx.push([0, 1, 2, 3, 4, 5].map((i) => boom(i)));
+    }
+    if (anim === 'shotdown') fx.push([0, 1, 2, 3, 4, 5, 6].map((i) => boom(i, 'boom big')));
+    if (step.damage) fx.push(h('b', { class: `b-damage is-${step.damage.to}` }, String(step.damage.value)));
+    const portrait =
+      step.speaker === 'narr'
+        ? null
+        : (this.illust(`pilot_${step.speaker}`, 'b-face') ??
+          this.illust(step.speaker === 'hero' ? 'hero' : 'wife_angry', 'b-face fallback'));
+    return [
+      h(
+        'div',
+        { class: `battle anim-${anim}${hpAt(s.step, 'hero') <= 0 ? ' hero-down' : ''}`, onclick: next },
+        h('div', { class: 'b-hud' }, hpPanel('hero'), hpPanel('wife')),
+        h('div', { class: 'b-field' }, unit('hero'), unit('wife'), fx),
+        step.attackName ? h('div', { class: `b-attack is-${step.speaker}` }, step.attackName) : null,
+        h(
+          'div',
+          { class: `b-msg is-${step.speaker}` },
+          portrait,
+          h(
+            'div',
+            {},
+            step.speaker === 'narr' ? null : h('b', {}, b[step.speaker].pilot),
+            h('p', {}, step.text),
+            h('small', { class: 'dim' }, '▼ タップ'),
           ),
         ),
       ),

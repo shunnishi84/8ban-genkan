@@ -597,6 +597,79 @@ warm cheerful colors, comedic. No text, no letters, no signs with writing, no wa
 
 ---
 
+## 11. スーパー夫婦大戦（ロボット大戦風フィナーレ）— Gemini 用
+
+暴言を4種送ったあとのフィナーレのひとつ。90年代のロボットSRPGの戦闘シーン風に、
+左に主人公の機体、右に妻の巨大な機体が向かい合い、下のメッセージ欄にパイロットの顔が出る。
+置いていない絵は、機体は四角＋名前、顔は既存の `hero.png` / `wife_angry.png`、背景は `bg_town.jpg` で代用される。
+
+| ファイル | 用途 | 添付する見本 |
+|---|---|---|
+| `bg_battle.jpg` | 戦闘の背景（縦 9:16） | `bg_town.jpg` |
+| `robot_hero.png` | 主人公の機体「サラリーマンガーZ」（右向き・白背景） | `hero.png` |
+| `robot_wife.png` | 妻の機体「グレートワイフ」（左向き・白背景） | `wife_demon.jpg` |
+| `pilot_hero.png` | メッセージ欄の主人公の顔（正方形） | `hero.png` |
+| `pilot_wife.png` | メッセージ欄の妻の顔（正方形） | `wife_suspicious.png` |
+
+機体と顔は白背景で作れば、こちらで切り抜く。**文字は入れない**。
+
+### 11-1. bg_battle.jpg（添付: bg_town.jpg）
+```
+Vertical 9:16. A battle backdrop for a 1990s-style Japanese mecha strategy RPG battle
+scene, side view: a Japanese residential city at night seen from rooftop height, a long
+row of apartment buildings and power lines forming a horizontal skyline across the
+middle, a wide empty open sky above with a few stars and a large full moon, a flat
+ground band in the lower half. Simple, clean, slightly retro 16-bit-inspired painted look
+with soft depth. No characters, no robots, no text, no letters, no watermark.
+```
+
+### 11-2. robot_hero.png（添付: hero.png）
+```
+A super-deformed (SD, chibi proportions, big head) giant robot in the style of 1990s
+Japanese mecha strategy RPG battle sprites, full body, side view facing RIGHT, standing
+in a heroic but slightly pathetic pose. The robot is themed after the tired salaryman in
+the attached image: white dress-shirt-colored armor, a navy necktie hanging from its
+chest plate, a briefcase used as a shield, a visor with tired droopy eyes, small dented
+shoulder plates, a tiny exhaust puffing a sigh. Mostly gray, white and navy.
+Plain pure white background, nothing else in the frame.
+Clean bold black outlines, flat cel shading. No text, no letters, no logos, no watermark.
+```
+
+### 11-3. robot_wife.png（添付: wife_demon.jpg）
+```
+A super-deformed (SD, chibi proportions) but HUGE, overwhelmingly powerful giant robot in
+the style of 1990s Japanese mecha strategy RPG battle sprites, full body, side view facing
+LEFT, towering and confident. The robot is themed after the woman in the attached image:
+a short dark bob-hair-shaped helmet with two curved horns, glowing pink eyes, armor shaped
+like a floral apron in crimson and cream with pink flower patterns, a giant ladle as a
+weapon in one hand, a household account book shaped shield, a big chest core glowing with
+pink energy, a flowing cape. Much bigger and more imposing than a normal robot.
+Plain pure white background, nothing else in the frame.
+Clean bold black outlines, flat cel shading, vivid colors. No text, no letters, no logos, no watermark.
+```
+
+### 11-4. pilot_hero.png（添付: hero.png）
+```
+Square 1:1. A pilot face portrait for the message window of a 1990s Japanese mecha
+strategy RPG: the man from the attached image (same face, short black hair, white dress
+shirt, loosened navy tie), bust shot facing slightly right, wearing a simple pilot headset,
+determined shouting expression with a drop of sweat, as if yelling an attack name.
+Plain pure white background.
+Japanese anime-style, clean bold black outlines, flat cel shading. No text, no watermark.
+```
+
+### 11-5. pilot_wife.png（添付: wife_suspicious.png）
+```
+Square 1:1. A pilot face portrait for the message window of a 1990s Japanese mecha
+strategy RPG: the woman from the attached image (same face, short dark bob hair, floral
+apron collar visible), bust shot facing slightly left, wearing a simple pilot headset,
+calm cold confident smile with eyes glinting, as if about to unleash a finishing move.
+Plain pure white background.
+Japanese anime-style, clean bold black outlines, flat cel shading. No text, no watermark.
+```
+
+---
+
 ## 置いたあとの確認
 
 1. `npm run dev` で起動

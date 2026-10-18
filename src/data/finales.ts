@@ -1,12 +1,39 @@
 import type { Clue } from '../core/types';
 
 /**
- * 暴言を4種すべて送った日だけに起きる「フィナーレ」。6本からランダムで1本。
+ * 暴言を4種すべて送った日だけに起きる「フィナーレ」。7本からランダムで1本。
  * どれも流血・暴力の描写はしない（暗転や比喩で済ませる）。
  */
-export type FinaleId = 'castle' | 'siege' | 'loop' | 'court' | 'lockout' | 'exposed';
+export type FinaleId = 'castle' | 'siege' | 'loop' | 'court' | 'lockout' | 'exposed' | 'robot';
 
-export const FINALE_IDS: FinaleId[] = ['castle', 'siege', 'loop', 'court', 'lockout', 'exposed'];
+export const FINALE_IDS: FinaleId[] = ['castle', 'siege', 'loop', 'court', 'lockout', 'exposed', 'robot'];
+
+/** ロボット大戦風の戦闘の参加者 */
+export interface BattleUnit {
+  /** パイロット名（メッセージ欄の名札） */
+  pilot: string;
+  /** 機体名（HP 欄） */
+  unit: string;
+  hp: number;
+}
+
+/**
+ * 戦闘の1コマ。タップで次へ。
+ * anim: attack = 攻撃（ミサイル）、zero = ノーダメージ、charge = 力を溜める、
+ * finisher = 必殺技（極太ビーム）、shotdown = 撃墜
+ */
+export interface BattleStep {
+  speaker: 'hero' | 'wife' | 'narr';
+  text: string;
+  /** 大きく出す技名 */
+  attackName?: string;
+  anim?: 'attack' | 'zero' | 'charge' | 'finisher' | 'shotdown';
+  /** この時点の HP（無ければ前のコマのまま） */
+  heroHp?: number;
+  wifeHp?: number;
+  /** 被弾した側に出すダメージ数値 */
+  damage?: { to: 'hero' | 'wife'; value: number };
+}
 
 export interface FinaleLine {
   who: 'me' | 'wife' | 'narr' | 'other';
@@ -58,7 +85,9 @@ export interface Finale {
   /** ゲームオーバー画面の「原因」 */
   title: string;
   /** 背景（renderer の Scene）。demon は魔王の演出、loop は無限玄関ループ、それ以外は画像キー */
-  scene: 'demon' | 'loop' | 'bg_court' | 'bg_siege' | 'bg_lockout' | 'bg_exposed';
+  scene: 'demon' | 'loop' | 'bg_court' | 'bg_siege' | 'bg_lockout' | 'bg_exposed' | 'bg_battle';
+  /** ロボット大戦風の戦闘（intro のあとに流し、終わったら outro） */
+  battle?: { hero: BattleUnit; wife: BattleUnit; steps: BattleStep[] };
   /** 4つ目の暴言を送った瞬間に出るメッセージ */
   onTrigger: string[];
   /** 送った瞬間にスマホが壊れて、以後スマホが使えなくなる */
@@ -427,5 +456,37 @@ export const FINALES: Record<FinaleId, Finale> = {
       { who: 'other', name: '妻（拡声器）', text: '本人、帰宅しました。' },
     ],
     outro: [{ who: 'narr', text: '拍手が起きた。誰も笑っていなかった。' }],
+  },
+
+  // I: スーパー夫婦大戦（往年のロボット大戦の戦闘シーン風）
+  robot: {
+    id: 'robot',
+    title: 'スーパー夫婦大戦',
+    scene: 'bg_battle',
+    onTrigger: ['……どこからか、やけに熱いBGMが聞こえてきた。'],
+    intro: [
+      { who: 'narr', text: 'ドアを開けた瞬間、視界が切り替わった。' },
+      { who: 'narr', text: '……マンションの廊下が、戦場になっている。' },
+      { who: 'wife', text: '出撃準備は、できてるわよね？' },
+      { who: 'narr', text: '──戦闘開始！' },
+    ],
+    battle: {
+      hero: { pilot: 'ダンナ', unit: 'サラリーマンガーZ', hp: 3200 },
+      wife: { pilot: 'ヨメ', unit: 'グレートワイフ', hp: 99999 },
+      steps: [
+        { speaker: 'hero', text: 'いくぞ！ 今日こそ言わせてもらう！' },
+        { speaker: 'hero', text: 'くらえっ！ 言い訳ミサイル！！', attackName: '言い訳ミサイル', anim: 'attack' },
+        { speaker: 'wife', text: '……今、何かした？', anim: 'zero', damage: { to: 'wife', value: 0 } },
+        { speaker: 'hero', text: 'そ、そんな……全弾命中したはずなのに……！' },
+        { speaker: 'wife', text: '次は、こっちの番ね。', anim: 'charge' },
+        { speaker: 'wife', text: '家計簿……バスタァァァーーッ！！', attackName: '超次元家計簿バスター', anim: 'finisher', heroHp: 0, damage: { to: 'hero', value: 9999 } },
+        { speaker: 'hero', text: 'うわあああああーーーっ！！', anim: 'shotdown' },
+        { speaker: 'narr', text: 'サラリーマンガーZは　撃墜された。' },
+      ],
+    },
+    outro: [
+      { who: 'wife', text: 'コンティニューは、ないから。' },
+      { who: 'narr', text: 'その夜、あなたは廊下で修理（反省）に専念した。' },
+    ],
   },
 };

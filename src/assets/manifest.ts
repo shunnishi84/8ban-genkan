@@ -103,6 +103,12 @@ export const IMAGES = {
   tv_capture: { file: 'tv_capture.jpg', label: 'テレビの画面', color: '#33415c' },
   kouhai_notice: { file: 'kouhai_notice.jpg', label: '後輩の通知', color: '#f2a7c3' },
   group_photo: { file: 'group_photo.jpg', label: '飲み会の集合写真', color: '#c98a4a' },
+  // スーパー夫婦大戦（ロボット大戦風フィナーレ）。背景が無ければ夜の街
+  bg_battle: { file: 'bg_battle.jpg', label: '戦闘背景', color: '#1d2333', fit: 'cover' },
+  robot_hero: { file: 'robot_hero.png', label: 'サラリーマンガーZ', color: '#8a96a8' },
+  robot_wife: { file: 'robot_wife.png', label: 'グレートワイフ', color: '#c0405a' },
+  pilot_hero: { file: 'pilot_hero.png', label: 'ダンナ', color: '#4b5a74' },
+  pilot_wife: { file: 'pilot_wife.png', label: 'ヨメ', color: '#7a1010' },
 } satisfies Record<string, ImageEntry>;
 
 /** アイテムID → 一覧に出すイラスト */
