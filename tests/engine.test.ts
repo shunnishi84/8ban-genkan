@@ -169,6 +169,17 @@ describe('新しい仕掛け', () => {
     expect(perform(other, { type: 'sendChat', template: 'meshi_recipe' }).ok).toBe(false);
   });
 
+  it('写真集の日だけ最低の言い訳が送れて、送ると火に油', () => {
+    expect(perform(day(['ring_off']), { type: 'sendChat', template: 'gravure_akiru' }).ok).toBe(false);
+    for (const id of ['gravure_hoyou', 'gravure_akiru', 'gravure_hikaku', 'gravure_shiryou', 'gravure_tomodachi']) {
+      const s = day(['gravure_found'], hm(23, 0));
+      for (const a of solve(s)!) if (a.type !== 'openDoor') perform(s, a);
+      expect(perform(s, { type: 'sendChat', template: id }).ok).toBe(true);
+      const o = perform(s, { type: 'openDoor' }).outcome;
+      expect(o.kind).toBe('angry');
+    }
+  });
+
   it('AV つけっぱなしの日だけ「とぼける」が送れて、送ると火に油', () => {
     expect(perform(day(['ring_off']), { type: 'sendChat', template: 'av_nanino' }).ok).toBe(false);
     const s = day(['av_left_on'], hm(23, 0));

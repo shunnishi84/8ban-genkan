@@ -136,6 +136,47 @@ export const CHAT_TEMPLATES: ChatTemplate[] = [
       'いいわ。明日から、ご飯はあなたが作って。サルでも出来るんでしょう？',
     ],
   },
+  // 写真集が見つかった日だけ出る、男として最低の言い訳。送ると火に油
+  {
+    id: 'gravure_hoyou',
+    text: 'あれは目の保養だよ！ 男はみんな持ってるって',
+    onlyWith: 'gravure_found',
+    replyRelevant: '目の保養。……じゃあ私は何？',
+    replyIrrelevant: '目の保養。……じゃあ私は何？',
+    provokeLines: ['「目の保養」。', '……毎日見てる私の顔は、目の毒ってことね。', '「男はみんな」？ じゃあ全員の奥さんに確認してくるわ。'],
+  },
+  {
+    id: 'gravure_akiru',
+    text: '毎日同じ顔ばっかり見てると、さすがに飽きるからさ',
+    onlyWith: 'gravure_found',
+    replyRelevant: '……飽きる。',
+    replyIrrelevant: '……飽きる。',
+    provokeLines: ['「飽きる」。', '奇遇ね。私も、あなたの言い訳にはもう飽きてるの。', '……明日から、しばらく顔を見せなくていいわよ。実家に帰るから。'],
+  },
+  {
+    id: 'gravure_hikaku',
+    text: 'おまえの良さを再認識するために、比較してたんだよ',
+    onlyWith: 'gravure_found',
+    replyRelevant: '比較。……結果は？',
+    replyIrrelevant: '比較。……結果は？',
+    provokeLines: ['「比較してた」。', '……で、付箋を貼ったのはどっちのページ？', '再認識できたなら、その本、もう要らないわよね。今ここで資源ゴミに出して。'],
+  },
+  {
+    id: 'gravure_shiryou',
+    text: 'あれは仕事の資料だから！ 夏のキャンペーンの参考に',
+    onlyWith: 'gravure_found',
+    replyRelevant: 'あなたの会社、事務機器メーカーよね？',
+    replyIrrelevant: 'あなたの会社、事務機器メーカーよね？',
+    provokeLines: ['夏のキャンペーンの資料。', '……付箋のページ、明日あなたの部長に見せて確認してもらう？', '「参考になりました」って、ちゃんと言うのよ。'],
+  },
+  {
+    id: 'gravure_tomodachi',
+    text: 'それ、友達から預かってるだけなんだよ',
+    onlyWith: 'gravure_found',
+    replyRelevant: 'へえ。お友達の名前は？',
+    replyIrrelevant: 'へえ。お友達の名前は？',
+    provokeLines: ['「友達から預かってる」。', '……中学生の言い訳ね。付箋の字、あなたの字だったけど。', 'じゃあ明日、そのお友達に返しに行きましょう。私も一緒に。'],
+  },
   // AV つけっぱなしの日だけ出る「とぼける」。バレているのでもちろん火に油
   {
     id: 'av_drama',
