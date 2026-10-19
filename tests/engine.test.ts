@@ -533,7 +533,6 @@ describe('暴言のランダム選択', () => {
 });
 
 describe('暴言4種コンプリートのフィナーレ', () => {
-  const ALL = CLASSIC_INSULTS;
   const withSeed = (finale: FinaleId, ids = ['neighbor_curry']) => {
     const s = day(ids);
     s.seed = finaleSeed(finale);
@@ -542,9 +541,9 @@ describe('暴言4種コンプリートのフィナーレ', () => {
 
   it('暴言が3つまでなら魔王、4つ全部ならフィナーレ', () => {
     const s = withSeed('court');
-    for (const t of ALL.slice(0, 3)) perform(s, { type: 'sendChat', template: t });
+    for (const t of CLASSIC_INSULTS.slice(0, 3)) perform(s, { type: 'sendChat', template: t });
     expect(s.finale).toBeUndefined();
-    perform(s, { type: 'sendChat', template: ALL[3] });
+    perform(s, { type: 'sendChat', template: CLASSIC_INSULTS[3] });
     expect(s.finale).toBe('court');
     const r = perform(s, { type: 'openDoor' });
     expect(r.outcome).toEqual({ kind: 'finale', finale: 'court' });
@@ -562,14 +561,14 @@ describe('暴言4種コンプリートのフィナーレ', () => {
   it('7本すべてが seed で選ばれうる', () => {
     for (const id of FINALE_IDS) {
       const s = withSeed(id);
-      for (const t of ALL) perform(s, { type: 'sendChat', template: t });
+      for (const t of CLASSIC_INSULTS) perform(s, { type: 'sendChat', template: t });
       expect(s.finale).toBe(id);
     }
   });
 
   it('魔王城: 4つ目を送った瞬間にスマホが割れて、以後スマホは使えない', () => {
     const s = withSeed('castle');
-    for (const t of ALL) perform(s, { type: 'sendChat', template: t });
+    for (const t of CLASSIC_INSULTS) perform(s, { type: 'sendChat', template: t });
     expect(s.flags.has('phone_broken')).toBe(true);
     expect(perform(s, { type: 'openApp', app: 'chat' }).ok).toBe(false);
     expect(perform(s, { type: 'order', item: 'bouquet' }).ok).toBe(false);
@@ -578,7 +577,7 @@ describe('暴言4種コンプリートのフィナーレ', () => {
   it('魔王城: 街にいても玄関前へワープさせられ、結界で引き返せない', () => {
     const s = withSeed('castle');
     s.location = 'konbini';
-    const msgs = ALL.flatMap((t) => perform(s, { type: 'sendChat', template: t }).messages);
+    const msgs = CLASSIC_INSULTS.flatMap((t) => perform(s, { type: 'sendChat', template: t }).messages);
     expect(s.location).toBe('door');
     expect(msgs.join()).toContain('玄関の前に立っていた');
     const t0 = s.time;
@@ -594,7 +593,7 @@ describe('暴言4種コンプリートのフィナーレ', () => {
 
   it('魔王城以外のフィナーレでは引き返せる', () => {
     const s = withSeed('court');
-    for (const t of ALL) perform(s, { type: 'sendChat', template: t });
+    for (const t of CLASSIC_INSULTS) perform(s, { type: 'sendChat', template: t });
     expect(perform(s, { type: 'travel', to: 'town' }).ok).toBe(true);
   });
 
@@ -608,14 +607,14 @@ describe('暴言4種コンプリートのフィナーレ', () => {
   it('包囲網: 4つ目を送った瞬間に義母・義父・友達・上司の通知が届く', () => {
     const s = withSeed('siege');
     const before = visibleClues(s, 'notice').length;
-    for (const t of ALL) perform(s, { type: 'sendChat', template: t });
+    for (const t of CLASSIC_INSULTS) perform(s, { type: 'sendChat', template: t });
     expect(visibleClues(s, 'notice').length).toBe(before + 4);
   });
 
   it('フィナーレが決まった日は、時間切れでもフィナーレ', () => {
     const s = withSeed('lockout');
     s.time = hm(24, 50);
-    for (const t of ALL) perform(s, { type: 'sendChat', template: t });
+    for (const t of CLASSIC_INSULTS) perform(s, { type: 'sendChat', template: t });
     expect(perform(s, { type: 'travel', to: 'town' }).outcome).toEqual({ kind: 'finale', finale: 'lockout' });
   });
 });

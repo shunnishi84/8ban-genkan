@@ -3,7 +3,6 @@ export type Child = Node | string | number | null | undefined | false | Child[];
 type Props = {
   class?: string;
   disabled?: boolean;
-  title?: string;
   [event: `on${string}`]: ((e: Event) => void) | undefined;
 } & Record<string, unknown>;
 
@@ -18,7 +17,6 @@ export const h = <K extends keyof HTMLElementTagNameMap>(
     if (v === undefined || v === false) continue;
     if (k === 'class') el.className = String(v);
     else if (k.startsWith('on') && typeof v === 'function') el.addEventListener(k.slice(2), v as EventListener);
-    else if (k === 'disabled') (el as HTMLButtonElement).disabled = Boolean(v);
     else el.setAttribute(k, String(v));
   }
   append(el, children);

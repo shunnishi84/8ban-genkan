@@ -53,11 +53,11 @@ const OVERLAY_RECTS: Record<string, Rect> = {
 export type Scene =
   | { kind: 'door'; visuals: string[] }
   | { kind: 'bg'; image: ImageKey; fallback?: ImageKey }
-  | { kind: 'angry'; started: number; image: 'wife_angry' | 'wife_dark' }
+  | { kind: 'angry'; image: 'wife_angry' | 'wife_dark' }
   /** final: 魔王の最終形態（缶ビール3本＋暴言コンプリートの魔王城） */
-  | { kind: 'demon'; started: number; final?: boolean }
+  | { kind: 'demon'; final?: boolean }
   /** 無限玄関ループ: level が上がるほど玄関がおかしくなる */
-  | { kind: 'loop'; level: number; started: number }
+  | { kind: 'loop'; level: number }
   /** grudging: 渋々許す日は無表情の妻（画像が無ければ笑顔で代用） */
   | { kind: 'home'; grudging?: boolean }
   | { kind: 'clear' }
@@ -68,6 +68,8 @@ export class Renderer {
   private ctx: CanvasRenderingContext2D;
   private scene: Scene = { kind: 'title' };
   private raf = 0;
+  /** 今の場面が始まった時刻（動く場面のアニメーション用） */
+  private started = 0;
 
   constructor(
     parent: HTMLElement,
@@ -85,13 +87,13 @@ export class Renderer {
 
   setScene(scene: Scene) {
     this.scene = scene;
-    cancelAnimationFrame(this.raf);
+    this.started = performance.now();
     this.draw();
   }
 
   /** 画像の読み込み完了時などに呼ぶ */
   redraw() {
-    if (this.scene.kind !== 'angry' && this.scene.kind !== 'demon' && this.scene.kind !== 'loop') this.draw();
+    this.draw();
   }
 
   private resize() {
@@ -113,10 +115,15 @@ export class Renderer {
     if (hit) this.onSpot(hit);
   }
 
+  /**
+   * 今の場面を描く。動く場面（怒り・魔王・ループ）は毎フレーム描き直す。
+   * 描き直しの予約は常に1本だけ（場面の切り替え・画面の回転・画像の読み込みのたびに前の予約を取り消す）
+   */
   private draw() {
-    const { ctx } = this;
-    ctx.clearRect(0, 0, W, H);
+    cancelAnimationFrame(this.raf);
+    this.ctx.clearRect(0, 0, W, H);
     const s = this.scene;
+    const t = (performance.now() - this.started) / 1000;
     switch (s.kind) {
       case 'title':
         this.drawImage('bg_title', FULL, false);
@@ -128,7 +135,7 @@ export class Renderer {
         this.drawImage(s.fallback && !this.images.get(s.image) && this.images.get(s.fallback) ? s.fallback : s.image, FULL);
         break;
       case 'loop':
-        this.drawLoop(s.level, s.started);
+        this.drawLoop(s.level, t);
         break;
       case 'home':
         this.drawImage(s.grudging && this.images.get('wife_sullen') ? 'wife_sullen' : 'wife_smile', FULL);
@@ -137,28 +144,39 @@ export class Renderer {
         this.drawImage('clear', FULL);
         break;
       case 'angry':
-        this.drawAngry(s.started, s.image);
+        this.drawAngry(t, s.image);
         break;
       case 'demon':
-        this.drawDemon(s.started, s.final);
+        this.drawDemon(t, s.final);
         break;
     }
+    if (s.kind === 'angry' || s.kind === 'demon' || s.kind === 'loop') this.raf = requestAnimationFrame(() => this.draw());
+  }
+
+  /** 画面全体を塗る */
+  private fillAll(style: string | CanvasGradient) {
+    this.ctx.fillStyle = style;
+    this.ctx.fillRect(0, 0, W, H);
+  }
+
+  /** 画面全体を円形のグラデーションで塗る */
+  private fillRadial(cx: number, cy: number, r0: number, r1: number, stops: [number, string][]) {
+    const g = this.ctx.createRadialGradient(cx, cy, r0, cx, cy, r1);
+    for (const [o, c] of stops) g.addColorStop(o, c);
+    this.fillAll(g);
   }
 
   private drawDoorScene(visuals: string[]) {
-    const { ctx } = this;
     // 一枚絵の下に余る部分は床の色で埋める
-    ctx.fillStyle = '#39424f';
-    ctx.fillRect(0, 0, W, H);
+    this.fillAll('#39424f');
     const composite = this.images.get('bg_door') !== null;
     this.drawImage('bg_door', DOOR_BG_RECT, false);
     if (!composite) {
       // 一枚絵が無いときだけ、廊下の灯りの雰囲気を足す
-      const g = ctx.createRadialGradient(180, 60, 10, 180, 60, 240);
-      g.addColorStop(0, 'rgba(200,230,255,0.25)');
-      g.addColorStop(1, 'rgba(200,230,255,0)');
-      ctx.fillStyle = g;
-      ctx.fillRect(0, 0, W, H);
+      this.fillRadial(180, 60, 10, 240, [
+        [0, 'rgba(200,230,255,0.25)'],
+        [1, 'rgba(200,230,255,0)'],
+      ]);
     }
     for (const spot of ['hallway', 'door', 'window', 'nameplate', 'floor'] as SpotId[]) {
       // 一枚絵があればパーツは個別画像があるときだけ重ねる
@@ -170,12 +188,8 @@ export class Renderer {
     }
   }
 
-  private drawAngry(started: number, image: 'wife_angry' | 'wife_dark') {
-    const t = (performance.now() - started) / 1000;
-    const { ctx } = this;
-    ctx.clearRect(0, 0, W, H);
-    ctx.fillStyle = image === 'wife_angry' ? '#2a0505' : '#0d0d14';
-    ctx.fillRect(0, 0, W, H);
+  private drawAngry(t: number, image: 'wife_angry' | 'wife_dark') {
+    this.fillAll(image === 'wife_angry' ? '#2a0505' : '#0d0d14');
     const shake = image === 'wife_angry' ? Math.min(1, t) * Math.sin(t * 40) * 3 : 0;
     const zoom = 1 + Math.min(t, 1.5) * 0.04;
     const r = { x: (W - W * zoom) / 2 + shake, y: (H - H * zoom) / 2, w: W * zoom, h: H * zoom };
@@ -195,29 +209,24 @@ export class Renderer {
     if (image === 'wife_angry') {
       // 画面の縁を赤く脈打たせる
       const a = 0.25 + Math.sin(t * 6) * 0.1;
-      const g = ctx.createRadialGradient(W / 2, H / 2, H * 0.3, W / 2, H / 2, H * 0.7);
-      g.addColorStop(0, 'rgba(255,40,0,0)');
-      g.addColorStop(1, `rgba(255,40,0,${a})`);
-      ctx.fillStyle = g;
-      ctx.fillRect(0, 0, W, H);
+      this.fillRadial(W / 2, H / 2, H * 0.3, H * 0.7, [
+        [0, 'rgba(255,40,0,0)'],
+        [1, `rgba(255,40,0,${a})`],
+      ]);
     }
-    this.raf = requestAnimationFrame(() => this.drawAngry(started, image));
   }
 
   /**
    * 暴言を送った日の結末: 邪悪なオーラを放つ魔王化した妻。
    * wife_demon 画像が無いあいだは wife_angry を紫に染めて代用する。
    */
-  private drawDemon(started: number, final = false) {
-    const t = (performance.now() - started) / 1000;
+  private drawDemon(t: number, final = false) {
     const { ctx } = this;
     // 最終形態は紫ではなく血のような赤と黒。光線は倍の速さで、稲妻も多い
     const pal = final
       ? { bg: '#0d0203', ray: ['rgba(200,10,30,0.28)', 'rgba(20,0,0,0.5)'], aura: [220, 20, 40], mid: 'rgba(120,0,10,0.4)', ember: 'rgba(255,60,40,0.85)', flash: '255,200,190', vig: 'rgba(15,0,0,0.9)', tint: 'rgba(170,20,30,0.85)' }
       : { bg: '#07020d', ray: ['rgba(120,20,190,0.22)', 'rgba(40,0,70,0.35)'], aura: [190, 60, 255], mid: 'rgba(90,0,150,0.35)', ember: 'rgba(200,90,255,0.8)', flash: '235,220,255', vig: 'rgba(10,0,20,0.85)', tint: 'rgba(110,40,180,0.85)' };
-    ctx.clearRect(0, 0, W, H);
-    ctx.fillStyle = pal.bg;
-    ctx.fillRect(0, 0, W, H);
+    this.fillAll(pal.bg);
 
     // 背後で回る闇の光線
     ctx.save();
@@ -238,17 +247,16 @@ export class Renderer {
 
     // 脈打つオーラ
     const pulse = 0.55 + Math.sin(t * (final ? 9 : 5)) * 0.2;
-    const aura = ctx.createRadialGradient(W / 2, H * 0.45, 30, W / 2, H * 0.45, H * 0.55);
-    aura.addColorStop(0, `rgba(${pal.aura.join(',')},${pulse})`);
-    aura.addColorStop(0.5, pal.mid);
-    aura.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle = aura;
-    ctx.fillRect(0, 0, W, H);
+    this.fillRadial(W / 2, H * 0.45, 30, H * 0.55, [
+      [0, `rgba(${pal.aura.join(',')},${pulse})`],
+      [0.5, pal.mid],
+      [1, 'rgba(0,0,0,0)'],
+    ]);
 
     // 妻（魔王）。震えは怒りより大きく
     const shake = Math.min(1, t) * Math.sin(t * 55) * (final ? 9 : 5);
+    const dy = Math.cos(t * 47) * 2;
     const zoom = 1.02 + Math.min(t, 2) * 0.05;
-    const r = { x: (W - W * zoom) / 2 + shake, y: (H - H * zoom) / 2 + Math.cos(t * 47) * 2, w: W * zoom, h: H * zoom };
     // 最終形態の絵が無ければ、いつもの魔王を赤黒く染めて代用する
     const key = final && this.images.get('wife_demon_final') ? 'wife_demon_final' : 'wife_demon';
     const demon = this.images.get(key);
@@ -256,29 +264,14 @@ export class Renderer {
       // 横幅いっぱい・縦は中央。上下の余白は回る光線とオーラが埋める
       const w = W * zoom;
       const h = (w * demon.naturalHeight) / demon.naturalWidth;
-      const rect = { x: (W - w) / 2 + shake, y: (H - h) / 2 + Math.cos(t * 47) * 2, w, h };
+      const rect = { x: (W - w) / 2 + shake, y: (H - h) / 2 + dy, w, h };
       this.drawImage(key, rect);
-      if (final && key === 'wife_demon') {
-        ctx.save();
-        ctx.globalCompositeOperation = 'multiply';
-        ctx.fillStyle = 'rgba(255,70,70,1)';
-        ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
-        ctx.globalCompositeOperation = 'screen';
-        ctx.fillStyle = `rgba(160,0,20,${0.18 + Math.sin(t * 9) * 0.08})`;
-        ctx.fillRect(0, 0, W, H);
-        ctx.restore();
-      }
+      // 最終形態の絵が無いときは赤黒く染める
+      if (final && key === 'wife_demon') this.tint('rgba(255,70,70,1)', rect, `rgba(160,0,20,${0.18 + Math.sin(t * 9) * 0.08})`);
     } else {
-      this.drawImage('wife_angry', r);
+      this.drawImage('wife_angry', { x: (W - W * zoom) / 2 + shake, y: (H - H * zoom) / 2 + dy, w: W * zoom, h: H * zoom });
       // 代用: 紫に染めて闇落ちさせる
-      ctx.save();
-      ctx.globalCompositeOperation = 'multiply';
-      ctx.fillStyle = pal.tint;
-      ctx.fillRect(0, 0, W, H);
-      ctx.globalCompositeOperation = 'screen';
-      ctx.fillStyle = `rgba(150,40,255,${0.15 + Math.sin(t * 5) * 0.08})`;
-      ctx.fillRect(0, 0, W, H);
-      ctx.restore();
+      this.tint(pal.tint, FULL, `rgba(150,40,255,${0.15 + Math.sin(t * 5) * 0.08})`);
     }
 
     // 立ちのぼる闇の火の粉
@@ -296,23 +289,30 @@ export class Renderer {
     // ときどき稲妻で画面が白く光る
     const phase = t % (final ? 1.1 : 2.3);
     if (phase < 0.12) {
-      ctx.fillStyle = `rgba(${pal.flash},${0.75 - phase * 6})`;
-      ctx.fillRect(0, 0, W, H);
+      this.fillAll(`rgba(${pal.flash},${0.75 - phase * 6})`);
     }
 
     // 画面の縁を闇で締める
-    const vignette = ctx.createRadialGradient(W / 2, H / 2, H * 0.25, W / 2, H / 2, H * 0.75);
-    vignette.addColorStop(0, 'rgba(0,0,0,0)');
-    vignette.addColorStop(1, pal.vig);
-    ctx.fillStyle = vignette;
-    ctx.fillRect(0, 0, W, H);
+    this.fillRadial(W / 2, H / 2, H * 0.25, H * 0.75, [
+      [0, 'rgba(0,0,0,0)'],
+      [1, pal.vig],
+    ]);
+  }
 
-    this.raf = requestAnimationFrame(() => this.drawDemon(started, final));
+  /** 絵を色で染める（rect を乗算で染め、画面全体に発光色を重ねる） */
+  private tint(multiply: string, rect: Rect, screen: string) {
+    const { ctx } = this;
+    ctx.save();
+    ctx.globalCompositeOperation = 'multiply';
+    ctx.fillStyle = multiply;
+    ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
+    ctx.globalCompositeOperation = 'screen';
+    this.fillAll(screen);
+    ctx.restore();
   }
 
   /** 無限玄関ループ: 段階的に「異変」を足していく（8番出口オマージュ） */
-  private drawLoop(level: number, started: number) {
-    const t = (performance.now() - started) / 1000;
+  private drawLoop(level: number, t: number) {
     const { ctx } = this;
     ctx.save();
     // 5周目以降は画面が横にずれる
@@ -321,8 +321,7 @@ export class Renderer {
     ctx.restore();
 
     // 周を重ねるごとに赤黒く沈む
-    ctx.fillStyle = `rgba(60,0,10,${Math.min(0.45, level * 0.05)})`;
-    ctx.fillRect(0, 0, W, H);
+    this.fillAll(`rgba(60,0,10,${Math.min(0.45, level * 0.05)})`);
     if (level >= 3) {
       // 表札が『魔』
       const r = SPOT_RECTS.nameplate;
@@ -369,10 +368,8 @@ export class Renderer {
       ctx.fill();
     }
     if (level >= 8 && Math.sin(t * 9) > 0.6) {
-      ctx.fillStyle = 'rgba(255,0,30,0.12)';
-      ctx.fillRect(0, 0, W, H);
+      this.fillAll('rgba(255,0,30,0.12)');
     }
-    this.raf = requestAnimationFrame(() => this.drawLoop(level, started));
   }
 
   /** 画像があれば描き、無ければ「仮の四角＋ラベル」 */

@@ -82,7 +82,6 @@ const FX_SE: Partial<Record<FinaleFx, SeKey>> = {
   guilty: 'se_guilty',
 };
 
-type SceneSpec = Scene;
 
 type TalkScreen = {
   name: 'talk';
@@ -93,7 +92,7 @@ type TalkScreen = {
   alone?: boolean;
   grudging?: boolean;
   /** 指定すると最初の行でこの背景にする。finale で省略すると直前の背景を引き継ぐ */
-  scene?: SceneSpec;
+  scene?: Scene;
   lines: Line[];
   index: number;
   after: () => void;
@@ -134,6 +133,12 @@ const INTRO_FLAVOR = [
 
 const DEMON_REASON = '暴言による魔王化';
 
+/** 0, 1, …, n-1 */
+const range = (n: number) => [...Array(n).keys()];
+
+/** 同じ話し手のセリフをまとめて会話の行にする */
+const say = (who: Speaker, texts: string[]): Line[] => texts.map((text) => ({ who, text }));
+
 /** 商品の値段と説明の1行 */
 const priceLine = (item: ItemDef | undefined, note: string) => `¥${item?.price?.toLocaleString()}　${note}`;
 
@@ -155,10 +160,8 @@ export class Game {
   private day: DayState | null = null;
   private screen: Screen = { name: 'title' };
   private modal: Modal | null = null;
-  /** 演出の効果音を鳴らし終えた行（同じ行を描き直しても二度鳴らさない） */
-  private fxPlayed: Line | null = null;
-  /** 戦闘のコマの効果音を鳴らし終えたか */
-  private battlePlayed: unknown = null;
+  /** 演出の効果音を鳴らし終えた行・戦闘のコマ（同じものを描き直しても二度鳴らさない） */
+  private sePlayed: unknown = null;
   /** 横スクロール用につないだ戦闘背景（data URL） */
   private stripUrl: string | null = null;
   /** 家庭裁判の最中（会話ウィンドウを法廷風にする） */
@@ -168,8 +171,8 @@ export class Game {
   /** 酔いの霧（画面全体に重ねる） */
   private fog: HTMLElement;
   private best = loadBest();
-  private params = new URLSearchParams(location.search);
-  private debug = this.params.has('debug');
+  /** ?debug のときだけ URL のパラメータ（シナリオ・フィナーレ・時刻の固定）を読む */
+  private debug = new URLSearchParams(location.search).has('debug') ? new URLSearchParams(location.search) : null;
 
   constructor(private root: HTMLElement) {
     // 画像が届いたら Canvas を描き直し、UI 内のイラストも出すために DOM だけ作り直す
@@ -213,16 +216,16 @@ export class Game {
 
   private beginDay() {
     // ?debug&scenario=a,b で その日のシナリオを固定できる（シナリオ追加時の動作確認用）
-    const forced = this.debug ? this.params.get('scenario') : null;
+    const forced = this.debug?.get('scenario');
     const scenarios = forced?.split(',').map((id) => SCENARIO_MAP[id]).filter(Boolean);
     this.day = scenarios?.length
       ? buildDay(this.run.day, scenarios, startTimeFor(this.run.day, Math.random()), Math.random())
       : startDay(this.run, Math.random);
     // ?debug&finale=court で、暴言4種コンプリート時のフィナーレを固定できる
-    const finale = this.debug ? (this.params.get('finale') as FinaleId | null) : null;
+    const finale = this.debug?.get('finale') as FinaleId | null | undefined;
     if (finale && FINALE_IDS.includes(finale)) this.day.seed = finaleSeed(finale);
     // ?debug&time=26:05 で開始時刻を変えられる（深夜の締め出しの確認用）
-    const time = this.debug ? this.params.get('time')?.split(':').map(Number) : undefined;
+    const time = this.debug?.get('time')?.split(':').map(Number);
     if (time?.length === 2) this.day.time = this.day.startTime = hm(time[0], time[1]);
     this.go({ name: 'intro' });
   }
@@ -246,13 +249,9 @@ export class Game {
 
     switch (r.outcome.kind) {
       case 'late':
-        this.gameOver('late', []);
-        return false;
       case 'dawn':
-        this.gameOver('dawn', []);
-        return false;
       case 'angry':
-        this.gameOver('angry', r.outcome.causes);
+        this.gameOver(r.outcome.kind, r.outcome.kind === 'angry' ? r.outcome.causes : []);
         return false;
       case 'demon':
         this.demonEnding(r.outcome.lines);
@@ -293,7 +292,7 @@ export class Game {
           ]
         : [
             { who: 'narr', text: 'ガチャ……' },
-            ...causes[0].angerLines.map((text) => ({ who: 'wife' as const, text })),
+            ...say('wife', causes[0].angerLines),
             ...(causes.length > 1
               ? [{ who: 'narr' as const, text: `さらに${causes.length - 1}件の火種が燃え上がった……！` }]
               : []),
@@ -311,7 +310,7 @@ export class Game {
       ...(alone ? [{ who: 'narr' as const, text: '実家にいるはずの妻の靴が、玄関にある。' }] : []),
       { who: 'narr', text: 'ガチャ……' },
       { who: 'narr', text: '玄関の空気が、凍りついた。' },
-      ...demonLines.map((text) => ({ who: 'wife' as const, text })),
+      ...say('wife', demonLines),
       { who: 'narr', text: '妻は、人であることをやめた。' },
     ];
     this.talk('demon', lines, this.toGameOver(DEMON_REASON, { demon: true }));
@@ -329,13 +328,13 @@ export class Game {
 
   // ---------------------------------------------------------------- フィナーレ（暴言4種コンプリート）
 
-  private finaleScene(f: Finale): SceneSpec {
-    if (f.scene === 'demon' || f.scene === 'loop') return { kind: 'demon', started: performance.now(), final: this.finalForm };
+  private finaleScene(f: Finale): Scene {
+    if (f.scene === 'demon' || f.scene === 'loop') return { kind: 'demon', final: this.finalForm };
     return { kind: 'bg', image: f.scene, fallback: f.scene === 'bg_battle' ? 'bg_town' : 'bg_door_dark' };
   }
 
   /** 家庭裁判のカメラ: 話している人の席を映す（その絵が無ければ法廷全体） */
-  private courtCamera(line: Line): SceneSpec {
+  private courtCamera(line: Line): Scene {
     const n = line.name ?? '';
     const image: ImageKey =
       line.fx === 'guilty' || n.startsWith('裁判長')
@@ -443,20 +442,20 @@ export class Game {
           // 妻は先に寝ている: 誰も出てこない。ほかの火種への一言は翌朝に聞く
           { who: 'me', text: 'ただいま……（小声）' },
           { who: 'narr', text: '……返事はない。妻は、もう寝ているようだ。' },
-          ...asleep.map((text) => ({ who: 'narr' as const, text })),
+          ...say('narr', asleep),
           { who: 'narr', text: '……今日も、平穏な1日だった。' },
-          ...(successLines.length ? [{ who: 'narr' as const, text: '──翌朝。' }, ...successLines.map((text) => ({ who: 'wife' as const, text }))] : []),
+          ...(successLines.length ? [{ who: 'narr' as const, text: '──翌朝。' }, ...say('wife', successLines)] : []),
         ]
       : alone
       ? [
           { who: 'me', text: 'ただいま……' },
           { who: 'narr', text: 'シーン……。返事はない。' },
-          ...successLines.map((text) => ({ who: 'narr' as const, text })),
+          ...say('narr', successLines),
         ]
       : [
           { who: 'me', text: 'ただいま……' },
           { who: 'wife', text: grudging ? '……おかえり。' : 'おかえり。' },
-          ...successLines.map((text) => ({ who: 'wife' as const, text })),
+          ...say('wife', successLines),
         ];
     const cleared = advanceRun(this.run);
     // 連続帰宅が伸びるのは帰宅できたときだけなので、最高記録の更新もここだけ
@@ -475,7 +474,7 @@ export class Game {
   }
 
   /** フィナーレの締め（outro があれば見せてからゲームオーバー） */
-  private finaleOutro(f: Finale, scene?: SceneSpec) {
+  private finaleOutro(f: Finale, scene?: Scene) {
     const end = this.toGameOver(f.title, { finale: f.id });
     if (f.outro.length) this.talk('finale', this.expand(f.outro), end, { scene });
     else end();
@@ -586,12 +585,12 @@ export class Game {
       } else if (s.index === 0) {
         this.renderer.setScene(
           s.mood === 'demon'
-            ? { kind: 'demon', started: performance.now() }
+            ? { kind: 'demon' }
             : s.mood === 'home'
             ? s.alone
               ? { kind: 'bg', image: 'bg_door_dark' }
               : { kind: 'home', grudging: s.grudging }
-            : { kind: 'angry', started: performance.now(), image: s.late ? 'wife_dark' : 'wife_angry' },
+            : { kind: 'angry', image: s.late ? 'wife_dark' : 'wife_angry' },
         );
       }
     } else if (s.name === 'choice') {
@@ -602,7 +601,7 @@ export class Game {
       bgm = 'bgm_demon';
     } else if (s.name === 'loop') {
       bgm = 'bgm_demon';
-      this.renderer.setScene({ kind: 'loop', level: s.level, started: performance.now() });
+      this.renderer.setScene({ kind: 'loop', level: s.level });
     } else if (s.name === 'gameover') {
       const demon = !!s.demon || !!s.finale;
       bgm = demon ? 'bgm_demon' : 'bgm_angry';
@@ -611,7 +610,7 @@ export class Game {
         s.finale
           ? this.finaleScene(FINALES[s.finale])
           : demon
-            ? { kind: 'demon', started: performance.now() }
+            ? { kind: 'demon' }
             : { kind: 'bg', image: 'wife_suspicious' },
       );
     } else if (s.name === 'clear') {
@@ -1015,7 +1014,8 @@ export class Game {
         ),
       ];
     } else if (app === 'chat') body = this.viewChat();
-    else if (app === 'sns') body = this.viewSns();
+    // つぶやきーは自分の投稿があるときだけ専用の画面（無ければ普通のアプリと同じ）
+    else if (app === 'sns' && visibleClues(day, 'app:sns').length) body = this.viewSns();
     else if (app === 'shop') body = this.viewShop();
     else body = h('div', { class: `paper ${app}` }, this.clueTexts(`app:${app}`, APP_BASE[app] ?? ''));
 
@@ -1090,7 +1090,6 @@ export class Game {
   private viewSns(): Child {
     const day = this.day!;
     const clues = visibleClues(day, 'app:sns');
-    if (clues.length === 0) return h('div', { class: 'paper sns' }, h('p', { class: 'desc' }, APP_BASE.sns ?? ''));
     return h(
       'div',
       { class: 'sns-feed' },
@@ -1100,7 +1099,7 @@ export class Game {
         return h(
           'div',
           { class: `sns-post mine${deleted ? ' deleted' : ''}` },
-          deleted ? h('p', { class: 'desc' }, 'この投稿は削除されました') : h('p', { class: 'desc' }, c.text),
+          h('p', { class: 'desc' }, deleted ? 'この投稿は削除されました' : c.text),
           deleted
             ? null
             : h('button', { class: 'btn small danger', onclick: () => this.act({ type: 'deletePost', clue: c.id! }, 'se_discard') }, `投稿を削除（${COST.deletePost}分）`),
@@ -1216,9 +1215,9 @@ export class Game {
     };
     const who = line.name ?? { me: 'あなた', wife: '妻', narr: '', other: '' }[line.who];
     const fx = line.fx;
-    if (fx && this.fxPlayed !== line) {
+    if (fx && this.sePlayed !== line) {
       // 演出の効果音は、その行を最初に出したときだけ
-      this.fxPlayed = line;
+      this.sePlayed = line;
       const se = FX_SE[fx];
       if (se) this.audio.playSe(se);
       if (fx === 'gavel') this.playSeAt('se_gavel', 260, 520);
@@ -1318,9 +1317,9 @@ export class Game {
       for (const x of b.steps.slice(0, i + 1)) hp = (who === 'hero' ? x.heroHp : x.wifeHp) ?? hp;
       return hp;
     };
-    if (this.battlePlayed !== step) {
+    if (this.sePlayed !== step) {
       // 効果音はそのコマを最初に出したときだけ
-      this.battlePlayed = step;
+      this.sePlayed = step;
       if (step.anim === 'attack') this.playSeAt('se_send', 0, 120, 240, 360, 480, 600), this.playSeAt('se_slam', 1450, 1600, 1750);
       if (step.anim === 'zero') this.playSeAt('se_tap', 0);
       if (step.anim === 'charge') this.playSeAt('se_demon', 0);
@@ -1337,6 +1336,7 @@ export class Game {
       const now = hpAt(s.step, who);
       const before = s.step > 0 ? hpAt(s.step - 1, who) : now;
       const pct = (n: number) => `${(n / u.hp) * 100}%`;
+      const drop = now < before;
       return h(
         'div',
         { class: `b-hp is-${who}` },
@@ -1345,12 +1345,12 @@ export class Game {
           'div',
           { class: 'b-hp-bar' },
           h('i', {
-            class: now < before ? 'drain' : '',
+            class: drop ? 'drain' : '',
             style: `--from:${pct(before)};--to:${pct(now)};width:${pct(now)}`,
           }),
         ),
         // 減ったコマでは、ゲージが減り切ってから数値が切り替わる
-        now < before
+        drop
           ? h('b', {}, 'HP ', h('span', { class: 'hp-swap' }, h('span', { class: 'hp-old' }, String(before)), h('span', { class: 'hp-new' }, String(now))), ` / ${u.hp}`)
           : h('b', {}, `HP ${now} / ${u.hp}`),
       );
@@ -1375,7 +1375,9 @@ export class Game {
     type Part = 'solo' | 'fire' | 'hit';
     const twoShot = anim === 'attack' || anim === 'finisher';
     const attacker: Cam = anim === 'attack' ? 'hero' : 'wife';
-    const solo: Cam = step.cam ?? (step.speaker === 'narr' ? 'wife' : step.speaker);
+    // 話し手の側（ナレーションは妻の側）。カメラと背景の流れる向きの既定
+    const side: Cam = step.speaker === 'narr' ? 'wife' : step.speaker;
+    const solo: Cam = step.cam ?? side;
     const shots: [Cam, Part][] = twoShot
       ? [
           [attacker, 'fire'],
@@ -1384,15 +1386,15 @@ export class Game {
       : [[solo, 'solo']];
     const shot = (cam: Cam, part: Part, i: number) => {
       const fx: Child[] = [];
-      if (anim === 'attack' && part === 'fire') fx.push([0, 1, 2, 3, 4, 5].map((k) => h('i', { class: 'missile out', style: `--i:${k}` })));
+      if (anim === 'attack' && part === 'fire') fx.push(range(6).map((k) => h('i', { class: 'missile out', style: `--i:${k}` })));
       if (anim === 'attack' && part === 'hit') {
-        fx.push([0, 1, 2, 3, 4, 5].map((k) => h('i', { class: 'missile in', style: `--i:${k}` })));
-        fx.push([0, 1, 2, 3].map((k) => h('i', { class: 'puff', style: `--i:${k}` })));
+        fx.push(range(6).map((k) => h('i', { class: 'missile in', style: `--i:${k}` })));
+        fx.push(range(4).map((k) => h('i', { class: 'puff', style: `--i:${k}` })));
       }
       if (anim === 'charge') fx.push(h('i', { class: 'aura' }), h('i', { class: 'converge' }));
       if (anim === 'finisher' && part === 'fire') fx.push(h('i', { class: 'aura' }), h('i', { class: 'beam out' }));
-      if (anim === 'finisher' && part === 'hit') fx.push(h('i', { class: 'beam in' }), [0, 1, 2, 3, 4, 5].map((k) => boom(k)));
-      if (anim === 'shotdown') fx.push([0, 1, 2, 3, 4, 5, 6].map((k) => boom(k, 'boom big')));
+      if (anim === 'finisher' && part === 'hit') fx.push(h('i', { class: 'beam in' }), range(6).map((k) => boom(k)));
+      if (anim === 'shotdown') fx.push(range(7).map((k) => boom(k, 'boom big')));
       if (step.damage && step.damage.to === cam && part !== 'fire') fx.push(h('b', { class: `b-damage is-${cam}` }, String(step.damage.value)));
       // 撃墜後のコマでは主人公の機体はもういない
       const gone = cam === 'hero' && heroDown && anim !== 'finisher' && anim !== 'shotdown';
@@ -1404,7 +1406,7 @@ export class Game {
         : (this.illust(`pilot_${step.speaker}`, 'b-face') ??
           this.illust(step.speaker === 'hero' ? 'hero' : 'wife_angry', 'b-face fallback'));
     // 背景は流れ続ける（主人公のターンは右→左、妻のターンは左→右）
-    const turn = step.turn ?? (step.speaker === 'narr' ? 'wife' : step.speaker);
+    const turn = step.turn ?? side;
     const strip = this.battleStrip();
     return [
       h(
