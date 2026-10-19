@@ -43,7 +43,7 @@ describe('データの参照整合性', () => {
   });
 
   it.each(SCENARIOS.map((s) => [s.id, s] as const))('%s: 参照しているアイテム・画像・シナリオが存在する', (_, s) => {
-    for (const i of s.startItems ?? []) expect(ITEM_MAP[i.item], i.item).toBeDefined();
+    for (const i of s.startItems ?? []) expect(ITEM_MAP[i], i).toBeDefined();
     for (const p of s.pickups ?? []) expect(ITEM_MAP[p.item], p.item).toBeDefined();
     for (const o of s.startOrders ?? []) expect(ITEM_MAP[o], o).toBeDefined();
     for (const v of [...(s.visuals ?? []), ...(s.pickups ?? []).flatMap((p) => p.visual ?? [])]) {

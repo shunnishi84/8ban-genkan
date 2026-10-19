@@ -40,7 +40,7 @@ export const isObtainable = (state: DayState, flag: string, depth = 0): boolean 
 };
 
 /** 全原因を解消するのに必要なフラグ集合（解けなければ null） */
-export const requiredFlags = (state: DayState): string[] | null => {
+const requiredFlags = (state: DayState): string[] | null => {
   const out = new Set<string>();
   for (const c of state.causes) {
     const flags = pickSatisfyingFlags(c.resolution, (f) => isObtainable(state, f));

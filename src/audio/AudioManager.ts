@@ -32,21 +32,21 @@ export class AudioManager {
     } catch {
       this.ctx = null;
     }
-    if (this.bgmKey) {
-      const key = this.bgmKey;
-      this.bgmKey = null;
-      this.playBgm(key);
-    }
+    this.resumeBgm();
+  }
+
+  /** 鳴らせずに待っていた BGM を鳴らし直す（音の解禁・ミュート解除のとき） */
+  private resumeBgm() {
+    const key = this.bgmKey;
+    if (!key) return;
+    this.bgmKey = null;
+    this.playBgm(key);
   }
 
   setMuted(muted: boolean) {
     this.muted = muted;
     if (!this.bgm) {
-      if (!muted && this.bgmKey) {
-        const key = this.bgmKey;
-        this.bgmKey = null;
-        this.playBgm(key);
-      }
+      if (!muted) this.resumeBgm();
       return;
     }
     if (muted) this.bgm.pause();
@@ -78,17 +78,16 @@ export class AudioManager {
   playSe(key: SeKey) {
     if (this.muted || !this.unlocked) return;
     const entry = SE[key];
-    if (this.missing.has(key)) {
-      this.beep(entry.beep ?? 440, entry.volume ?? 0.3);
-      return;
-    }
+    // ファイルが無い効果音はビープで代用
+    const fallback = () => this.beep(entry.beep ?? 440, entry.volume ?? 0.3);
+    if (this.missing.has(key)) return fallback();
     const el = new Audio(url(entry.file));
     el.volume = entry.volume ?? 0.5;
     el.addEventListener(
       'error',
       () => {
         this.missing.add(key);
-        this.beep(entry.beep ?? 440, entry.volume ?? 0.3);
+        fallback();
       },
       { once: true },
     );
@@ -109,27 +108,19 @@ export class AudioManager {
     osc.stop(ctx.currentTime + 0.13);
   }
 
-  private fadeTo(el: HTMLAudioElement, target: number) {
+  private fadeTo(el: HTMLAudioElement, target: number, done?: () => void) {
     const start = el.volume;
     const t0 = performance.now();
     const step = (now: number) => {
       const k = Math.min(1, (now - t0) / FADE_MS);
       el.volume = start + (target - start) * k;
       if (k < 1) requestAnimationFrame(step);
+      else done?.();
     };
     requestAnimationFrame(step);
   }
 
   private fadeOut(el: HTMLAudioElement | null) {
-    if (!el) return;
-    const start = el.volume;
-    const t0 = performance.now();
-    const step = (now: number) => {
-      const k = Math.min(1, (now - t0) / FADE_MS);
-      el.volume = start * (1 - k);
-      if (k < 1) requestAnimationFrame(step);
-      else el.pause();
-    };
-    requestAnimationFrame(step);
+    if (el) this.fadeTo(el, 0, () => el.pause());
   }
 }

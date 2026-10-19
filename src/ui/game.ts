@@ -24,6 +24,7 @@ import {
   chatText,
   chatTimeline,
   drunkLevel,
+  finaleSeed,
   sentText,
   hasUnreadChat,
   newRun,
@@ -42,7 +43,7 @@ import { ITEM_MAP, itemsAt } from '../data/items';
 import { SCENARIO_MAP } from '../data/scenarios';
 import { h, type Child } from './dom';
 import { pick } from '../core/rng';
-import { Renderer } from './renderer';
+import { Renderer, type Scene } from './renderer';
 
 type Line = {
   who: Speaker;
@@ -81,27 +82,29 @@ const FX_SE: Partial<Record<FinaleFx, SeKey>> = {
   guilty: 'se_guilty',
 };
 
-type SceneSpec = Parameters<Renderer['setScene']>[0];
+type SceneSpec = Scene;
+
+type TalkScreen = {
+  name: 'talk';
+  mood: 'angry' | 'home' | 'demon' | 'finale' | 'prank';
+  /** prank のときの BGM */
+  bgm?: BgmKey;
+  late?: boolean;
+  alone?: boolean;
+  grudging?: boolean;
+  /** 指定すると最初の行でこの背景にする。finale で省略すると直前の背景を引き継ぐ */
+  scene?: SceneSpec;
+  lines: Line[];
+  index: number;
+  after: () => void;
+};
 
 type Screen =
   | { name: 'title' }
   | { name: 'howto' }
   | { name: 'intro' }
   | { name: 'play' }
-  | {
-      name: 'talk';
-      mood: 'angry' | 'home' | 'demon' | 'finale' | 'prank';
-      /** prank のときの BGM */
-      bgm?: BgmKey;
-      late?: boolean;
-      alone?: boolean;
-      grudging?: boolean;
-      /** 指定すると最初の行でこの背景にする。finale で省略すると直前の背景を引き継ぐ */
-      scene?: SceneSpec;
-      lines: Line[];
-      index: number;
-      after: () => void;
-    }
+  | TalkScreen
   | { name: 'choice'; prompt: string; options: FinaleChoice[]; onPick: (o: FinaleChoice) => void; court?: boolean; gauge?: Gauge }
   | { name: 'loop'; level: number }
   /** ロボット大戦風の戦闘。step は今のコマ */
@@ -217,8 +220,7 @@ export class Game {
       : startDay(this.run, Math.random);
     // ?debug&finale=court で、暴言4種コンプリート時のフィナーレを固定できる
     const finale = this.debug ? (this.params.get('finale') as FinaleId | null) : null;
-    const idx = finale ? FINALE_IDS.indexOf(finale) : -1;
-    if (idx >= 0) this.day.seed = (idx + 0.5) / FINALE_IDS.length;
+    if (finale && FINALE_IDS.includes(finale)) this.day.seed = finaleSeed(finale);
     // ?debug&time=26:05 で開始時刻を変えられる（深夜の締め出しの確認用）
     const time = this.debug ? this.params.get('time')?.split(':').map(Number) : undefined;
     if (time?.length === 2) this.day.time = this.day.startTime = hm(time[0], time[1]);
@@ -296,16 +298,8 @@ export class Game {
               ? [{ who: 'narr' as const, text: `さらに${causes.length - 1}件の火種が燃え上がった……！` }]
               : []),
           ];
-    this.recordBest();
-    this.go({
-      name: 'talk',
-      mood: 'angry',
-      late: kind !== 'angry',
-      lines,
-      index: 0,
-      after: () =>
-        this.go({ name: 'gameover', reason: kind === 'dawn' ? '朝帰り' : kind === 'late' ? '遅すぎる帰宅' : '妻の怒り', causes }),
-    });
+    const reason = { dawn: '朝帰り', late: '遅すぎる帰宅', angry: '妻の怒り' }[kind];
+    this.talk('angry', lines, this.toGameOver(reason, { causes }), { late: kind !== 'angry' });
   }
 
   /** 暴言を送っていた日: 火種に関係なく、ドアの向こうに魔王 */
@@ -320,29 +314,16 @@ export class Game {
       ...demonLines.map((text) => ({ who: 'wife' as const, text })),
       { who: 'narr', text: '妻は、人であることをやめた。' },
     ];
-    this.recordBest();
-    this.go({
-      name: 'talk',
-      mood: 'demon',
-      lines,
-      index: 0,
-      after: () => this.go({ name: 'gameover', reason: DEMON_REASON, causes: [], demon: true }),
-    });
+    this.talk('demon', lines, this.toGameOver(DEMON_REASON, { demon: true }));
   }
 
   /** 酔った勢いの悪ふざけを送っていた日: 送った文面ごとの結末 */
   private prankEnding(templateId: string) {
     const e = CHAT_MAP[templateId].prankEnding!;
     this.audio.playSe('se_door');
-    this.recordBest();
-    this.go({
-      name: 'talk',
-      mood: 'prank',
+    this.talk('prank', e.lines, this.toGameOver(e.title), {
       bgm: e.bgm,
       scene: { kind: 'bg', image: e.scene as ImageKey, fallback: e.fallback as ImageKey },
-      lines: e.lines,
-      index: 0,
-      after: () => this.go({ name: 'gameover', reason: e.title, causes: [] }),
     });
   }
 
@@ -388,10 +369,7 @@ export class Game {
     this.court = f.choice?.style === 'court';
     this.audio.playSe('se_door');
     this.playSeAt('se_demon', 300);
-    this.recordBest();
-    const end = () => this.go({ name: 'gameover', reason: f.title, causes: [], finale: id });
-    const outro = (scene?: SceneSpec) =>
-      f.outro.length ? this.go({ name: 'talk', mood: 'finale', scene, lines: this.expand(f.outro), index: 0, after: end }) : end();
+    const outro = () => this.finaleOutro(f);
     let hp = f.choice?.hp ?? 0;
     let last: FinaleCounter | undefined;
     const choice = () => {
@@ -430,7 +408,7 @@ export class Game {
               next = () => outro();
             }
           }
-          this.go({ name: 'talk', mood: 'finale', lines, index: 0, after: next });
+          this.talk('finale', lines, next);
         },
       });
     };
@@ -438,8 +416,8 @@ export class Game {
       this.go({ name: 'loop', level: 1 });
       return;
     }
-    const afterIntro = f.battle ? () => this.go({ name: 'battle', finale: f, step: 0, after: () => outro() }) : choice;
-    this.go({ name: 'talk', mood: 'finale', scene: this.finaleScene(f), lines: this.expand(f.intro), index: 0, after: afterIntro });
+    const afterIntro = f.battle ? () => this.go({ name: 'battle', finale: f, step: 0, after: outro }) : choice;
+    this.talk('finale', this.expand(f.intro), afterIntro, { scene: this.finaleScene(f) });
   }
 
   /** 無限玄関ループ: ドアを開けるたびに1段ずつおかしくなる。最後は魔王 */
@@ -451,14 +429,7 @@ export class Game {
       return;
     }
     this.playSeAt('se_demon', 300);
-    this.go({
-      name: 'talk',
-      mood: 'finale',
-      scene: { kind: 'demon', started: performance.now() },
-      lines: this.expand(f.outro),
-      index: 0,
-      after: () => this.go({ name: 'gameover', reason: f.title, causes: [], finale: 'loop' }),
-    });
+    this.finaleOutro(f, this.finaleScene(f));
   }
 
   private goHome(successLines: string[]) {
@@ -488,20 +459,26 @@ export class Game {
           ...successLines.map((text) => ({ who: 'wife' as const, text })),
         ];
     const cleared = advanceRun(this.run);
-    this.recordBest();
-    this.go({
-      name: 'talk',
-      mood: 'home',
-      alone: alone || asleep.length > 0,
-      grudging,
-      lines,
-      index: 0,
-      after: () => (cleared ? this.go({ name: 'clear' }) : this.beginDay()),
-    });
+    // 連続帰宅が伸びるのは帰宅できたときだけなので、最高記録の更新もここだけ
+    if (saveBest(this.run.streak)) this.best = this.run.streak;
+    this.talk('home', lines, () => (cleared ? this.go({ name: 'clear' }) : this.beginDay()), { alone: alone || asleep.length > 0, grudging });
   }
 
-  private recordBest() {
-    if (saveBest(this.run.streak)) this.best = this.run.streak;
+  /** 会話画面を最初の行から始める */
+  private talk(mood: TalkScreen['mood'], lines: Line[], after: () => void, extra: Partial<TalkScreen> = {}) {
+    this.go({ name: 'talk', mood, lines, index: 0, after, ...extra });
+  }
+
+  /** 会話のあとにゲームオーバー画面へ */
+  private toGameOver(reason: string, extra: Partial<Extract<Screen, { name: 'gameover' }>> = {}) {
+    return () => this.go({ name: 'gameover', reason, causes: [], ...extra });
+  }
+
+  /** フィナーレの締め（outro があれば見せてからゲームオーバー） */
+  private finaleOutro(f: Finale, scene?: SceneSpec) {
+    const end = this.toGameOver(f.title, { finale: f.id });
+    if (f.outro.length) this.talk('finale', this.expand(f.outro), end, { scene });
+    else end();
   }
 
   // ================================================================ 入力
@@ -748,7 +725,7 @@ export class Game {
         { class: 'hud-left' },
         h('b', {}, `${day.day}日目`),
         h('small', {}, `連続帰宅 ${this.run.streak}/${GOAL_DAYS}`),
-        drunkLevel(day) ? h('small', { class: 'drunk-meter' }, `酔い ${'🍺'.repeat(drunkLevel(day))}`) : null,
+        day.flags.has('drunk:1') ? h('small', { class: 'drunk-meter' }, `酔い ${'🍺'.repeat(drunkLevel(day))}`) : null,
       ),
       h('div', { class: `clock${day.time >= WARN_TIME ? ' warn' : ''}` }, formatTime(day.time)),
       this.muteButton(),
@@ -826,7 +803,9 @@ export class Game {
       btn('持ち物', null, () => this.openModal({ kind: 'items', slot: 'bag' }, { type: 'openSlot', slot: 'bag' })),
       day.flags.has('phone_broken')
         ? btn('スマホ', '故障', () => this.openModal({ kind: 'phone', app: null }), 'badge')
-        : btn('スマホ', hasUnreadChat(day) ? '● 未読' : null, () => this.openModal({ kind: 'phone', app: null }), hasUnreadChat(day) ? 'badge' : ''),
+        : hasUnreadChat(day)
+          ? btn('スマホ', '● 未読', () => this.openModal({ kind: 'phone', app: null }), 'badge')
+          : btn('スマホ', null, () => this.openModal({ kind: 'phone', app: null })),
     ];
     const cost = (to: Location) => `${TRAVEL[day.location][to]}分`;
     if (day.location === 'door') {

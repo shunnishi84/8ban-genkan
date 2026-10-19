@@ -1381,6 +1381,8 @@ button:disabled {
   background: linear-gradient(rgba(0, 0, 20, 0.25), rgba(0, 0, 20, 0.05) 40%, rgba(0, 0, 20, 0.35));
 }
 .b-hud {
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.5em;
@@ -1935,10 +1937,6 @@ button:disabled {
   to {
     transform: translateX(0);
   }
-}
-.b-hud {
-  position: relative;
-  z-index: 1;
 }
 /* 溜めのコマは背景を暗く */
 .anim-charge .b-bg::after {

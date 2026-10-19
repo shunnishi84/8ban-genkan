@@ -3,12 +3,12 @@ import { IMAGES, type ImageEntry, type ImageKey } from '../assets/manifest';
 import type { SpotId } from '../core/types';
 
 /** 論理解像度（9:16）。CSS で拡縮し、devicePixelRatio 分だけ実ピクセルを増やす */
-export const W = 360;
-export const H = 640;
+const W = 360;
+const H = 640;
 
 const FULL = { x: 0, y: 0, w: W, h: H };
 
-export interface Rect {
+interface Rect {
   x: number;
   y: number;
   w: number;
@@ -23,10 +23,10 @@ const ART_W = 224;
 const ART_H = 367;
 const K = W / ART_W;
 const art = (x: number, y: number, w: number, h: number): Rect => ({ x: x * K, y: y * K, w: w * K, h: h * K });
-export const DOOR_BG_RECT = art(0, 0, ART_W, ART_H);
+const DOOR_BG_RECT = art(0, 0, ART_W, ART_H);
 
 /** 玄関前のタップ領域 */
-export const SPOT_RECTS: Record<SpotId, Rect> = {
+const SPOT_RECTS: Record<SpotId, Rect> = {
   hallway: art(0, 40, 58, 290),
   door: art(63, 95, 107, 205),
   window: art(176, 93, 43, 93),

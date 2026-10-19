@@ -67,11 +67,6 @@ export interface Cause {
   grudging?: boolean;
 }
 
-/** シナリオ開始時に持っている（拾える）アイテム */
-export interface StartItem {
-  item: string;
-}
-
 /** 玄関前で拾えるアイテム（ゴミ袋など） */
 export interface Pickup {
   at: SpotId;
@@ -90,7 +85,7 @@ export interface Scenario {
   causes: Cause[];
   clues: Clue[];
   /** 開始時の所持品（店の名刺、レシートなど） */
-  startItems?: StartItem[];
+  startItems?: string[];
   pickups?: Pickup[];
   /** 通販アプリの注文履歴に最初から入っている注文（キャンセル対象） */
   startOrders?: string[];
@@ -115,7 +110,7 @@ export interface Scenario {
   chatReplies?: Record<string, string[]>;
 }
 
-export type ShopKind = 'konbini' | 'mail';
+type ShopKind = 'konbini' | 'mail';
 
 export interface ItemDef {
   id: string;
@@ -271,7 +266,7 @@ export interface ActionResult {
 
 
 /** 悪ふざけの結末。行ごとに背景（bg）を切り替えられる */
-export interface PrankEnding {
+interface PrankEnding {
   /** ゲームオーバー画面の「原因」 */
   title: string;
   /** 最初の背景（manifest の画像キー）と、その絵が無いときの代わり */

@@ -157,7 +157,7 @@ export const ITEM_ICONS: Partial<Record<string, ImageKey>> = {
 
 export type ImageKey = keyof typeof IMAGES;
 
-export interface AudioEntry {
+interface AudioEntry {
   file: string;
   /** ファイルが無い効果音の代わりに鳴らすビープの周波数（Hz）。BGM は無音 */
   beep?: number;

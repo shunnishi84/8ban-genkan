@@ -114,7 +114,7 @@ export const SCENARIOS: Scenario[] = [
   {
     id: 'cabaret_lipstick',
     title: 'キャバクラ帰りでシャツに口紅',
-    startItems: [{ item: 'cabaret_card' }, { item: 'cabaret_receipt' }],
+    startItems: ['cabaret_card', 'cabaret_receipt'],
     causes: [
       {
         id: 'cabaret_lipstick',
@@ -263,7 +263,7 @@ export const SCENARIOS: Scenario[] = [
       coming_home: ['はーい！ 休肝日えらいね〜 まっすぐ帰ってきてね☺️', 'お茶いれて待ってる〜☺️'],
       sorry_generic: ['え、何が？？ ……まさか、飲んだ？ 電話する'],
     },
-    startItems: [{ item: 'empty_can' }],
+    startItems: ['empty_can'],
     causes: [
       {
         id: 'liver_holiday',
@@ -364,7 +364,7 @@ export const SCENARIOS: Scenario[] = [
       sorry_generic: ['何に謝ってるの？ ……指輪？', 'ごめんって言うってことは、またしてないんだ。'],
       love: ['愛してるなら、指輪くらいしてきて。', '……左手の薬指、見てから言って。'],
     },
-    startItems: [{ item: 'ring' }],
+    startItems: ['ring'],
     causes: [
       {
         id: 'ring_off',
@@ -515,7 +515,7 @@ export const SCENARIOS: Scenario[] = [
       sorry_generic: ['……ごめんって、まさかマグカップ？', '謝るってことは、知ってるんだ。'],
       love: ['あのマグカップも、あなたがくれたやつなんだけど。'],
     },
-    startItems: [{ item: 'broken_mug' }],
+    startItems: ['broken_mug'],
     causes: [
       {
         id: 'broken_mug',
@@ -820,7 +820,7 @@ export const SCENARIOS: Scenario[] = [
     title: '異変なし: 夜の蝶',
     asleep: 'リビングの灯りだけ、つけておいてくれていた。……ラーメンの匂いは、明日の朝までに消えるだろうか。',
     causes: [],
-    startItems: [{ item: 'ramen_receipt' }],
+    startItems: ['ramen_receipt'],
     successLine: 'おかえり。ラーメンの匂いする〜。お疲れさま',
     clues: [
       { at: 'slot:wallet', text: 'レシートが1枚。『夜の蝶』……!?' },

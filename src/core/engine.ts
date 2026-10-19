@@ -83,7 +83,7 @@ export const buildDay = (day: number, scenarios: Scenario[], startTime: number, 
     time: startTime,
     location: 'door',
     flags: new Set(),
-    inventory: scenarios.flatMap((s) => (s.startItems ?? []).map((i) => i.item)),
+    inventory: scenarios.flatMap((s) => s.startItems ?? []),
     orders,
     chatLog: [],
     // 妻が先に寝ているシナリオの一言は、寝ている妻からは聞けないのでナレーションに回す
@@ -236,6 +236,11 @@ const act = (state: DayState, action: Action): ActionResult => {
       // 何か送るとトーク画面を開かれ、取り消し前の誤爆メッセージにも既読がつく
       const exposed = markMisfiresRead(state);
       const send = (...rest: string[]) => ['送信した。', ...exposed, ...rest];
+      /** 妻の返事をチャットに足して、送信完了のメッセージを返す */
+      const replied = (text: string, ...msgs: string[]) => {
+        state.chatLog.push({ from: 'wife', text });
+        return result(true, send(...msgs), COST.sendChat);
+      };
       // 一度でも暴言を送ったら、以後は何を送っても取りつく島もない返事だけ（電話も来ない）
       const coldReply = () => COLD_REPLIES[state.chatLog.filter((m) => m.from === 'wife').length % COLD_REPLIES.length];
       const alreadyInsulted = state.flags.has('insulted');
@@ -251,24 +256,19 @@ const act = (state: DayState, action: Action): ActionResult => {
           COST.sendChat,
         );
       }
-      if (alreadyInsulted) {
-        state.chatLog.push({ from: 'wife', text: coldReply() });
-        return result(true, send('……取りつく島もない。'), COST.sendChat);
-      }
+      if (alreadyInsulted) return replied(coldReply(), '……取りつく島もない。');
       // 2:00 を過ぎたら妻はもう寝ている。何を送っても既読にならない
       if (state.time > LOCKOUT_TIME) {
         return result(true, send('……既読がつかない。', '妻はもう、寝てしまったようだ。'), COST.sendChat);
       }
       if (t.prank) {
         state.flags.add(`prank:${t.id}`);
-        state.chatLog.push({ from: 'wife', text: t.replyRelevant });
         state.clues.push(...(t.triggerClues ?? []));
-        return result(true, send('……一瞬で既読がついた。', '電話が、鳴りやまない。'), COST.sendChat);
+        return replied(t.replyRelevant, '……一瞬で既読がついた。', '電話が、鳴りやまない。');
       }
       if (t.provokeLines) {
         state.flags.add(`provoked:${t.id}`);
-        state.chatLog.push({ from: 'wife', text: t.replyRelevant });
-        return result(true, send('……妙に静かだ。', '言わなくていいことを言った気がする。'), COST.sendChat);
+        return replied(t.replyRelevant, '……妙に静かだ。', '言わなくていいことを言った気がする。');
       }
       const relevant = isChatRelevant(state, t.id);
       // 関係ない定型文には、その日の状況に合わせた返事（無ければ定型文の既定の返事）
@@ -500,32 +500,37 @@ const markMisfiresRead = (state: DayState): string[] => {
   return hit.length ? ['……あ。最初に誤爆したメッセージに既読がついた。', 'もう、取り消せない。'] : [];
 };
 
-/** ワイシャツを脱いだまま帰ると、火種を全部消していても怒られる */
-const UNDRESSED: Cause = {
-  id: 'undressed',
-  title: '肌着で帰宅',
+/** 行動そのものが新しい火種になったときの、解消しようのない火種 */
+const angerCause = (id: string, title: string, angerLines: string[]): Cause => ({
+  id,
+  title,
   resolution: { all: [] },
-  angerLines: ['……ちょっと。', 'なんて格好で帰ってきてるの！', 'ご近所に見られたらどうするのよ！ シャツはどこ！？'],
+  angerLines,
   successLine: '',
-};
+});
+
+/** ワイシャツを脱いだまま帰ると、火種を全部消していても怒られる */
+const UNDRESSED = angerCause('undressed', '肌着で帰宅', [
+  '……ちょっと。',
+  'なんて格好で帰ってきてるの！',
+  'ご近所に見られたらどうするのよ！ シャツはどこ！？',
+]);
 
 /** 余計なひと言を送っていたら、それ自体が新しい火種になる */
 const provokeCauses = (state: DayState): Cause[] =>
-  CHAT_TEMPLATES.filter((t) => t.provokeLines && state.flags.has(`provoked:${t.id}`)).map((t) => ({
-    id: `provoke:${t.id}`,
-    title: '火に油',
-    resolution: { all: [] },
-    angerLines: t.provokeLines!,
-    successLine: '',
-  }));
+  CHAT_TEMPLATES.filter((t) => t.provokeLines && state.flags.has(`provoked:${t.id}`)).map((t) =>
+    angerCause(`provoke:${t.id}`, '火に油', t.provokeLines!),
+  );
 
 /** 暴言を4種すべて送ったら、その日のフィナーレを決めて仕掛けを発動する */
 const triggerFinale = (state: DayState): Finale | null => {
-  if (state.finale) return null;
   const all = state.insultIds.every((id) => state.flags.has(`insult:${id}`));
   if (!all) return null;
   return applyFinale(state, FINALE_IDS[Math.min(FINALE_IDS.length - 1, Math.floor(state.seed * FINALE_IDS.length))]);
 };
+
+/** そのフィナーレが選ばれる seed（デバッグやテストでフィナーレを固定するとき用） */
+export const finaleSeed = (id: FinaleId): number => (FINALE_IDS.indexOf(id) + 0.5) / FINALE_IDS.length;
 
 /** フィナーレを確定させて仕掛けを発動する（すでに決まっていれば何もしない） */
 const applyFinale = (state: DayState, id: FinaleId): Finale | null => {

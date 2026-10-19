@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { GOAL_DAYS, hm } from '../src/core/config';
-import { advanceRun, buildDay, chatText, chatTimeline, drunkLevel, sentText, chooseScenarios, newRun, perform, startDay, visibleClues } from '../src/core/engine';
+import { advanceRun, buildDay, chatText, finaleSeed, chatTimeline, drunkLevel, sentText, chooseScenarios, newRun, perform, startDay, visibleClues } from '../src/core/engine';
 import { seeded } from '../src/core/rng';
 import { solve } from '../src/core/solver';
 import { SCENARIO_MAP } from '../src/data/scenarios';
@@ -533,10 +533,10 @@ describe('暴言のランダム選択', () => {
 });
 
 describe('暴言4種コンプリートのフィナーレ', () => {
-  const ALL = ['insult_oni', 'insult_komakai', 'insult_kaachan', 'insult_gunsou'];
+  const ALL = CLASSIC_INSULTS;
   const withSeed = (finale: FinaleId, ids = ['neighbor_curry']) => {
     const s = day(ids);
-    s.seed = (FINALE_IDS.indexOf(finale) + 0.5) / FINALE_IDS.length;
+    s.seed = finaleSeed(finale);
     return s;
   };
 

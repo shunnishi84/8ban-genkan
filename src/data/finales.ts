@@ -9,7 +9,7 @@ export const FINALE_IDS = ['castle', 'siege', 'loop', 'court', 'lockout', 'expos
 export type FinaleId = (typeof FINALE_IDS)[number];
 
 /** ロボット大戦風の戦闘の参加者 */
-export interface BattleUnit {
+interface BattleUnit {
   /** パイロット名（メッセージ欄の名札） */
   pilot: string;
   /** 機体名（HP 欄） */
@@ -22,7 +22,7 @@ export interface BattleUnit {
  * anim: attack = 攻撃（ミサイル）、zero = ノーダメージ、charge = 力を溜める、
  * finisher = 必殺技（極太ビーム）、shotdown = 撃墜
  */
-export interface BattleStep {
+interface BattleStep {
   speaker: 'hero' | 'wife' | 'narr';
   text: string;
   /** 大きく出す技名 */
