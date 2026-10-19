@@ -159,7 +159,7 @@ cd android && ./gradlew assembleDebug   # → android/app/build/outputs/apk/debu
 | bg_battle.jpg / robot_hero.png / robot_wife.png / pilot_hero.png / pilot_wife.png | スーパー夫婦大戦（ロボット大戦風フィナーレ）の背景・機体・顔（Gemini で生成。主人公の機体は左右反転） | ✅ |
 | gravure_page.jpg | 写真集を拾ったときに開く付箋のページ（Gemini で生成） | ✅ |
 | item_saru_recipe.png | メシマズの日の「火に油」アイテム、料理本のアイコン（Gemini で生成） | ✅ |
-| prank_police.jpg / prank_mummy.jpg / prank_tears.jpg | 酔った勢いの悪ふざけの結末（無ければ既存の妻の絵で代用） | — |
+| prank_police.jpg / prank_mummy.jpg / prank_tears.jpg | 酔った勢いの悪ふざけの結末（Gemini で生成） | ✅ |
 | castle_gate.png | 魔王城フィナーレで玄関ドアに重ねる門（Gemini で生成） | ✅ |
 | bg_court.jpg / bg_siege.jpg / bg_exposed.jpg | 家庭裁判（法廷全体）・家族会議・公開処刑のフィナーレ背景（Gemini で生成） | ✅ |
 | bg_court_judge / defense / prosecutor / witness .jpg | 家庭裁判のカメラ切り替え（Gemini で生成。無ければ bg_court で代用） | ✅ |
