@@ -173,6 +173,8 @@ export interface ChatTemplate {
    * 帰宅した瞬間に怒りシーン。妻のセリフ
    */
   provokeLines?: string[];
+  /** 酔った勢いの悪ふざけ（妻を心配させる嘘）。「余計なひと言」とは別の枠に出る */
+  prank?: boolean;
   /** 送った瞬間にこのフィナーレへ直行する（暴言扱い） */
   finale?: FinaleId;
 }

@@ -252,6 +252,7 @@ const act = (state: DayState, action: Action): ActionResult => {
       if (t.provokeLines) {
         state.flags.add(`provoked:${t.id}`);
         state.chatLog.push({ from: 'wife', text: t.replyRelevant });
+        if (t.prank) return result(true, send('……一瞬で既読がついた。', '電話が、鳴りやまない。'), COST.sendChat);
         return result(true, send('……妙に静かだ。', '言わなくていいことを言った気がする。'), COST.sendChat);
       }
       const relevant = isChatRelevant(state, t.id);
@@ -476,7 +477,7 @@ const UNDRESSED: Cause = {
 const provokeCauses = (state: DayState): Cause[] =>
   CHAT_TEMPLATES.filter((t) => t.provokeLines && state.flags.has(`provoked:${t.id}`)).map((t) => ({
     id: `provoke:${t.id}`,
-    title: '火に油',
+    title: t.prank ? '悪ふざけ' : '火に油',
     resolution: { all: [] },
     angerLines: t.provokeLines!,
     successLine: '',

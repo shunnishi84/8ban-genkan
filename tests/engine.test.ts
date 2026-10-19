@@ -186,6 +186,21 @@ describe('新しい仕掛け', () => {
     }
   });
 
+  it('缶ビール2本以上で「心配させる悪ふざけ」が送れて、送ると帰ったときに怒られる（展開は仮）', () => {
+    const s = day(['neighbor_curry']);
+    expect(perform(s, { type: 'sendChat', template: 'prank_jiko' }).ok).toBe(false);
+    s.location = 'konbini';
+    for (let i = 0; i < 2; i++) perform(s, { type: 'buy', item: 'beer' });
+    perform(s, { type: 'use', item: 'beer' });
+    expect(perform(s, { type: 'sendChat', template: 'prank_jiko' }).ok).toBe(false);
+    perform(s, { type: 'use', item: 'beer' });
+    expect(perform(s, { type: 'sendChat', template: 'prank_jiko' }).ok).toBe(true);
+    s.location = 'door';
+    const o = perform(s, { type: 'openDoor' }).outcome;
+    expect(o.kind).toBe('angry');
+    if (o.kind === 'angry') expect(o.causes.map((c) => c.title)).toEqual(['悪ふざけ']);
+  });
+
   it('AV つけっぱなしの日だけ「とぼける」が送れて、送ると火に油', () => {
     expect(perform(day(['ring_off']), { type: 'sendChat', template: 'av_nanino' }).ok).toBe(false);
     const s = day(['av_left_on'], hm(23, 0));

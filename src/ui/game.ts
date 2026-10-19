@@ -981,8 +981,9 @@ export class Game {
     const bubble = (from: 'me' | 'wife', text: string, cls = '') => h('div', { class: `bubble ${from} ${cls}` }, text);
     const ME = '（あなた）';
     const provoke = CHAT_TEMPLATES.filter(
-      (t) => (t.provokeLines || t.finale) && (canSendChat(day, t.id) || day.flags.has(`chat:${t.id}`)),
+      (t) => !t.prank && (t.provokeLines || t.finale) && (canSendChat(day, t.id) || day.flags.has(`chat:${t.id}`)),
     );
+    const pranks = CHAT_TEMPLATES.filter((t) => t.prank && (canSendChat(day, t.id) || day.flags.has(`chat:${t.id}`)));
     return [
       h(
         'div',
@@ -1028,6 +1029,19 @@ export class Game {
         }),
         provoke.length ? h('small', { class: 'insult-label' }, '😏 余計なひと言（※おすすめしない）') : null,
         provoke.map((t) => {
+          const sent = day.flags.has(`chat:${t.id}`);
+          return h(
+            'button',
+            {
+              class: 'template insult',
+              disabled: sent || !canSendChat(day, t.id),
+              onclick: () => this.act({ type: 'sendChat', template: t.id }, 'se_send'),
+            },
+            sent ? `✓ ${sentText(day, t.id)}` : chatText(day, t),
+          );
+        }),
+        pranks.length ? h('small', { class: 'insult-label' }, '🍺 酔った勢いの悪ふざけ（※おすすめしない）') : null,
+        pranks.map((t) => {
           const sent = day.flags.has(`chat:${t.id}`);
           return h(
             'button',

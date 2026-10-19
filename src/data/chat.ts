@@ -122,6 +122,35 @@ export const CHAT_TEMPLATES: ChatTemplate[] = [
     replyIrrelevant: '…………は？',
     demonLines: ['「自分で捨てておいてくれよ」。', '……ええ、捨ててあげる。何もかも。'],
   },
+  // 缶ビールを2本以上飲むと出る、妻を心配させる悪ふざけ。
+  // 送った後の展開は検討中。いまは仮に「帰ったら怒られる」（provokeLines）にしてある
+  {
+    id: 'prank_jiko',
+    text: '交通事故にあって、今病院にいる……',
+    requires: 'drunk:2',
+    prank: true,
+    replyRelevant: 'えっ！？ どこの病院！？ 今すぐ行くから場所送って！！',
+    replyIrrelevant: 'えっ！？ どこの病院！？ 今すぐ行くから場所送って！！',
+    provokeLines: ['……近くの病院、全部に電話したのよ。', 'どこにも、あなたはいなかった。', '酔っ払いの悪ふざけで、私がどれだけ……。もういい。'],
+  },
+  {
+    id: 'prank_kaidan',
+    text: '駅の階段で足すべらせた……動けない',
+    requires: 'drunk:2',
+    prank: true,
+    replyRelevant: 'えっ、大丈夫！？ どこの駅！？ 救急車は呼んだ！？',
+    replyIrrelevant: 'えっ、大丈夫！？ どこの駅！？ 救急車は呼んだ！？',
+    provokeLines: ['……駅員さんに電話して、階段を全部見てもらったの。', '誰も倒れてなかったって。', '……ずいぶん元気な足で、帰ってきたのね。'],
+  },
+  {
+    id: 'prank_mune',
+    text: 'なんか胸が苦しい……ちょっと道で座って休む',
+    requires: 'drunk:2',
+    prank: true,
+    replyRelevant: '大丈夫！？ 今どこ！？ 電話出て！！ お願い！！',
+    replyIrrelevant: '大丈夫！？ 今どこ！？ 電話出て！！ お願い！！',
+    provokeLines: ['電話、何回かけたと思う？ 27回よ。', '……苦しかったのは、私の胸のほう。', 'お酒、当分禁止。'],
+  },
   // メシマズでバズった日に料理本を買うと出る、最悪のフォロー。送ると火に油
   {
     id: 'meshi_recipe',

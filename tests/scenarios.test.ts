@@ -64,6 +64,12 @@ describe('データの参照整合性', () => {
     for (const t of CHAT_TEMPLATES) {
       for (const f of t.requires ? flagsIn(t.requires) : []) {
         const [kind, id] = f.split(':');
+        // drunk:<n> は酔いの段階（缶ビールの本数。1〜3）
+        if (kind === 'drunk') {
+          expect(Number(id), `${t.id}: ${f}`).toBeGreaterThanOrEqual(1);
+          expect(Number(id), `${t.id}: ${f}`).toBeLessThanOrEqual(ITEM_MAP.beer.maxStock!);
+          continue;
+        }
         // deleted:/unsent: は投稿・メッセージ（手がかりの id）、chat: は定型文、それ以外はアイテム
         const clueIds = SCENARIOS.flatMap((sc) => sc.clues.map((c) => c.id).filter(Boolean));
         const target = kind === 'chat' ? CHAT_MAP[id] : kind === 'deleted' || kind === 'unsent' ? clueIds.find((c) => c === id) : ITEM_MAP[id];
