@@ -16,15 +16,49 @@ const day = (ids: string[], start = hm(23, 0)) => {
 };
 
 describe('時計', () => {
-  it('午前1:00を過ぎると原因に関係なくゲームオーバー', () => {
+  it('午前1:00を過ぎてからドアを開けると、原因に関係なくゲームオーバー', () => {
     const s = day(['neighbor_curry'], hm(24, 56));
-    expect(perform(s, { type: 'travel', to: 'town' }).outcome.kind).toBe('late');
+    expect(perform(s, { type: 'travel', to: 'town' }).outcome.kind).toBe('continue');
+    expect(perform(s, { type: 'travel', to: 'door' }).outcome.kind).toBe('continue');
+    expect(perform(s, { type: 'openDoor' }).outcome.kind).toBe('late');
   });
 
   it('ちょうど 1:00 ならまだセーフ', () => {
-    const s = day(['neighbor_curry'], hm(24, 55));
-    expect(perform(s, { type: 'travel', to: 'town' }).outcome.kind).toBe('continue');
-    expect(perform(s, { type: 'travel', to: 'door' }).outcome.kind).toBe('late');
+    const s = day(['neighbor_curry'], hm(25, 0));
+    expect(perform(s, { type: 'openDoor' }).outcome.kind).toBe('home');
+  });
+
+  it('2:00 を過ぎるとチャットは既読にならず、ドアはチェーンロックで入れない', () => {
+    const s = day(['dinner_unannounced'], hm(26, 1));
+    const before = s.chatLog.length;
+    const r = perform(s, { type: 'sendChat', template: 'apology_dinner' });
+    expect(r.messages.join()).toContain('既読がつかない');
+    expect(s.chatLog.slice(before).filter((m) => m.from === 'wife')).toHaveLength(0);
+    expect(s.flags.has('chat:apology_dinner')).toBe(true);
+    const d = perform(s, { type: 'openDoor' });
+    expect(d.ok).toBe(false);
+    expect(d.messages.join()).toContain('チェーンロック');
+    expect(d.outcome.kind).toBe('continue');
+  });
+
+  it('締め出されたら公園で1時間ずつ時間をつぶし、朝6:00に帰ると「朝帰り」', () => {
+    const s = day(['neighbor_curry'], hm(26, 5));
+    expect(perform(s, { type: 'wait' }).ok).toBe(false);
+    perform(s, { type: 'travel', to: 'town' });
+    perform(s, { type: 'travel', to: 'bench' });
+    let n = 0;
+    while (perform(s, { type: 'wait' }).ok) n++;
+    expect(n).toBe(4);
+    expect(s.time).toBeGreaterThanOrEqual(hm(30, 0));
+    perform(s, { type: 'travel', to: 'town' });
+    perform(s, { type: 'travel', to: 'door' });
+    expect(perform(s, { type: 'openDoor' }).outcome.kind).toBe('dawn');
+  });
+
+  it('2:00 前は公園で時間をつぶせない', () => {
+    const s = day(['neighbor_curry'], hm(23, 0));
+    s.location = 'bench';
+    expect(perform(s, { type: 'wait' }).ok).toBe(false);
   });
 
   it('異変なしの日に引き返すと時間だけ消費する', () => {

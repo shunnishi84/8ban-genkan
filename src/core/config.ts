@@ -5,8 +5,12 @@ export const GOAL_DAYS = 8;
 
 export const hm = (h: number, m: number): Minutes => h * 60 + m;
 
-/** これを過ぎたら「遅すぎる」でゲームオーバー（翌 1:00） */
+/** これを過ぎてからドアを開けると「遅すぎる」でゲームオーバー（翌 1:00） */
 export const TIME_LIMIT = hm(25, 0);
+/** これを過ぎると妻は寝てしまい、チャットは既読にならず、ドアにはチェーンロック（翌 2:00） */
+export const LOCKOUT_TIME = hm(26, 0);
+/** 締め出されたまま公園で時間をつぶして、この時刻になるとチェーンが外れる（翌朝 6:00） */
+export const DAWN_TIME = hm(30, 0);
 /** 通販の特急便（翌朝着）締切。この時刻ちょうどまでに注文すれば翌朝届く */
 export const EXPRESS_DEADLINE = hm(23, 59);
 /** 既存注文のキャンセル締切（0:00 の発送処理より前）。誤爆メッセージの送信取消も同じ（0:00 に妻が既読にする） */
@@ -40,6 +44,8 @@ export const COST = {
   pickup: 1,
   unsend: 2,
   deletePost: 2,
+  /** 締め出されたあと、公園のベンチで時間をつぶす */
+  wait: 60,
   undress: 1,
   dress: 1,
 } as const;

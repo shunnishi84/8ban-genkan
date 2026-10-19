@@ -236,6 +236,8 @@ export type Action =
   | { type: 'pickup'; item: string }
   /** 着ているワイシャツを脱ぐ / 着直す */
   | { type: 'undress' }
+  /** 締め出されたあと、公園のベンチで1時間つぶす */
+  | { type: 'wait' }
   | { type: 'dress' }
   | { type: 'unsend'; clue: string }
   | { type: 'deletePost'; clue: string }
@@ -245,6 +247,8 @@ export type Action =
 export type Outcome =
   | { kind: 'continue' }
   | { kind: 'late' }
+  /** 2:00 を過ぎて締め出され、朝 6:00 にようやく家に入れた */
+  | { kind: 'dawn' }
   | { kind: 'angry'; causes: Cause[] }
   /** 暴言を送っていた: 火種の有無に関係なく、魔王化した妻が待っている */
   | { kind: 'demon'; lines: string[] }

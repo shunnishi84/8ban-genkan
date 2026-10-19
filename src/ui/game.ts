@@ -11,6 +11,9 @@ import {
   GOAL_DAYS,
   TRAVEL,
   WARN_TIME,
+  hm,
+  LOCKOUT_TIME,
+  DAWN_TIME,
   formatTime,
   startTimeFor,
 } from '../core/config';
@@ -211,6 +214,9 @@ export class Game {
     const finale = this.debug ? (new URLSearchParams(location.search).get('finale') as FinaleId | null) : null;
     const idx = finale ? FINALE_IDS.indexOf(finale) : -1;
     if (idx >= 0) this.day.seed = (idx + 0.5) / FINALE_IDS.length;
+    // ?debug&time=26:05 で開始時刻を変えられる（深夜の締め出しの確認用）
+    const time = this.debug ? new URLSearchParams(location.search).get('time')?.split(':').map(Number) : undefined;
+    if (time?.length === 2) this.day.time = this.day.startTime = hm(time[0], time[1]);
     this.go({ name: 'intro' });
   }
 
@@ -229,6 +235,9 @@ export class Game {
     switch (r.outcome.kind) {
       case 'late':
         this.gameOver('late', []);
+        return false;
+      case 'dawn':
+        this.gameOver('dawn', []);
         return false;
       case 'angry':
         this.gameOver('angry', r.outcome.causes);
@@ -250,11 +259,20 @@ export class Game {
     return r.ok;
   }
 
-  private gameOver(kind: 'late' | 'angry', causes: Cause[]) {
-    this.audio.playSe(kind === 'late' ? 'se_late' : 'se_door');
+  private gameOver(kind: 'late' | 'dawn' | 'angry', causes: Cause[]) {
+    this.audio.playSe(kind === 'angry' ? 'se_door' : 'se_late');
     window.setTimeout(() => this.audio.playSe('se_angry'), 250);
     const lines: Line[] =
-      kind === 'late'
+      kind === 'dawn'
+        ? [
+            { who: 'narr', text: 'チュンチュン……。空が、すっかり明るい。' },
+            { who: 'narr', text: 'ガチャ。……チェーンが、外れた。' },
+            { who: 'wife', text: '……おはよう。' },
+            { who: 'wife', text: '朝の6時。新聞と一緒に帰ってくる夫って、どうなの？' },
+            { who: 'wife', text: 'もっと早く帰ってきなさい！！' },
+            { who: 'wife', text: '……シャワー浴びて、そのまま会社に行ってらっしゃい。' },
+          ]
+        : kind === 'late'
         ? [
             { who: 'narr', text: `時計の針は ${formatTime(this.day!.time)} を指していた。` },
             { who: 'wife', text: '……今、何時だと思ってるの？' },
@@ -272,10 +290,11 @@ export class Game {
     this.go({
       name: 'talk',
       mood: 'angry',
-      late: kind === 'late',
+      late: kind !== 'angry',
       lines,
       index: 0,
-      after: () => this.go({ name: 'gameover', reason: kind === 'late' ? '遅すぎる帰宅' : '妻の怒り', causes }),
+      after: () =>
+        this.go({ name: 'gameover', reason: kind === 'dawn' ? '朝帰り' : kind === 'late' ? '遅すぎる帰宅' : '妻の怒り', causes }),
     });
   }
 
@@ -702,7 +721,7 @@ export class Game {
           h('li', {}, '「いつもと違う」ところが妻を怒らせる原因。引き返してコンビニ・ゴミ捨て場・通販で対処しよう。'),
           h('li', {}, '原因が残ったままドアを開けると……鬼が出る。'),
           h('li', {}, '異変がない日もある。紛らわしい「ニセ異変」に惑わされて引き返すと、時間だけが過ぎていく。'),
-          h('li', {}, `行動するたびに時間が進む。午前1:00を過ぎたらアウト。通販の特急便（翌朝着）は ${formatTime(EXPRESS_DEADLINE)} 締切。`),
+          h('li', {}, `行動するたびに時間が進む。午前1:00を過ぎて帰るとアウト。2:00を過ぎるとチェーンロックで朝まで入れない。通販の特急便（翌朝着）は ${formatTime(EXPRESS_DEADLINE)} 締切。`),
           h('li', {}, '6日目からは原因が2つ、最終日は3つ重なる。'),
         ),
         h('button', { class: 'btn primary', onclick: () => this.go({ name: 'title' }) }, '戻る'),
@@ -754,7 +773,25 @@ export class Game {
     // 店などのシートは下部バー（持ち物・スマホ）の上に出す
     if (day.location === 'konbini') out.push(this.viewKonbini());
     else if (day.location === 'trash') out.push(this.viewTrash());
-    else if (day.location === 'bench') out.push(this.sheet('公園のベンチ', this.viewShop(), () => this.travel('town'), '街へ戻る'));
+    else if (day.location === 'bench') {
+      // 2:00 を過ぎて締め出されたら、ベンチは時間つぶしの場所になる
+      const locked = day.time > LOCKOUT_TIME;
+      out.push(
+        this.sheet(
+          '公園のベンチ',
+          locked
+            ? [
+                h('p', { class: 'desc' }, '家にはチェーンロック。……朝の6時まで、ここで時間をつぶすしかない。'),
+                day.time < DAWN_TIME
+                  ? h('button', { class: 'btn primary', onclick: () => this.act({ type: 'wait' }, 'se_tap') }, '時間をつぶす（1時間）')
+                  : h('p', { class: 'desc' }, '空が白んできた。……家に戻ろう。'),
+              ]
+            : this.viewShop(),
+          () => this.travel('town'),
+          '街へ戻る',
+        ),
+      );
+    }
 
     if (this.modal) out.push(this.viewModal(this.modal));
     return out;

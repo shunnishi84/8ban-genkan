@@ -10,6 +10,8 @@ import {
   GOAL_DAYS,
   NO_ANOMALY_RATE,
   TIME_LIMIT,
+  LOCKOUT_TIME,
+  DAWN_TIME,
   TRAVEL,
   causeCountFor,
   formatTime,
@@ -249,6 +251,10 @@ const act = (state: DayState, action: Action): ActionResult => {
         state.chatLog.push({ from: 'wife', text: coldReply() });
         return result(true, send('……取りつく島もない。'), COST.sendChat);
       }
+      // 2:00 を過ぎたら妻はもう寝ている。何を送っても既読にならない
+      if (state.time > LOCKOUT_TIME) {
+        return result(true, send('……既読がつかない。', '妻はもう、寝てしまったようだ。'), COST.sendChat);
+      }
       if (t.prank) {
         state.flags.add(`prank:${t.id}`);
         state.chatLog.push({ from: 'wife', text: t.replyRelevant });
@@ -362,6 +368,18 @@ const act = (state: DayState, action: Action): ActionResult => {
       return result(true, [`${ITEM_MAP[p.item]?.name ?? p.item}を持った。`], COST.pickup);
     }
 
+    case 'wait':
+      if (state.location !== 'bench') return result(false, ['ここでは時間をつぶせない。']);
+      if (state.time <= LOCKOUT_TIME) return result(false, ['……まだ、家に帰れる時間だ。']);
+      if (state.time >= DAWN_TIME) return result(false, ['空が白んできた。……そろそろ、家に戻ろう。']);
+      return result(
+        true,
+        [['ベンチに座って、ぼんやり夜空を眺めた。', '自販機のコーヒーで、手を温めた。', 'ハトが一羽、隣に座った。……お前も、締め出されたのか。', '新聞配達のバイクが通り過ぎていった。'][
+          Math.floor((state.time - LOCKOUT_TIME) / 60) % 4
+        ], '……1時間つぶした。'],
+        COST.wait,
+      );
+
     case 'undress':
       if (state.flags.has('undressed')) return result(false, ['もう脱いでいる。']);
       state.flags.add('undressed');
@@ -410,6 +428,12 @@ const act = (state: DayState, action: Action): ActionResult => {
       if (state.location !== 'door') return result(false, ['ドアの前にいない。']);
       if (state.finale) return result(true, [], 0, { kind: 'finale', finale: state.finale });
       if (state.flags.has('insulted')) return result(true, [], 0, demonOutcome(state));
+      // 遅すぎる帰宅: 1:00〜2:00 は怒られて終わり、2:00 を過ぎるとチェーンロック、朝 6:00 にようやく入れる
+      if (state.time >= DAWN_TIME) return result(true, [], 0, { kind: 'dawn' });
+      if (state.time > LOCKOUT_TIME) {
+        return result(false, ['ガチャ……ガツン！', 'チェーンロックがかかっていて、中に入れない！', '……朝まで、どこかで時間をつぶすしかない。']);
+      }
+      if (state.time > TIME_LIMIT) return result(true, [], 0, { kind: 'late' });
       // 悪ふざけを送っていたら、火種に関係なく最初に送ったものの結末
       const prank = [...state.flags].find((f) => f.startsWith('prank:'));
       if (prank) return result(true, [], 0, { kind: 'prank', template: prank.slice('prank:'.length) });
@@ -525,12 +549,9 @@ const demonOutcome = (state: DayState): Outcome => {
 export const perform = (state: DayState, action: Action): ActionResult => {
   const r = act(state, action);
   state.time += r.cost;
-  if (state.time > TIME_LIMIT) {
-    const outcome: Outcome = state.finale
-      ? { kind: 'finale', finale: state.finale }
-      : state.flags.has('insulted')
-        ? demonOutcome(state)
-        : { kind: 'late' };
+  // 1:00 を過ぎても歩き回れる（ドアを開けたときに判定）。ただし暴言を送っていたら魔王が迎えに来る
+  if (state.time > TIME_LIMIT && (state.finale || state.flags.has('insulted'))) {
+    const outcome: Outcome = state.finale ? { kind: 'finale', finale: state.finale } : demonOutcome(state);
     return { ...r, outcome };
   }
   return r;
