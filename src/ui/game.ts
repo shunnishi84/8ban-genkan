@@ -968,7 +968,7 @@ export class Game {
     return [
       h('div', { class: 'tabs' }, tabs, h('button', { class: 'tab', onclick: () => this.openModal({ kind: 'phone', app: null }) }, 'スマホ')),
       slot === 'shirt' && day.flags.has('undressed')
-        ? h('div', { class: 'paper' }, h('p', { class: 'desc' }, 'ワイシャツは脱いで手に持っている。今は肌着一枚だ。'))
+        ? h('p', { class: 'desc' }, 'ワイシャツは脱いで手に持っている。今は肌着一枚だ。')
         : this.clueTexts(`slot:${slot}`, SLOT_BASE[slot]),
       slot === 'shirt'
         ? h(
@@ -1081,7 +1081,7 @@ export class Game {
         { class: 'compose' },
         h('small', { class: 'dim' }, '定型文を送る（2分）'),
         // 送れない定型文は出さない（条件を満たしたら現れる）。送信済みは ✓ 付きで残す
-        CHAT_TEMPLATES.filter((t) => !t.insult && !t.provokeLines && !t.finale && (canSendChat(day, t.id) || day.flags.has(`chat:${t.id}`))).map((t) => {
+        CHAT_TEMPLATES.filter((t) => !t.insult && !t.provokeLines && !t.finale && !t.prank && (canSendChat(day, t.id) || day.flags.has(`chat:${t.id}`))).map((t) => {
           const sent = day.flags.has(`chat:${t.id}`);
           return h(
             'button',
