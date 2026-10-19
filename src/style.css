@@ -1441,6 +1441,7 @@ button:disabled {
 /* 戦場。1カットに映るのは片方の機体だけ（攻撃のコマは2カット） */
 .b-field {
   position: relative;
+  z-index: 1;
   flex: 1;
   overflow: hidden;
 }
@@ -1935,8 +1936,7 @@ button:disabled {
     transform: translateX(0);
   }
 }
-.b-hud,
-.b-field {
+.b-hud {
   position: relative;
   z-index: 1;
 }

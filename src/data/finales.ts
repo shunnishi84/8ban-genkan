@@ -1,12 +1,12 @@
-import type { Clue } from '../core/types';
+import type { Clue, Speaker } from '../core/types';
 
 /**
  * 暴言を4種すべて送った日だけに起きる「フィナーレ」。7本からランダムで1本。
  * どれも流血・暴力の描写はしない（暗転や比喩で済ませる）。
  */
-export type FinaleId = 'castle' | 'siege' | 'loop' | 'court' | 'lockout' | 'exposed' | 'robot';
+export const FINALE_IDS = ['castle', 'siege', 'loop', 'court', 'lockout', 'exposed', 'robot'] as const;
 
-export const FINALE_IDS: FinaleId[] = ['castle', 'siege', 'loop', 'court', 'lockout', 'exposed', 'robot'];
+export type FinaleId = (typeof FINALE_IDS)[number];
 
 /** ロボット大戦風の戦闘の参加者 */
 export interface BattleUnit {
@@ -43,7 +43,7 @@ export interface BattleStep {
 }
 
 export interface FinaleLine {
-  who: 'me' | 'wife' | 'narr' | 'other';
+  who: Speaker;
   /** who が other のときの名札（「義母」「裁判長（妻）」など） */
   name?: string;
   text: string;

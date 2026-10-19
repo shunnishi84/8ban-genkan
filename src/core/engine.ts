@@ -137,19 +137,23 @@ export const unresolvedCauses = (state: DayState): Cause[] =>
   state.causes.filter((c) => !evaluate(c.resolution, state.flags));
 
 /** チャット定型文がその日の原因に関係あるか */
-export const isChatRelevant = (state: DayState, templateId: string): boolean =>
+const isChatRelevant = (state: DayState, templateId: string): boolean =>
   state.causes.some((c) => flagsIn(c.resolution).includes(`chat:${templateId}`));
 
-export const canSendChat = (state: DayState, templateId: string): boolean => {
-  const t = CHAT_MAP[templateId];
-  if (!t || state.flags.has(`chat:${templateId}`)) return false;
-  if (t.onlyWith && !state.causes.some((c) => c.id === t.onlyWith)) return false;
-  if (t.insult && !state.insultIds.includes(t.id)) return false;
-  return !t.requires || evaluate(t.requires, state.flags);
+/** 定型文を今送れない理由（送れるなら null）。UI のボタンと sendChat の両方がこれを使う */
+const chatBlockReason = (state: DayState, t: ChatTemplate): string | null => {
+  if (state.flags.has(`chat:${t.id}`)) return 'それはもう送った。';
+  if (t.requires && !evaluate(t.requires, state.flags)) return 'まだそれを言える状況じゃない。';
+  if (t.onlyWith && !state.causes.some((c) => c.id === t.onlyWith)) return '今それを言う意味がない。';
+  if (t.insult && !state.insultIds.includes(t.id)) return '……今日は、その言葉は出てこない。';
+  return null;
 };
 
+export const canSendChat = (state: DayState, templateId: string): boolean =>
+  !!CHAT_MAP[templateId] && !chatBlockReason(state, CHAT_MAP[templateId]);
+
 /** 1日に出る暴言の数 */
-export const INSULTS_PER_DAY = 4;
+const INSULTS_PER_DAY = 4;
 
 /** その日の暴言を全種からランダムに選ぶ（日ごとの seed で決まる。並びは定義順） */
 const pickInsults = (seed: number): string[] => {
@@ -158,21 +162,23 @@ const pickInsults = (seed: number): string[] => {
   return all.filter((id) => chosen.has(id));
 };
 
-/** 酔いの段階（飲んだ缶ビールの本数） */
-export const drunkLevel = (state: DayState): number => [...state.flags].filter((f) => f.startsWith('drunk:')).length;
+/** 指定の接頭辞で始まるフラグ（drunk:1, buy:beer:2 など、回数を数えるフラグ用） */
+const flagsWith = (state: DayState, prefix: string): string[] => [...state.flags].filter((f) => f.startsWith(prefix));
 
-/** 今送ったらこうなる、という文面（暴言は酔うほどひどくなる） */
-export const chatText = (state: DayState, t: ChatTemplate): string => {
-  const level = Math.min(drunkLevel(state), t.drunkText?.length ?? 0);
-  return level > 0 ? t.drunkText![level - 1] : t.text;
-};
+/** 酔いの段階（飲んだ缶ビールの本数） */
+export const drunkLevel = (state: DayState): number => flagsWith(state, 'drunk:').length;
+
+/** 酔いの段階に応じた文面（暴言は酔うほどひどくなる） */
+const textAt = (t: ChatTemplate, level: number): string =>
+  level > 0 && t.drunkText?.length ? t.drunkText[Math.min(level, t.drunkText.length) - 1] : t.text;
+
+/** 今送ったらこうなる、という文面 */
+export const chatText = (state: DayState, t: ChatTemplate): string => textAt(t, drunkLevel(state));
 
 /** 実際に送った文面 */
 export const sentText = (state: DayState, templateId: string): string => {
-  const t = CHAT_MAP[templateId];
-  const said = [...state.flags].find((f) => f.startsWith(`said:${templateId}:`));
-  const level = said ? Number(said.split(':')[2]) : 0;
-  return level > 0 && t.drunkText ? t.drunkText[Math.min(level, t.drunkText.length) - 1] : t.text;
+  const said = flagsWith(state, `said:${templateId}:`)[0];
+  return textAt(CHAT_MAP[templateId], said ? Number(said.split(':')[2]) : 0);
 };
 
 export const hasUnreadChat = (state: DayState): boolean =>
@@ -221,10 +227,8 @@ const act = (state: DayState, action: Action): ActionResult => {
     case 'sendChat': {
       const t = CHAT_MAP[action.template];
       if (!t) return result(false, ['そんなメッセージは無い。']);
-      if (state.flags.has(`chat:${t.id}`)) return result(false, ['それはもう送った。']);
-      if (t.requires && !evaluate(t.requires, state.flags)) return result(false, ['まだそれを言える状況じゃない。']);
-      if (t.onlyWith && !state.causes.some((c) => c.id === t.onlyWith)) return result(false, ['今それを言う意味がない。']);
-      if (t.insult && !state.insultIds.includes(t.id)) return result(false, ['……今日は、その言葉は出てこない。']);
+      const blocked = chatBlockReason(state, t);
+      if (blocked) return result(false, [blocked]);
       state.flags.add(`chat:${t.id}`);
       state.chatLog.push({ from: 'me', text: chatText(state, t), image: t.image });
       // 実際に送った文面（酔いの段階）を覚えておく。家庭裁判の証拠などで使う
@@ -317,7 +321,7 @@ const act = (state: DayState, action: Action): ActionResult => {
       if (state.location !== 'konbini') return result(false, ['コンビニにいない。']);
       if (!item || item.source !== 'konbini') return result(false, ['その商品はコンビニに置いていない。']);
       if (item.maxStock) {
-        const n = [...state.flags].filter((f) => f.startsWith(`buy:${item.id}:`)).length;
+        const n = flagsWith(state, `buy:${item.id}:`).length;
         if (n >= item.maxStock) return result(false, ['店員「お客さん……今日はもう、そのへんにしときましょう」', 'これ以上は売ってもらえなかった。']);
         state.flags.add(`buy:${item.id}:${n + 1}`);
       }
@@ -355,7 +359,7 @@ const act = (state: DayState, action: Action): ActionResult => {
         return result(true, [msgs[Math.min(level, msgs.length) - 1] ?? `${item.name}を飲んだ。`], COST.use);
       }
       // 脱いだまま替えのシャツに着替えたら、ちゃんと服を着たことになる
-      if (item.slot === 'shirt' && item.id === 'spare_shirt') state.flags.delete('undressed');
+      if (item.dresses) state.flags.delete('undressed');
       return result(true, [item.useMessage ?? `${item.name}を使った。`], COST.use);
     }
 
@@ -414,7 +418,7 @@ const act = (state: DayState, action: Action): ActionResult => {
       const trap = state.finale ? FINALES[state.finale].trap : undefined;
       if (trap) {
         // 結界の中: 玄関前から出られない。試すたびに違うメッセージ
-        const n = [...state.flags].filter((f) => f.startsWith('blocked:')).length;
+        const n = flagsWith(state, 'blocked:').length;
         state.flags.add(`blocked:${n}`);
         return result(false, trap.blocked[n % trap.blocked.length]);
       }
@@ -435,7 +439,7 @@ const act = (state: DayState, action: Action): ActionResult => {
       }
       if (state.time > TIME_LIMIT) return result(true, [], 0, { kind: 'late' });
       // 悪ふざけを送っていたら、火種に関係なく最初に送ったものの結末
-      const prank = [...state.flags].find((f) => f.startsWith('prank:'));
+      const prank = flagsWith(state, 'prank:')[0];
       if (prank) return result(true, [], 0, { kind: 'prank', template: prank.slice('prank:'.length) });
       const angry = [...(state.flags.has('undressed') ? [UNDRESSED] : []), ...unresolvedCauses(state), ...provokeCauses(state)];
       if (angry.length > 0) return result(true, [], 0, { kind: 'angry', causes: angry });
@@ -537,14 +541,15 @@ const applyFinale = (state: DayState, id: FinaleId): Finale | null => {
 
 /** 暴言を送った日の結末。最初に送った暴言のセリフを使う */
 const demonOutcome = (state: DayState): Outcome => {
-  const first = [...state.flags].find((f) => f.startsWith('insult:'))?.slice('insult:'.length);
+  const first = flagsWith(state, 'insult:')[0]?.slice('insult:'.length);
   const lines = (first && CHAT_MAP[first]?.demonLines) || ['…………。'];
   return { kind: 'demon', lines };
 };
 
 /**
- * 行動を実行して状態を更新する。時間経過と「遅すぎる」判定もここで行う。
- * 判定は「openDoor 時点で全 cause が解消済みか」だけ。
+ * 行動を実行して状態を更新する。時間経過もここで進める。
+ * 帰宅の判定は openDoor で行う（フィナーレ → 魔王 → 朝帰り/締め出し/遅すぎる → 悪ふざけ → 火種）。
+ * 例外として、暴言を送っていた日は 1:00 を過ぎた時点で魔王（フィナーレ）が迎えに来る。
  */
 export const perform = (state: DayState, action: Action): ActionResult => {
   const r = act(state, action);

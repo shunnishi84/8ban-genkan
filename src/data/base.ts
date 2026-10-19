@@ -39,11 +39,10 @@ export const APP_LABEL: Record<AppId, string> = {
   sns: 'つぶやきー',
 };
 
-export const APP_BASE: Record<AppId, string> = {
-  chat: '（妻とのトーク）',
+/** 手がかりが無いときのアプリの中身（チャットと通販は専用の画面なので無い） */
+export const APP_BASE: Partial<Record<AppId, string>> = {
   calendar: '今日: 予定なし',
   memo: 'メモはありません。',
-  shop: '',
   sns: '（あなた）今日も一日おつかれ。（昨日）\nタイムラインに特に変わったことはない。',
 };
 

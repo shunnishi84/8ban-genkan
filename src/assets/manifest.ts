@@ -2,8 +2,7 @@
  * アセットのファイル名を一元管理する。
  * 画像は public/assets/images/、音声は public/assets/audio/ に置けば自動で使われる。
  * ファイルが無い場合、画像は「仮の四角＋ラベル」、効果音は簡易ビープ、BGM は無音になる。
- *
- * rect は 360x640 の論理座標上の描画位置。画像はこの矩形に引き伸ばして描く。
+ * 玄関前での描画位置は renderer.ts の SPOT_RECTS / OVERLAY_RECTS で決める。
  */
 
 export interface ImageEntry {

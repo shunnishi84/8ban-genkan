@@ -75,12 +75,6 @@ export class AudioManager {
     );
   }
 
-  stopBgm() {
-    this.fadeOut(this.bgm);
-    this.bgm = null;
-    this.bgmKey = null;
-  }
-
   playSe(key: SeKey) {
     if (this.muted || !this.unlocked) return;
     const entry = SE[key];

@@ -137,6 +137,8 @@ export interface ItemDef {
   /** 通販の注文履歴でキャンセル期限の代わりに出す説明（既定は「0:00 発送処理」） */
   cancelNote?: string;
   useMessage?: string;
+  /** 使うと服を着たことになる（替えのワイシャツ）。脱いだ状態が解消される */
+  dresses?: boolean;
   /** 1日に買える上限（無ければ無制限） */
   maxStock?: number;
   /** 飲むと酔いが1段階進む（ビール）。useMessages は 1杯目, 2杯目, … のメッセージ */
@@ -234,11 +236,12 @@ export type Action =
   | { type: 'discard'; item: string }
   | { type: 'use'; item: string }
   | { type: 'pickup'; item: string }
-  /** 着ているワイシャツを脱ぐ / 着直す */
+  /** 着ているワイシャツを脱ぐ */
   | { type: 'undress' }
+  /** 脱いだワイシャツを着直す */
+  | { type: 'dress' }
   /** 締め出されたあと、公園のベンチで1時間つぶす */
   | { type: 'wait' }
-  | { type: 'dress' }
   | { type: 'unsend'; clue: string }
   | { type: 'deletePost'; clue: string }
   | { type: 'travel'; to: Location }
@@ -276,5 +279,8 @@ export interface PrankEnding {
   fallback: string;
   /** BGM。しんみりさせたいときは静かな曲 */
   bgm: 'bgm_angry' | 'bgm_home';
-  lines: { who: 'me' | 'wife' | 'narr' | 'other'; name?: string; text: string; bg?: string; bgFallback?: string }[];
+  lines: { who: Speaker; name?: string; text: string; bg?: string; bgFallback?: string }[];
 }
+
+/** セリフの話し手。other は名札（name）で誰かを示す */
+export type Speaker = 'me' | 'wife' | 'narr' | 'other';

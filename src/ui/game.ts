@@ -34,17 +34,18 @@ import {
 } from '../core/engine';
 import { loadBest, saveBest } from '../core/save';
 import { solve } from '../core/solver';
-import type { Action, AppId, Cause, ItemDef, ClueLocation, DayState, Location, RunState, SlotId, SpotId } from '../core/types';
+import type { Action, AppId, Cause, ChatTemplate, Speaker, ItemDef, ClueLocation, DayState, Location, RunState, SlotId, SpotId } from '../core/types';
 import { APP_BASE, APP_LABEL, CHAT_HISTORY, SLOT_BASE, SLOT_LABEL, SPOT_BASE, SPOT_LABEL } from '../data/base';
 import { CHAT_MAP, CHAT_TEMPLATES } from '../data/chat';
 import { FINALES, FINALE_IDS, type Finale, type FinaleChoice, type FinaleCounter, type FinaleFx, type FinaleId, type FinaleLine } from '../data/finales';
 import { ITEM_MAP, itemsAt } from '../data/items';
 import { SCENARIO_MAP } from '../data/scenarios';
 import { h, type Child } from './dom';
+import { pick } from '../core/rng';
 import { Renderer } from './renderer';
 
 type Line = {
-  who: 'me' | 'wife' | 'narr' | 'other';
+  who: Speaker;
   text: string;
   /** who が other のときの名札 */
   name?: string;
@@ -105,7 +106,7 @@ type Screen =
   | { name: 'loop'; level: number }
   /** ロボット大戦風の戦闘。step は今のコマ */
   | { name: 'battle'; finale: Finale; step: number; after: () => void }
-  | { name: 'gameover'; reason: string; causes: Cause[]; finale?: FinaleId }
+  | { name: 'gameover'; reason: string; causes: Cause[]; finale?: FinaleId; demon?: boolean }
   | { name: 'clear' };
 
 type Modal =
@@ -129,6 +130,9 @@ const INTRO_FLAVOR = [
 ];
 
 const DEMON_REASON = '暴言による魔王化';
+
+/** 商品の値段と説明の1行 */
+const priceLine = (item: ItemDef | undefined, note: string) => `¥${item?.price?.toLocaleString()}　${note}`;
 
 const LOCATION_LABEL: Record<Location, string> = {
   door: '自宅の玄関前',
@@ -161,7 +165,8 @@ export class Game {
   /** 酔いの霧（画面全体に重ねる） */
   private fog: HTMLElement;
   private best = loadBest();
-  private debug = new URLSearchParams(location.search).has('debug');
+  private params = new URLSearchParams(location.search);
+  private debug = this.params.has('debug');
 
   constructor(private root: HTMLElement) {
     // 画像が届いたら Canvas を描き直し、UI 内のイラストも出すために DOM だけ作り直す
@@ -205,19 +210,24 @@ export class Game {
 
   private beginDay() {
     // ?debug&scenario=a,b で その日のシナリオを固定できる（シナリオ追加時の動作確認用）
-    const forced = this.debug ? new URLSearchParams(location.search).get('scenario') : null;
+    const forced = this.debug ? this.params.get('scenario') : null;
     const scenarios = forced?.split(',').map((id) => SCENARIO_MAP[id]).filter(Boolean);
     this.day = scenarios?.length
       ? buildDay(this.run.day, scenarios, startTimeFor(this.run.day, Math.random()), Math.random())
       : startDay(this.run, Math.random);
     // ?debug&finale=court で、暴言4種コンプリート時のフィナーレを固定できる
-    const finale = this.debug ? (new URLSearchParams(location.search).get('finale') as FinaleId | null) : null;
+    const finale = this.debug ? (this.params.get('finale') as FinaleId | null) : null;
     const idx = finale ? FINALE_IDS.indexOf(finale) : -1;
     if (idx >= 0) this.day.seed = (idx + 0.5) / FINALE_IDS.length;
     // ?debug&time=26:05 で開始時刻を変えられる（深夜の締め出しの確認用）
-    const time = this.debug ? new URLSearchParams(location.search).get('time')?.split(':').map(Number) : undefined;
+    const time = this.debug ? this.params.get('time')?.split(':').map(Number) : undefined;
     if (time?.length === 2) this.day.time = this.day.startTime = hm(time[0], time[1]);
     this.go({ name: 'intro' });
+  }
+
+  /** 効果音を少し遅らせて鳴らす（ms を並べると、その時刻ごとに鳴らす） */
+  private playSeAt(key: SeKey, ...ms: number[]) {
+    for (const t of ms) window.setTimeout(() => this.audio.playSe(key), t);
   }
 
   private act(action: Action, se?: SeKey): boolean {
@@ -261,7 +271,7 @@ export class Game {
 
   private gameOver(kind: 'late' | 'dawn' | 'angry', causes: Cause[]) {
     this.audio.playSe(kind === 'angry' ? 'se_door' : 'se_late');
-    window.setTimeout(() => this.audio.playSe('se_angry'), 250);
+    this.playSeAt('se_angry', 250);
     const lines: Line[] =
       kind === 'dawn'
         ? [
@@ -301,7 +311,7 @@ export class Game {
   /** 暴言を送っていた日: 火種に関係なく、ドアの向こうに魔王 */
   private demonEnding(demonLines: string[]) {
     this.audio.playSe('se_door');
-    window.setTimeout(() => this.audio.playSe('se_demon'), 300);
+    this.playSeAt('se_demon', 300);
     const alone = this.day!.homeAlone;
     const lines: Line[] = [
       ...(alone ? [{ who: 'narr' as const, text: '実家にいるはずの妻の靴が、玄関にある。' }] : []),
@@ -316,7 +326,7 @@ export class Game {
       mood: 'demon',
       lines,
       index: 0,
-      after: () => this.go({ name: 'gameover', reason: DEMON_REASON, causes: [] }),
+      after: () => this.go({ name: 'gameover', reason: DEMON_REASON, causes: [], demon: true }),
     });
   }
 
@@ -377,12 +387,11 @@ export class Game {
     this.finalForm = !!ff;
     this.court = f.choice?.style === 'court';
     this.audio.playSe('se_door');
-    window.setTimeout(() => this.audio.playSe('se_demon'), 300);
+    this.playSeAt('se_demon', 300);
     this.recordBest();
     const end = () => this.go({ name: 'gameover', reason: f.title, causes: [], finale: id });
     const outro = (scene?: SceneSpec) =>
       f.outro.length ? this.go({ name: 'talk', mood: 'finale', scene, lines: this.expand(f.outro), index: 0, after: end }) : end();
-    const pick = <T,>(xs: T[]): T => xs[Math.floor(Math.random() * xs.length)];
     let hp = f.choice?.hp ?? 0;
     let last: FinaleCounter | undefined;
     const choice = () => {
@@ -401,11 +410,11 @@ export class Game {
         gauge: gauge(hp),
         onPick: (o) => {
           const before = hp;
-          let lines = this.expand(pick(o.replies)).map((l) => ({ ...l, gauge: gauge(before) }));
+          let lines = this.expand(pick(Math.random, o.replies)).map((l) => ({ ...l, gauge: gauge(before) }));
           let next = () => (o.end ? outro() : choice());
           if (!o.end && c.counters?.length) {
             // 相手の反撃。1ターンごとに必ず返ってくる
-            const counter = pick(c.counters.length > 1 ? c.counters.filter((x) => x !== last) : c.counters);
+            const counter = pick(Math.random, c.counters.length > 1 ? c.counters.filter((x) => x !== last) : c.counters);
             last = counter;
             hp -= counter.damage;
             // ゲージは penalty の行で削れる（無ければ最初の行で）
@@ -441,7 +450,7 @@ export class Game {
       this.go({ name: 'loop', level: level + 1 });
       return;
     }
-    window.setTimeout(() => this.audio.playSe('se_demon'), 300);
+    this.playSeAt('se_demon', 300);
     this.go({
       name: 'talk',
       mood: 'finale',
@@ -454,7 +463,7 @@ export class Game {
 
   private goHome(successLines: string[]) {
     this.audio.playSe('se_door');
-    window.setTimeout(() => this.audio.playSe('se_success'), 300);
+    this.playSeAt('se_success', 300);
     const alone = this.day!.homeAlone;
     const grudging = this.day!.grudging;
     const asleep = this.day!.asleepLines;
@@ -618,7 +627,7 @@ export class Game {
       bgm = 'bgm_demon';
       this.renderer.setScene({ kind: 'loop', level: s.level, started: performance.now() });
     } else if (s.name === 'gameover') {
-      const demon = s.reason === DEMON_REASON || !!s.finale;
+      const demon = !!s.demon || !!s.finale;
       bgm = demon ? 'bgm_demon' : 'bgm_angry';
       // 魔王化・フィナーレのときは、結果画面の背後でもその場面が続く
       this.renderer.setScene(
@@ -783,7 +792,7 @@ export class Game {
             ? [
                 h('p', { class: 'desc' }, '家にはチェーンロック。……朝の6時まで、ここで時間をつぶすしかない。'),
                 day.time < DAWN_TIME
-                  ? h('button', { class: 'btn primary', onclick: () => this.act({ type: 'wait' }, 'se_tap') }, '時間をつぶす（1時間）')
+                  ? h('button', { class: 'btn primary', onclick: () => this.act({ type: 'wait' }, 'se_tap') }, `時間をつぶす（${COST.wait / 60}時間）`)
                   : h('p', { class: 'desc' }, '空が白んできた。……家に戻ろう。'),
               ]
             : this.viewShop(),
@@ -845,11 +854,12 @@ export class Game {
     return h('div', { class: 'bar' }, common);
   }
 
-  private sheet(title: string, body: Child, onClose: () => void, closeLabel = '閉じる'): HTMLElement {
-    const inTown = closeLabel !== '閉じる';
+  /** 下から出るシート。aboveBar は店など、下部バーの上に出す場所（閉じるボタンの文言も変わる） */
+  private sheet(title: string, body: Child, onClose: () => void, aboveBar?: string): HTMLElement {
+    const closeLabel = aboveBar ?? '閉じる';
     return h(
       'div',
-      { class: inTown ? 'sheet above-bar' : 'sheet' },
+      { class: aboveBar ? 'sheet above-bar' : 'sheet' },
       h('div', { class: 'sheet-head' }, h('b', {}, title), h('button', { class: 'btn small', onclick: onClose }, closeLabel)),
       h('div', { class: 'sheet-body' }, body),
     );
@@ -898,7 +908,7 @@ export class Game {
                     else this.closeModal();
                   },
                 },
-                `${p.label}（1分）`,
+                `${p.label}（${COST.pickup}分）`,
               ),
             ),
           ],
@@ -916,40 +926,36 @@ export class Game {
       case 'phone':
         return this.viewPhone(m.app);
       case 'confirmDoor':
-        return h(
-          'div',
-          { class: 'dialog-backdrop' },
-          h(
-            'div',
-            { class: 'dialog' },
-            h('p', {}, 'ドアを開ける？'),
-            h('p', { class: 'dim' }, '火種が残っていたら……'),
-            h(
-              'div',
-              { class: 'row' },
-              h('button', { class: 'btn', onclick: () => this.closeModal() }, 'やめる'),
-              h('button', { class: 'btn danger', onclick: () => this.act({ type: 'openDoor' }) }, '開ける'),
-            ),
-          ),
-        );
+        return this.dialog('ドアを開ける？', '火種が残っていたら……', 'やめる', '開ける', () => this.act({ type: 'openDoor' }));
       case 'confirmQuit':
-        return h(
-          'div',
-          { class: 'dialog-backdrop' },
-          h(
-            'div',
-            { class: 'dialog' },
-            h('p', {}, 'タイトルに戻る？'),
-            h('p', { class: 'dim' }, `今の連続帰宅（${this.run.streak}日）はここで途切れる。最高記録は残る。`),
-            h(
-              'div',
-              { class: 'row' },
-              h('button', { class: 'btn', onclick: () => this.closeModal() }, 'つづける'),
-              h('button', { class: 'btn danger', onclick: () => this.go({ name: 'title' }) }, 'タイトルへ'),
-            ),
-          ),
+        return this.dialog(
+          'タイトルに戻る？',
+          `今の連続帰宅（${this.run.streak}日）はここで途切れる。最高記録は残る。`,
+          'つづける',
+          'タイトルへ',
+          () => this.go({ name: 'title' }),
         );
     }
+  }
+
+  /** 確認ダイアログ（やめる / 実行する） */
+  private dialog(title: string, sub: string, cancel: string, ok: string, onOk: () => void): HTMLElement {
+    return h(
+      'div',
+      { class: 'dialog-backdrop' },
+      h(
+        'div',
+        { class: 'dialog' },
+        h('p', {}, title),
+        h('p', { class: 'dim' }, sub),
+        h(
+          'div',
+          { class: 'row' },
+          h('button', { class: 'btn', onclick: () => this.closeModal() }, cancel),
+          h('button', { class: 'btn danger', onclick: onOk }, ok),
+        ),
+      ),
+    );
   }
 
   private viewItems(slot: SlotId): Child {
@@ -975,8 +981,8 @@ export class Game {
             'div',
             { class: 'row-actions' },
             day.flags.has('undressed')
-              ? h('button', { class: 'btn small', onclick: () => this.act({ type: 'dress' }, 'se_tap') }, '着る（1分）')
-              : h('button', { class: 'btn small', onclick: () => this.act({ type: 'undress' }, 'se_tap') }, '脱ぐ（1分）'),
+              ? h('button', { class: 'btn small', onclick: () => this.act({ type: 'dress' }, 'se_tap') }, `着る（${COST.dress}分）`)
+              : h('button', { class: 'btn small', onclick: () => this.act({ type: 'undress' }, 'se_tap') }, `脱ぐ（${COST.undress}分）`),
           )
         : null,
       items.map((item) =>
@@ -984,7 +990,7 @@ export class Game {
           item,
           item.desc,
           item.useLabel
-            ? h('button', { class: 'btn small', onclick: () => this.act({ type: 'use', item: item.id }, 'se_tap') }, `${item.useLabel}（2分）`)
+            ? h('button', { class: 'btn small', onclick: () => this.act({ type: 'use', item: item.id }, 'se_tap') }, `${item.useLabel}（${COST.use}分）`)
             : null,
         ),
       ),
@@ -1032,7 +1038,7 @@ export class Game {
     } else if (app === 'chat') body = this.viewChat();
     else if (app === 'sns') body = this.viewSns();
     else if (app === 'shop') body = this.viewShop();
-    else body = h('div', { class: `paper ${app}` }, this.clueTexts(`app:${app}`, APP_BASE[app]));
+    else body = h('div', { class: `paper ${app}` }, this.clueTexts(`app:${app}`, APP_BASE[app] ?? ''));
 
     return h(
       'div',
@@ -1046,10 +1052,23 @@ export class Game {
     const day = this.day!;
     const bubble = (from: 'me' | 'wife', text: string, cls = '') => h('div', { class: `bubble ${from} ${cls}` }, text);
     const ME = '（あなた）';
-    const provoke = CHAT_TEMPLATES.filter(
-      (t) => !t.prank && (t.provokeLines || t.finale) && (canSendChat(day, t.id) || day.flags.has(`chat:${t.id}`)),
-    );
-    const pranks = CHAT_TEMPLATES.filter((t) => t.prank && (canSendChat(day, t.id) || day.flags.has(`chat:${t.id}`)));
+    // 送れない定型文は出さない（条件を満たしたら現れる）。送信済みは ✓ 付きで残す
+    const shown = (t: ChatTemplate) => canSendChat(day, t.id) || day.flags.has(`chat:${t.id}`);
+    const button = (t: ChatTemplate, cls: string) => {
+      const sent = day.flags.has(`chat:${t.id}`);
+      return h(
+        'button',
+        { class: cls, disabled: !canSendChat(day, t.id), onclick: () => this.act({ type: 'sendChat', template: t.id }, 'se_send') },
+        sent ? `✓ ${sentText(day, t.id)}` : chatText(day, t),
+      );
+    };
+    // 定型文の枠: [見出し（無ければなし）, その枠に入る定型文, ボタンの class]
+    const groups: [string | null, (t: ChatTemplate) => boolean, string][] = [
+      [null, (t) => !t.insult && !t.provokeLines && !t.finale && !t.prank, 'template'],
+      ['😏 余計なひと言（※おすすめしない）', (t) => !t.prank && !!(t.provokeLines || t.finale), 'template insult'],
+      ['🍺 酔った勢いの悪ふざけ（※おすすめしない）', (t) => !!t.prank, 'template insult'],
+      ['😤 感情のままに送る（※おすすめしない）', (t) => !!t.insult, 'template insult'],
+    ];
     return [
       h(
         'div',
@@ -1066,7 +1085,7 @@ export class Game {
             { class: 'bubble-row me' },
             read
               ? h('small', { class: 'read-mark' }, '既読')
-              : h('button', { class: 'btn small unsend', onclick: () => this.act({ type: 'unsend', clue: c.id! }, 'se_tap') }, '送信取消（2分）'),
+              : h('button', { class: 'btn small unsend', onclick: () => this.act({ type: 'unsend', clue: c.id! }, 'se_tap') }, `送信取消（${COST.unsend}分）`),
             bubble('me', c.text.slice(ME.length)),
           );
         }),
@@ -1079,58 +1098,10 @@ export class Game {
       h(
         'div',
         { class: 'compose' },
-        h('small', { class: 'dim' }, '定型文を送る（2分）'),
-        // 送れない定型文は出さない（条件を満たしたら現れる）。送信済みは ✓ 付きで残す
-        CHAT_TEMPLATES.filter((t) => !t.insult && !t.provokeLines && !t.finale && !t.prank && (canSendChat(day, t.id) || day.flags.has(`chat:${t.id}`))).map((t) => {
-          const sent = day.flags.has(`chat:${t.id}`);
-          return h(
-            'button',
-            {
-              class: 'template',
-              disabled: sent || !canSendChat(day, t.id),
-              onclick: () => this.act({ type: 'sendChat', template: t.id }, 'se_send'),
-            },
-            sent ? `✓ ${sentText(day, t.id)}` : chatText(day, t),
-          );
-        }),
-        provoke.length ? h('small', { class: 'insult-label' }, '😏 余計なひと言（※おすすめしない）') : null,
-        provoke.map((t) => {
-          const sent = day.flags.has(`chat:${t.id}`);
-          return h(
-            'button',
-            {
-              class: 'template insult',
-              disabled: sent || !canSendChat(day, t.id),
-              onclick: () => this.act({ type: 'sendChat', template: t.id }, 'se_send'),
-            },
-            sent ? `✓ ${sentText(day, t.id)}` : chatText(day, t),
-          );
-        }),
-        pranks.length ? h('small', { class: 'insult-label' }, '🍺 酔った勢いの悪ふざけ（※おすすめしない）') : null,
-        pranks.map((t) => {
-          const sent = day.flags.has(`chat:${t.id}`);
-          return h(
-            'button',
-            {
-              class: 'template insult',
-              disabled: sent || !canSendChat(day, t.id),
-              onclick: () => this.act({ type: 'sendChat', template: t.id }, 'se_send'),
-            },
-            sent ? `✓ ${sentText(day, t.id)}` : chatText(day, t),
-          );
-        }),
-        h('small', { class: 'insult-label' }, '😤 感情のままに送る（※おすすめしない）'),
-        CHAT_TEMPLATES.filter((t) => t.insult && day.insultIds.includes(t.id)).map((t) => {
-          const sent = day.flags.has(`chat:${t.id}`);
-          return h(
-            'button',
-            {
-              class: 'template insult',
-              disabled: sent,
-              onclick: () => this.act({ type: 'sendChat', template: t.id }, 'se_send'),
-            },
-            sent ? `✓ ${sentText(day, t.id)}` : chatText(day, t),
-          );
+        h('small', { class: 'dim' }, `定型文を送る（${COST.sendChat}分）`),
+        groups.map(([label, inGroup, cls]) => {
+          const list = CHAT_TEMPLATES.filter((t) => inGroup(t) && shown(t));
+          return list.length ? [label ? h('small', { class: 'insult-label' }, label) : null, list.map((t) => button(t, cls))] : null;
         }),
       ),
     ];
@@ -1140,7 +1111,7 @@ export class Game {
   private viewSns(): Child {
     const day = this.day!;
     const clues = visibleClues(day, 'app:sns');
-    if (clues.length === 0) return h('div', { class: 'paper sns' }, h('p', { class: 'desc' }, APP_BASE.sns));
+    if (clues.length === 0) return h('div', { class: 'paper sns' }, h('p', { class: 'desc' }, APP_BASE.sns ?? ''));
     return h(
       'div',
       { class: 'sns-feed' },
@@ -1153,7 +1124,7 @@ export class Game {
           deleted ? h('p', { class: 'desc' }, 'この投稿は削除されました') : h('p', { class: 'desc' }, c.text),
           deleted
             ? null
-            : h('button', { class: 'btn small danger', onclick: () => this.act({ type: 'deletePost', clue: c.id! }, 'se_discard') }, '投稿を削除（2分）'),
+            : h('button', { class: 'btn small danger', onclick: () => this.act({ type: 'deletePost', clue: c.id! }, 'se_discard') }, `投稿を削除（${COST.deletePost}分）`),
         );
       }),
     );
@@ -1163,6 +1134,8 @@ export class Game {
     const day = this.day!;
     const open = day.time <= EXPRESS_DEADLINE;
     const status = (id: string) => day.orders[id];
+    const history = Object.entries(day.orders).filter(([, v]) => v === 'existing' || v === 'canceled');
+    const shipped = day.time > CANCEL_DEADLINE;
     return [
       h(
         'div',
@@ -1176,36 +1149,34 @@ export class Game {
         const st = status(item.id);
         return this.itemRow(
           item,
-          `¥${item.price?.toLocaleString()}　${item.desc}`,
+          priceLine(item, item.desc),
           st === 'express'
             ? h('span', { class: 'tag ok' }, '翌朝着')
             : st === 'late'
               ? h('span', { class: 'tag ng' }, '明後日着')
-              : h('button', { class: 'btn small', onclick: () => this.act({ type: 'order', item: item.id }, 'se_order') }, '注文（3分）'),
+              : h('button', { class: 'btn small', onclick: () => this.act({ type: 'order', item: item.id }, 'se_order') }, `注文（${COST.order}分）`),
         );
       }),
-      Object.entries(day.orders).some(([, v]) => v === 'existing' || v === 'canceled')
+      history.length
         ? h(
             'div',
             { class: 'history' },
             h('b', {}, '注文履歴（発送準備中）'),
-            Object.entries(day.orders)
-              .filter(([, v]) => v === 'existing' || v === 'canceled')
-              .map(([id, v]) =>
+            history.map(([id, v]) =>
                 h(
                   'div',
                   { class: 'item' },
-                  h('div', {}, h('b', {}, ITEM_MAP[id]?.name ?? id), h('small', {}, `¥${ITEM_MAP[id]?.price?.toLocaleString()}　${ITEM_MAP[id]?.cancelNote ?? '0:00 発送処理'}`)),
+                  h('div', {}, h('b', {}, ITEM_MAP[id]?.name ?? id), h('small', {}, priceLine(ITEM_MAP[id], ITEM_MAP[id]?.cancelNote ?? '0:00 発送処理'))),
                   v === 'canceled'
                     ? h('span', { class: 'tag' }, 'キャンセル済み')
                     : h(
                         'button',
                         {
                           class: 'btn small',
-                          disabled: day.time > CANCEL_DEADLINE,
+                          disabled: shipped,
                           onclick: () => this.act({ type: 'cancelOrder', item: id }, 'se_tap'),
                         },
-                        day.time > CANCEL_DEADLINE ? '発送済み' : 'キャンセル（2分）',
+                        shipped ? '発送済み' : `キャンセル（${COST.cancelOrder}分）`,
                       ),
                 ),
               ),
@@ -1220,11 +1191,11 @@ export class Game {
     return this.sheet(
       'コンビニ',
       [
-        h('p', { class: 'dim' }, 'いらっしゃいませー（1点 2分）'),
+        h('p', { class: 'dim' }, `いらっしゃいませー（1点 ${COST.buy}分）`),
         itemsAt('konbini').map((item) =>
           this.itemRow(
             item,
-            `¥${item.price?.toLocaleString()}　${item.desc}`,
+            priceLine(item, item.desc),
             h('button', { class: 'btn small', onclick: () => this.act({ type: 'buy', item: item.id }, 'se_buy') }, '買う'),
           ),
         ),
@@ -1240,7 +1211,7 @@ export class Game {
     return this.sheet(
       'ゴミ捨て場',
       [
-        h('p', { class: 'dim' }, '集積所とコンビニ前のゴミ箱。（1点 1分）'),
+        h('p', { class: 'dim' }, `集積所とコンビニ前のゴミ箱。（1点 ${COST.discard}分）`),
         items.length === 0 ? h('p', { class: 'desc' }, '捨てられるものは持っていない。') : null,
         items.map((item) =>
           this.itemRow(
@@ -1271,8 +1242,8 @@ export class Game {
       this.fxPlayed = line;
       const se = FX_SE[fx];
       if (se) this.audio.playSe(se);
-      if (fx === 'gavel') [260, 520].forEach((ms) => window.setTimeout(() => this.audio.playSe('se_gavel'), ms));
-      if (fx === 'guilty') window.setTimeout(() => this.audio.playSe('se_guilty'), 600);
+      if (fx === 'gavel') this.playSeAt('se_gavel', 260, 520);
+      if (fx === 'guilty') this.playSeAt('se_guilty', 600);
     }
     const guilty = fx === 'guilty';
     return [
@@ -1371,12 +1342,11 @@ export class Game {
     if (this.battlePlayed !== step) {
       // 効果音はそのコマを最初に出したときだけ
       this.battlePlayed = step;
-      const se = (key: SeKey, ms: number) => window.setTimeout(() => this.audio.playSe(key), ms);
-      if (step.anim === 'attack') [0, 120, 240, 360, 480, 600].forEach((ms) => se('se_send', ms)), [1450, 1600, 1750].forEach((ms) => se('se_slam', ms));
-      if (step.anim === 'zero') se('se_tap', 0);
-      if (step.anim === 'charge') se('se_demon', 0);
-      if (step.anim === 'finisher') se('se_objection', 0), se('se_demon', 400), [1300, 1550, 1800, 2050].forEach((ms) => se('se_slam', ms));
-      if (step.anim === 'shotdown') [300, 700, 1100].forEach((ms) => se('se_guilty', ms));
+      if (step.anim === 'attack') this.playSeAt('se_send', 0, 120, 240, 360, 480, 600), this.playSeAt('se_slam', 1450, 1600, 1750);
+      if (step.anim === 'zero') this.playSeAt('se_tap', 0);
+      if (step.anim === 'charge') this.playSeAt('se_demon', 0);
+      if (step.anim === 'finisher') this.playSeAt('se_objection', 0), this.playSeAt('se_demon', 400), this.playSeAt('se_slam', 1300, 1550, 1800, 2050);
+      if (step.anim === 'shotdown') this.playSeAt('se_guilty', 300, 700, 1100);
     }
     const next = () => {
       this.audio.playSe('se_tap');

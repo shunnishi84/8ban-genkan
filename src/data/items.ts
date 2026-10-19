@@ -21,6 +21,7 @@ export const ITEMS: ItemDef[] = [
     price: 1980,
     slot: 'shirt',
     useLabel: '着替える',
+    dresses: true,
     useMessage: 'コンビニのトイレで新しいワイシャツに着替えた。古いシャツは鞄の奥へ封印。',
   },
   {
