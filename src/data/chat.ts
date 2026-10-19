@@ -122,8 +122,8 @@ export const CHAT_TEMPLATES: ChatTemplate[] = [
     replyIrrelevant: '…………は？',
     demonLines: ['「自分で捨てておいてくれよ」。', '……ええ、捨ててあげる。何もかも。'],
   },
-  // 缶ビールを2本以上飲むと出る、妻を心配させる悪ふざけ。
-  // 送った後の展開は検討中。いまは仮に「帰ったら怒られる」（provokeLines）にしてある
+  // 缶ビールを2本以上飲むと出る、妻を心配させる悪ふざけ。送った文面ごとに結末が変わる
+  // （どれを送っても、火種を消していてもドアを開けたら失敗）
   {
     id: 'prank_jiko',
     text: '交通事故にあって、今病院にいる……',
@@ -131,7 +131,31 @@ export const CHAT_TEMPLATES: ChatTemplate[] = [
     prank: true,
     replyRelevant: 'えっ！？ どこの病院！？ 今すぐ行くから場所送って！！',
     replyIrrelevant: 'えっ！？ どこの病院！？ 今すぐ行くから場所送って！！',
-    provokeLines: ['……近くの病院、全部に電話したのよ。', 'どこにも、あなたはいなかった。', '酔っ払いの悪ふざけで、私がどれだけ……。もういい。'],
+    // 妻は家を飛び出して、病院・警察・実家・職場に片っ端から電話している
+    triggerClues: [
+      { at: 'notice', text: '📞 不在着信（妻）×27' },
+      { at: 'notice', text: '📞 市立中央病院 救急外来: 奥さまからお問い合わせがありました。折り返しお願いします' },
+      { at: 'notice', text: '📞 〇〇警察署 生活安全課: 奥さまから捜索のご相談を受けています。至急ご連絡ください' },
+      { at: 'notice', text: '💬 義母: 大丈夫なの！？ どこの病院！？ 今から行きます' },
+      { at: 'notice', text: '💬 課長: 奥さんから電話があったぞ。無事か？ 明日は休んでいいからな' },
+    ],
+    prankEnding: {
+      title: '捜索願',
+      scene: 'bg_door_dark',
+      fallback: 'bg_door_dark',
+      bgm: 'bgm_angry',
+      lines: [
+        { who: 'narr', text: '玄関の灯りが消えている。……鍵も、かかっている。' },
+        { who: 'narr', text: '妻がいない。玄関には、サンダルが片方だけ転がっていた。' },
+        { who: 'narr', text: 'スマホが、ずっと震えている。' },
+        { who: 'narr', text: '──ガチャ。' },
+        { who: 'narr', text: 'パジャマにサンダルの妻と、おまわりさんが立っていた。', bg: 'prank_police', bgFallback: 'wife_dark' },
+        { who: 'other', name: '警察官', text: 'ご主人ですね。……ご無事で、何よりです。' },
+        { who: 'other', name: '警察官', text: 'で、どちらの病院に搬送されたんでしたっけ？' },
+        { who: 'wife', text: '…………。' },
+        { who: 'narr', text: 'その夜、あなたは捜索願の取り下げ書類を書かされた。' },
+      ],
+    },
   },
   {
     id: 'prank_kaidan',
@@ -140,7 +164,21 @@ export const CHAT_TEMPLATES: ChatTemplate[] = [
     prank: true,
     replyRelevant: 'えっ、大丈夫！？ どこの駅！？ 救急車は呼んだ！？',
     replyIrrelevant: 'えっ、大丈夫！？ どこの駅！？ 救急車は呼んだ！？',
-    provokeLines: ['……駅員さんに電話して、階段を全部見てもらったの。', '誰も倒れてなかったって。', '……ずいぶん元気な足で、帰ってきたのね。'],
+    prankEnding: {
+      title: '全治3か月（自宅療養）',
+      scene: 'wife_smile',
+      fallback: 'wife_smile',
+      bgm: 'bgm_angry',
+      lines: [
+        { who: 'wife', text: 'おかえり〜。……あら、歩けてるじゃない。' },
+        { who: 'wife', text: 'でも階段で足をすべらせたんでしょ？ 無理しちゃダメよ。' },
+        { who: 'narr', text: '玄関に、介護ベッドと包帯の山が用意されていた。' },
+        { who: 'wife', text: 'はい、じっとしてて。' },
+        { who: 'narr', text: 'あなたは頭のてっぺんから足の先まで、包帯でぐるぐる巻きにされた。', bg: 'prank_mummy', bgFallback: 'wife_smile' },
+        { who: 'wife', text: '全治3か月ね。その間、外出も飲み会も禁止。' },
+        { who: 'wife', text: 'お大事に♪' },
+      ],
+    },
   },
   {
     id: 'prank_mune',
@@ -149,7 +187,21 @@ export const CHAT_TEMPLATES: ChatTemplate[] = [
     prank: true,
     replyRelevant: '大丈夫！？ 今どこ！？ 電話出て！！ お願い！！',
     replyIrrelevant: '大丈夫！？ 今どこ！？ 電話出て！！ お願い！！',
-    provokeLines: ['電話、何回かけたと思う？ 27回よ。', '……苦しかったのは、私の胸のほう。', 'お酒、当分禁止。'],
+    prankEnding: {
+      title: '本当に反省した',
+      scene: 'prank_tears',
+      fallback: 'wife_dark',
+      bgm: 'bgm_home',
+      lines: [
+        { who: 'narr', text: 'リビングの灯りだけが、ついている。' },
+        { who: 'narr', text: '妻が、スマホを握りしめたまま、ソファで泣いていた。' },
+        { who: 'narr', text: '画面には、あなたへの発信履歴が並んでいる。' },
+        { who: 'wife', text: '…………。' },
+        { who: 'narr', text: '何か言おうとして、言葉が出てこない。' },
+        { who: 'wife', text: '……生きてて、よかった。' },
+        { who: 'narr', text: 'その夜、あなたは本当に反省した。' },
+      ],
+    },
   },
   // メシマズでバズった日に料理本を買うと出る、最悪のフォロー。送ると火に油
   {

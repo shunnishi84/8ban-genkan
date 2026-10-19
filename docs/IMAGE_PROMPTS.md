@@ -728,6 +728,59 @@ simple and readable at small size, comedic. No text, no letters, no watermark.
 
 ---
 
+## 14. 酔った勢いの悪ふざけの結末（3枚）— Gemini 用
+
+缶ビール2本以上で送れる「妻を心配させる嘘」の結末。送った文面ごとに1枚。どれも縦 9:16、文字なし。
+置くまでは既存の妻の絵で代用される。
+
+| ファイル | 結末 | 添付する見本 |
+|---|---|---|
+| `prank_police.jpg` | 交通事故の嘘 → 捜索願（妻がおまわりさんを連れて帰ってくる） | `wife_dark.png` |
+| `prank_mummy.jpg` | 階段の嘘 → 全治3か月（包帯でぐるぐる巻きの主人公と、笑顔の妻） | `wife_smile.png` と `hero.png` |
+| `prank_tears.jpg` | 胸が苦しいの嘘 → 本気泣き（リビングで泣いている妻） | `wife_dark.png` |
+
+### 14-1. prank_police.jpg（添付: wife_dark.png）
+```
+Use the attached image as the character reference for the wife (same face, short dark bob
+hair). Vertical 9:16, viewpoint of a husband standing at his own apartment front door at
+night, the door just opened from outside. In the doorway stands the wife in pajamas and
+mismatched sandals, hair messy, phone clutched in her hand, eyes red from worry, staring at
+the viewer with an exhausted, furious, silent glare. Next to her stands a polite young
+Japanese police officer in uniform, holding a clipboard, smiling awkwardly. Cool night
+light from the corridor lamp. Comedic but tense mood.
+Japanese manga-style digital illustration, clean bold black outlines, flat cel shading.
+No text, no letters, no badges with writing, no watermark.
+```
+
+### 14-2. prank_mummy.jpg（添付: wife_smile.png, hero.png）
+```
+Use the attached images as character references: the woman is the wife (same face, short
+dark bob hair, floral apron) and the man is the husband. Vertical 9:16. A Japanese
+apartment entrance hallway at night. The husband is completely wrapped in white bandages
+from head to toe like a cartoon mummy, only his panicked eyes showing, sitting stiffly on
+a rented home-care bed that has been set up right in the entrance hall. A pile of extra
+bandage rolls and a pair of crutches lean nearby. The wife stands beside him with a sweet,
+terrifying smile, tying the last bandage into a cute ribbon. Over-the-top comedic,
+no injury or blood shown.
+Japanese manga-style digital illustration, clean bold black outlines, flat cel shading.
+No text, no letters, no watermark.
+```
+
+### 14-3. prank_tears.jpg（添付: wife_dark.png）
+```
+Use the attached image as the character reference for the wife (same face, short dark bob
+hair). Vertical 9:16. A small, dim Japanese apartment living room late at night, lit only
+by one floor lamp. The wife sits curled up on the sofa in her pajamas, hugging her knees,
+clutching her smartphone with both hands, quietly crying with tears on her cheeks and red
+eyes, looking up toward the viewer at the doorway with relief and hurt at the same time.
+A blanket half fallen to the floor, a cold cup of tea on the low table. Quiet, sincere,
+emotional mood — not comedic.
+Japanese manga-style digital illustration, clean bold black outlines, soft cel shading,
+muted warm and blue colors. No text, no letters, no watermark.
+```
+
+---
+
 ## 置いたあとの確認
 
 1. `npm run dev` で起動

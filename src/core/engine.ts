@@ -249,10 +249,15 @@ const act = (state: DayState, action: Action): ActionResult => {
         state.chatLog.push({ from: 'wife', text: coldReply() });
         return result(true, send('……取りつく島もない。'), COST.sendChat);
       }
+      if (t.prank) {
+        state.flags.add(`prank:${t.id}`);
+        state.chatLog.push({ from: 'wife', text: t.replyRelevant });
+        state.clues.push(...(t.triggerClues ?? []));
+        return result(true, send('……一瞬で既読がついた。', '電話が、鳴りやまない。'), COST.sendChat);
+      }
       if (t.provokeLines) {
         state.flags.add(`provoked:${t.id}`);
         state.chatLog.push({ from: 'wife', text: t.replyRelevant });
-        if (t.prank) return result(true, send('……一瞬で既読がついた。', '電話が、鳴りやまない。'), COST.sendChat);
         return result(true, send('……妙に静かだ。', '言わなくていいことを言った気がする。'), COST.sendChat);
       }
       const relevant = isChatRelevant(state, t.id);
@@ -405,6 +410,9 @@ const act = (state: DayState, action: Action): ActionResult => {
       if (state.location !== 'door') return result(false, ['ドアの前にいない。']);
       if (state.finale) return result(true, [], 0, { kind: 'finale', finale: state.finale });
       if (state.flags.has('insulted')) return result(true, [], 0, demonOutcome(state));
+      // 悪ふざけを送っていたら、火種に関係なく最初に送ったものの結末
+      const prank = [...state.flags].find((f) => f.startsWith('prank:'));
+      if (prank) return result(true, [], 0, { kind: 'prank', template: prank.slice('prank:'.length) });
       const angry = [...(state.flags.has('undressed') ? [UNDRESSED] : []), ...unresolvedCauses(state), ...provokeCauses(state)];
       if (angry.length > 0) return result(true, [], 0, { kind: 'angry', causes: angry });
       return result(true, [], 0, { kind: 'home', lines: state.successLines });
@@ -477,7 +485,7 @@ const UNDRESSED: Cause = {
 const provokeCauses = (state: DayState): Cause[] =>
   CHAT_TEMPLATES.filter((t) => t.provokeLines && state.flags.has(`provoked:${t.id}`)).map((t) => ({
     id: `provoke:${t.id}`,
-    title: t.prank ? '悪ふざけ' : '火に油',
+    title: '火に油',
     resolution: { all: [] },
     angerLines: t.provokeLines!,
     successLine: '',

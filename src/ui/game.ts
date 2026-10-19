@@ -33,7 +33,7 @@ import { loadBest, saveBest } from '../core/save';
 import { solve } from '../core/solver';
 import type { Action, AppId, Cause, ItemDef, ClueLocation, DayState, Location, RunState, SlotId, SpotId } from '../core/types';
 import { APP_BASE, APP_LABEL, CHAT_HISTORY, SLOT_BASE, SLOT_LABEL, SPOT_BASE, SPOT_LABEL } from '../data/base';
-import { CHAT_TEMPLATES } from '../data/chat';
+import { CHAT_MAP, CHAT_TEMPLATES } from '../data/chat';
 import { FINALES, FINALE_IDS, type Finale, type FinaleChoice, type FinaleCounter, type FinaleFx, type FinaleId, type FinaleLine } from '../data/finales';
 import { ITEM_MAP, itemsAt } from '../data/items';
 import { SCENARIO_MAP } from '../data/scenarios';
@@ -47,6 +47,9 @@ type Line = {
   name?: string;
   /** 大きなカードで見せる文字（家庭裁判の証拠など） */
   card?: string;
+  /** この行で背景を切り替える（悪ふざけの結末など）。絵が無ければ bgFallback */
+  bg?: string;
+  bgFallback?: string;
   fx?: FinaleFx;
   testimony?: boolean;
   /** 家庭裁判の信頼度ゲージ（この行を出している間の値。lost は今削れた分） */
@@ -83,7 +86,9 @@ type Screen =
   | { name: 'play' }
   | {
       name: 'talk';
-      mood: 'angry' | 'home' | 'demon' | 'finale';
+      mood: 'angry' | 'home' | 'demon' | 'finale' | 'prank';
+      /** prank のときの BGM */
+      bgm?: BgmKey;
       late?: boolean;
       alone?: boolean;
       grudging?: boolean;
@@ -237,6 +242,9 @@ export class Game {
       case 'home':
         this.goHome(r.outcome.lines);
         return false;
+      case 'prank':
+        this.prankEnding(r.outcome.template);
+        return false;
     }
     this.render();
     return r.ok;
@@ -290,6 +298,22 @@ export class Game {
       lines,
       index: 0,
       after: () => this.go({ name: 'gameover', reason: DEMON_REASON, causes: [] }),
+    });
+  }
+
+  /** 酔った勢いの悪ふざけを送っていた日: 送った文面ごとの結末 */
+  private prankEnding(templateId: string) {
+    const e = CHAT_MAP[templateId].prankEnding!;
+    this.audio.playSe('se_door');
+    this.recordBest();
+    this.go({
+      name: 'talk',
+      mood: 'prank',
+      bgm: e.bgm,
+      scene: { kind: 'bg', image: e.scene as ImageKey, fallback: e.fallback as ImageKey },
+      lines: e.lines,
+      index: 0,
+      after: () => this.go({ name: 'gameover', reason: e.title, causes: [] }),
     });
   }
 
@@ -546,7 +570,12 @@ export class Game {
       this.renderer.setScene({ kind: 'title' });
     } else if (s.name === 'talk') {
       bgm = s.mood === 'demon' || s.mood === 'finale' ? 'bgm_demon' : s.mood === 'angry' ? 'bgm_angry' : 'bgm_home';
-      if (s.mood === 'finale') {
+      if (s.mood === 'prank') {
+        bgm = s.bgm ?? 'bgm_angry';
+        const line = s.lines[s.index];
+        if (line.bg) this.renderer.setScene({ kind: 'bg', image: line.bg as ImageKey, fallback: (line.bgFallback ?? line.bg) as ImageKey });
+        else if (s.index === 0 && s.scene) this.renderer.setScene(s.scene);
+      } else if (s.mood === 'finale') {
         if (this.court) this.renderer.setScene(this.courtCamera(s.lines[s.index]));
         else if (s.index === 0 && s.scene) this.renderer.setScene(s.scene);
       } else if (s.index === 0) {

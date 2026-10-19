@@ -175,6 +175,11 @@ export interface ChatTemplate {
   provokeLines?: string[];
   /** 酔った勢いの悪ふざけ（妻を心配させる嘘）。「余計なひと言」とは別の枠に出る */
   prank?: boolean;
+  /** 悪ふざけを送っていた日の結末（火種に関係なく、ドアを開けるとこうなる） */
+  prankEnding?: PrankEnding;
+  /** 送った瞬間に増える手がかり（妻が方々に電話した通知など） */
+  triggerClues?: Clue[];
+
   /** 送った瞬間にこのフィナーレへ直行する（暴言扱い） */
   finale?: FinaleId;
 }
@@ -243,6 +248,8 @@ export type Outcome =
   | { kind: 'angry'; causes: Cause[] }
   /** 暴言を送っていた: 火種の有無に関係なく、魔王化した妻が待っている */
   | { kind: 'demon'; lines: string[] }
+  /** 酔った勢いの悪ふざけを送っていた: 送った文面ごとの結末 */
+  | { kind: 'prank'; template: string }
   /** 暴言を4種すべて送った: 7本からランダムに選ばれたフィナーレ */
   | { kind: 'finale'; finale: FinaleId }
   | { kind: 'home'; lines: string[] };
@@ -253,4 +260,17 @@ export interface ActionResult {
   messages: string[];
   cost: Minutes;
   outcome: Outcome;
+}
+
+
+/** 悪ふざけの結末。行ごとに背景（bg）を切り替えられる */
+export interface PrankEnding {
+  /** ゲームオーバー画面の「原因」 */
+  title: string;
+  /** 最初の背景（manifest の画像キー）と、その絵が無いときの代わり */
+  scene: string;
+  fallback: string;
+  /** BGM。しんみりさせたいときは静かな曲 */
+  bgm: 'bgm_angry' | 'bgm_home';
+  lines: { who: 'me' | 'wife' | 'narr' | 'other'; name?: string; text: string; bg?: string; bgFallback?: string }[];
 }

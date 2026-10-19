@@ -105,6 +105,10 @@ export const IMAGES = {
   kouhai_notice: { file: 'kouhai_notice.jpg', label: '後輩の通知', color: '#f2a7c3' },
   group_photo: { file: 'group_photo.jpg', label: '飲み会の集合写真', color: '#c98a4a' },
   gravure_page: { file: 'gravure_page.jpg', label: '付箋のページ', color: '#5fb7d4' },
+  // 酔った勢いの悪ふざけの結末（無ければ既存の絵で代用）
+  prank_police: { file: 'prank_police.jpg', label: '妻とおまわりさん', color: '#2b2b38', fit: 'cover' },
+  prank_mummy: { file: 'prank_mummy.jpg', label: '包帯ぐるぐる巻き', color: '#e8e0cc', fit: 'cover' },
+  prank_tears: { file: 'prank_tears.jpg', label: '泣いている妻', color: '#3a3f55', fit: 'cover' },
   // スーパー夫婦大戦（ロボット大戦風フィナーレ）。背景が無ければ夜の街
   bg_battle: { file: 'bg_battle.jpg', label: '戦闘背景', color: '#1d2333', fit: 'cover' },
   robot_hero: { file: 'robot_hero.png', label: 'サラリーマンガーZ', color: '#8a96a8' },

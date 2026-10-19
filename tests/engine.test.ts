@@ -186,7 +186,7 @@ describe('新しい仕掛け', () => {
     }
   });
 
-  it('缶ビール2本以上で「心配させる悪ふざけ」が送れて、送ると帰ったときに怒られる（展開は仮）', () => {
+  it('缶ビール2本以上で「心配させる悪ふざけ」が送れて、送ると文面ごとの結末になる', () => {
     const s = day(['neighbor_curry']);
     expect(perform(s, { type: 'sendChat', template: 'prank_jiko' }).ok).toBe(false);
     s.location = 'konbini';
@@ -195,10 +195,24 @@ describe('新しい仕掛け', () => {
     expect(perform(s, { type: 'sendChat', template: 'prank_jiko' }).ok).toBe(false);
     perform(s, { type: 'use', item: 'beer' });
     expect(perform(s, { type: 'sendChat', template: 'prank_jiko' }).ok).toBe(true);
+    // 交通事故の嘘: 妻が方々に電話した通知が届く
+    expect(visibleClues(s, 'notice').some((c) => c.text.includes('警察署'))).toBe(true);
     s.location = 'door';
-    const o = perform(s, { type: 'openDoor' }).outcome;
-    expect(o.kind).toBe('angry');
-    if (o.kind === 'angry') expect(o.causes.map((c) => c.title)).toEqual(['悪ふざけ']);
+    expect(perform(s, { type: 'openDoor' }).outcome).toEqual({ kind: 'prank', template: 'prank_jiko' });
+  });
+
+  it('悪ふざけの結末は3つとも違い、火種を消していても結末が優先される', () => {
+    const titles = new Set<string>();
+    for (const id of ['prank_jiko', 'prank_kaidan', 'prank_mune']) {
+      const s = day(['ring_off']);
+      for (const a of solve(s)!) if (a.type !== 'openDoor') perform(s, a);
+      s.flags.add('drunk:1').add('drunk:2');
+      expect(perform(s, { type: 'sendChat', template: id }).ok).toBe(true);
+      s.location = 'door';
+      expect(perform(s, { type: 'openDoor' }).outcome).toEqual({ kind: 'prank', template: id });
+      titles.add(CHAT_MAP[id].prankEnding!.title);
+    }
+    expect(titles.size).toBe(3);
   });
 
   it('AV つけっぱなしの日だけ「とぼける」が送れて、送ると火に油', () => {
