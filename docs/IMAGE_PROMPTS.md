@@ -1035,6 +1035,18 @@ before/after contrast. Japanese manga-style digital illustration, clean bold bla
 flat cel shading. No text, no letters, no watermark.
 ```
 
+### 19-5. item_dinner_reservation.png（添付: item_spa_ticket.png）
+週末のダブルブッキングの日に通販で入れる「ペアディナー予約」の持ち物アイコン。白背景で作れば、こちらで切り抜く。
+```
+A single game item icon in the same art style as the attached icon: an elegant restaurant
+dinner reservation voucher card for two, cream colored with a gold border, decorated with a
+small illustration of crossed fork and knife, a plate of pasta and two clinking wine glasses,
+tucked half inside a dark red envelope with a small wax seal. Plain pure white background,
+nothing else in the frame. Japanese manga-style digital illustration, clean bold black
+outlines, flat cel shading, simple and readable at small size.
+No text, no letters, no numbers, no watermark.
+```
+
 ---
 
 ## 置いたあとの確認
