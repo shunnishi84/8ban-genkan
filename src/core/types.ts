@@ -65,6 +65,8 @@ export interface Cause {
   successLine: string;
   /** 解消しても小言つきで渋々許す（帰宅時の妻が笑顔ではなく無表情になる） */
   grudging?: boolean;
+  /** 怒られるときの妻の絵（無ければ鬼の形相の妻） */
+  angerImage?: string;
 }
 
 /** 玄関前で拾えるアイテム（ゴミ袋など） */
@@ -102,6 +104,8 @@ export interface Scenario {
    * successLine の代わりにこのナレーションで静かに1日が終わる
    */
   asleep?: string;
+  /** 妻が酔っている日のシナリオ（通常の抽選には入らず、1/10 でほかのシナリオに重なる） */
+  wifeDrunk?: WifeDrunk;
   /**
    * その日の状況に合わせた、定型文への妻の返事（定型文ID → 候補。ランダムに1つ）。
    * 火種が未解消のあいだはこれを使う。`<定型文ID>:after` は火種を消したあとの返事。
@@ -201,6 +205,8 @@ export interface DayState {
   chatLog: { from: 'me' | 'wife'; text: string; image?: string }[];
   successLines: string[];
   homeAlone: boolean;
+  /** 妻が酔っている日なら、その酔い方 */
+  wifeDrunk: WifeDrunk | null;
   /** その日に送れる暴言（全種からランダムに4つ）。4つ全部送るとフィナーレ */
   insultIds: string[];
   /** 渋々許す火種がある日（帰宅時の妻が無表情） */
@@ -247,14 +253,19 @@ export type Outcome =
   | { kind: 'late' }
   /** 2:00 を過ぎて締め出され、朝 6:00 にようやく家に入れた */
   | { kind: 'dawn' }
-  | { kind: 'angry'; causes: Cause[] }
+  /** morning: 酔って寝落ちした妻に、翌朝バレた */
+  | { kind: 'angry'; causes: Cause[]; morning?: boolean }
   /** 暴言を送っていた: 火種の有無に関係なく、魔王化した妻が待っている */
   | { kind: 'demon'; lines: string[] }
   /** 酔った勢いの悪ふざけを送っていた: 送った文面ごとの結末 */
   | { kind: 'prank'; template: string }
   /** 暴言を4種すべて送った: 7本からランダムに選ばれたフィナーレ */
   | { kind: 'finale'; finale: FinaleId }
-  | { kind: 'home'; lines: string[] };
+  /**
+   * 帰宅成功。special は特別な帰宅: drunk = 酔った妻、reset = 妻が寝落ちで何も聞かれない、
+   * party = 夫婦そろって酔っ払いの宴会
+   */
+  | { kind: 'home'; lines: string[]; special?: 'drunk' | 'reset' | 'party' };
 
 export interface ActionResult {
   ok: boolean;
@@ -279,3 +290,6 @@ interface PrankEnding {
 
 /** セリフの話し手。other は名札（name）で誰かを示す */
 export type Speaker = 'me' | 'wife' | 'narr' | 'other';
+
+/** 妻の酔い方: からみ酒 / 甘え上戸 / 記憶リセット / 逆魔王 */
+export type WifeDrunk = 'karami' | 'amae' | 'reset' | 'gyaku';

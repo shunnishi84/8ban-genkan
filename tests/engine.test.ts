@@ -502,6 +502,77 @@ describe('暴言（おふざけ枠）', () => {
   });
 });
 
+describe('妻が酔っている日', () => {
+  it('およそ 1/10 の日で、妻が家にいる日だけ起きる', () => {
+    let drunk = 0;
+    const N = 2000;
+    for (let i = 0; i < N; i++) {
+      const s = startDay(newRun(), seeded(i + 1));
+      if (s.wifeDrunk) {
+        drunk++;
+        expect(s.homeAlone).toBe(false);
+        expect(s.asleepLines).toHaveLength(0);
+      }
+    }
+    expect(drunk / N).toBeGreaterThan(0.05);
+    expect(drunk / N).toBeLessThan(0.13);
+  });
+
+  it('からみ酒: いつもは罠の「愛してるよ」が正解。送らないと理不尽に怒られる', () => {
+    const a = day(['neighbor_curry', 'wife_drunk_karami']);
+    expect(perform(a, { type: 'openDoor' }).outcome.kind).toBe('angry');
+    const b = day(['neighbor_curry', 'wife_drunk_karami']);
+    expect(perform(b, { type: 'sendChat', template: 'love' }).cost).toBe(2);
+    expect(perform(b, { type: 'openDoor' }).outcome).toMatchObject({ kind: 'home', special: 'drunk' });
+  });
+
+  it('甘え上戸: アイスを買って帰れば、ほかの火種を1つだけ見逃してもらえる', () => {
+    const one = day(['ring_off', 'wife_drunk_amae']);
+    one.location = 'konbini';
+    perform(one, { type: 'buy', item: 'ice_cream' });
+    one.location = 'door';
+    expect(perform(one, { type: 'openDoor' }).outcome).toMatchObject({ kind: 'home', special: 'drunk' });
+    const two = day(['ring_off', 'tie_lost', 'wife_drunk_amae']);
+    two.location = 'konbini';
+    perform(two, { type: 'buy', item: 'ice_cream' });
+    two.location = 'door';
+    expect(perform(two, { type: 'openDoor' }).outcome.kind).toBe('angry');
+    expect(perform(day(['wife_drunk_amae']), { type: 'openDoor' }).outcome.kind).toBe('angry');
+  });
+
+  it('記憶リセット: チャットや注文の手当ては忘れてくれるが、物的証拠は翌朝バレる', () => {
+    // 結婚記念日（注文＋チャットで解消）は何もしなくても忘れてくれる
+    expect(perform(day(['anniversary_forgot', 'wife_drunk_reset']), { type: 'openDoor' }).outcome).toMatchObject({ kind: 'home', special: 'reset' });
+    // 口紅シャツ（着替え・名刺とレシートを捨てる）は証拠が残る
+    const s = day(['cabaret_lipstick', 'wife_drunk_reset']);
+    expect(perform(s, { type: 'openDoor' }).outcome).toMatchObject({ kind: 'angry', morning: true });
+  });
+
+  it('逆魔王: やさしくいなす定型文が正解。この日だけ出る', () => {
+    expect(perform(day(['neighbor_curry']), { type: 'sendChat', template: 'drunk_calm' }).ok).toBe(false);
+    const s = day(['neighbor_curry', 'wife_drunk_gyaku']);
+    expect(perform(s, { type: 'sendChat', template: 'drunk_calm' }).ok).toBe(true);
+    expect(perform(s, { type: 'openDoor' }).outcome).toMatchObject({ kind: 'home', special: 'drunk' });
+  });
+
+  it('夫婦そろって酔っ払いなら、火種はうやむやで宴会', () => {
+    const s = day(['cabaret_lipstick', 'wife_drunk_karami']);
+    s.flags.add('drunk:1').add('drunk:2');
+    expect(perform(s, { type: 'openDoor' }).outcome).toMatchObject({ kind: 'home', special: 'party' });
+  });
+
+  it('酔った妻の日も、自動解答器で解ける', () => {
+    for (const id of ['wife_drunk_karami', 'wife_drunk_amae', 'wife_drunk_reset', 'wife_drunk_gyaku']) {
+      const s = day(['ring_off', id]);
+      const plan = solve(s);
+      expect(plan, id).not.toBeNull();
+      let last;
+      for (const a of plan!) last = perform(s, a);
+      expect(last!.outcome.kind, id).toBe('home');
+    }
+  });
+});
+
 describe('暴言のランダム選択', () => {
   it('暴言は全部で10種あり、毎日そのうち4つが日ごとに変わる', () => {
     const all = CHAT_TEMPLATES.filter((t) => t.insult);

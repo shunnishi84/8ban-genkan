@@ -53,13 +53,14 @@ const OVERLAY_RECTS: Record<string, Rect> = {
 export type Scene =
   | { kind: 'door'; visuals: string[] }
   | { kind: 'bg'; image: ImageKey; fallback?: ImageKey }
-  | { kind: 'angry'; image: 'wife_angry' | 'wife_dark' }
+  /** image が無いときは鬼の形相の妻（wife_dark は時間切れの静かな怒り） */
+  | { kind: 'angry'; image: ImageKey }
   /** final: 魔王の最終形態（缶ビール3本＋暴言コンプリートの魔王城） */
   | { kind: 'demon'; final?: boolean }
   /** 無限玄関ループ: level が上がるほど玄関がおかしくなる */
   | { kind: 'loop'; level: number }
   /** grudging: 渋々許す日は無表情の妻（画像が無ければ笑顔で代用） */
-  | { kind: 'home'; grudging?: boolean }
+  | { kind: 'home'; grudging?: boolean; image?: ImageKey }
   | { kind: 'clear' }
   | { kind: 'title' };
 
@@ -138,13 +139,16 @@ export class Renderer {
         this.drawLoop(s.level, t);
         break;
       case 'home':
-        this.drawImage(s.grudging && this.images.get('wife_sullen') ? 'wife_sullen' : 'wife_smile', FULL);
+        this.drawImage(
+          s.image && this.images.get(s.image) ? s.image : s.grudging && this.images.get('wife_sullen') ? 'wife_sullen' : 'wife_smile',
+          FULL,
+        );
         break;
       case 'clear':
         this.drawImage('clear', FULL);
         break;
       case 'angry':
-        this.drawAngry(t, s.image);
+        this.drawAngry(t, s.image === 'wife_dark' || this.images.get(s.image) ? s.image : 'wife_angry');
         break;
       case 'demon':
         this.drawDemon(t, s.final);
@@ -188,9 +192,10 @@ export class Renderer {
     }
   }
 
-  private drawAngry(t: number, image: 'wife_angry' | 'wife_dark') {
-    this.fillAll(image === 'wife_angry' ? '#2a0505' : '#0d0d14');
-    const shake = image === 'wife_angry' ? Math.min(1, t) * Math.sin(t * 40) * 3 : 0;
+  private drawAngry(t: number, image: ImageKey) {
+    const loud = image !== 'wife_dark';
+    this.fillAll(loud ? '#2a0505' : '#0d0d14');
+    const shake = loud ? Math.min(1, t) * Math.sin(t * 40) * 3 : 0;
     const zoom = 1 + Math.min(t, 1.5) * 0.04;
     const r = { x: (W - W * zoom) / 2 + shake, y: (H - H * zoom) / 2, w: W * zoom, h: H * zoom };
     if (this.images.get(image)) {
@@ -206,7 +211,7 @@ export class Renderer {
       }
       this.drawImage(image, { x: 60 + shake, y: 110, w: 240, h: 320 });
     }
-    if (image === 'wife_angry') {
+    if (loud) {
       // 画面の縁を赤く脈打たせる
       const a = 0.25 + Math.sin(t * 6) * 0.1;
       this.fillRadial(W / 2, H / 2, H * 0.3, H * 0.7, [

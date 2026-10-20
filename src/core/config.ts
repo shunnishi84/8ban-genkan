@@ -25,6 +25,9 @@ export const startTimeFor = (day: number, jitter: number): Minutes =>
 /** 何日目に原因がいくつ重なるか */
 export const causeCountFor = (day: number): number => (day >= 8 ? 3 : day >= 6 ? 2 : 1);
 
+/** 妻が酔っている日になる確率 */
+export const WIFE_DRUNK_RATE = 0.1;
+
 /** 1〜5日目に「異変なし」の日になる確率 */
 export const NO_ANOMALY_RATE = 0.25;
 

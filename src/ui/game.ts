@@ -91,6 +91,8 @@ type TalkScreen = {
   late?: boolean;
   alone?: boolean;
   grudging?: boolean;
+  /** 怒り・帰宅の場面の妻の絵（酔った妻など） */
+  image?: ImageKey;
   /** 指定すると最初の行でこの背景にする。finale で省略すると直前の背景を引き継ぐ */
   scene?: Scene;
   lines: Line[];
@@ -251,7 +253,7 @@ export class Game {
       case 'late':
       case 'dawn':
       case 'angry':
-        this.gameOver(r.outcome.kind, r.outcome.kind === 'angry' ? r.outcome.causes : []);
+        this.gameOver(r.outcome.kind, r.outcome.kind === 'angry' ? r.outcome.causes : [], r.outcome.kind === 'angry' && r.outcome.morning);
         return false;
       case 'demon':
         this.demonEnding(r.outcome.lines);
@@ -260,7 +262,7 @@ export class Game {
         this.playFinale(r.outcome.finale);
         return false;
       case 'home':
-        this.goHome(r.outcome.lines);
+        this.goHome(r.outcome.lines, r.outcome.special);
         return false;
       case 'prank':
         this.prankEnding(r.outcome.template);
@@ -270,7 +272,7 @@ export class Game {
     return r.ok;
   }
 
-  private gameOver(kind: 'late' | 'dawn' | 'angry', causes: Cause[]) {
+  private gameOver(kind: 'late' | 'dawn' | 'angry', causes: Cause[], morning = false) {
     this.audio.playSe(kind === 'angry' ? 'se_door' : 'se_late');
     this.playSeAt('se_angry', 250);
     const lines: Line[] =
@@ -291,14 +293,20 @@ export class Game {
             { who: 'wife', text: '言い訳は、朝ごはんの時に聞きます。' },
           ]
         : [
-            { who: 'narr', text: 'ガチャ……' },
+            // 酔って寝落ちした妻は何も聞かなかったが、翌朝、残っていた証拠を見つけた
+            ...(morning
+              ? say('narr', ['玄関で、妻が寝落ちしていた。……今夜は、何も聞かれなかった。', '──翌朝。', '妻は、玄関に残っていた「証拠」を見つけてしまった。'])
+              : [{ who: 'narr' as const, text: 'ガチャ……' }]),
             ...say('wife', causes[0].angerLines),
             ...(causes.length > 1
               ? [{ who: 'narr' as const, text: `さらに${causes.length - 1}件の火種が燃え上がった……！` }]
               : []),
           ];
     const reason = { dawn: '朝帰り', late: '遅すぎる帰宅', angry: '妻の怒り' }[kind];
-    this.talk('angry', lines, this.toGameOver(reason, { causes }), { late: kind !== 'angry' });
+    this.talk('angry', lines, this.toGameOver(reason, { causes }), {
+      late: kind !== 'angry',
+      image: causes[0]?.angerImage as ImageKey | undefined,
+    });
   }
 
   /** 暴言を送っていた日: 火種に関係なく、ドアの向こうに魔王 */
@@ -431,13 +439,32 @@ export class Game {
     this.finaleOutro(f, this.finaleScene(f));
   }
 
-  private goHome(successLines: string[]) {
+  private goHome(successLines: string[], special?: 'drunk' | 'reset' | 'party') {
     this.audio.playSe('se_door');
     this.playSeAt('se_success', 300);
     const alone = this.day!.homeAlone;
-    const grudging = this.day!.grudging;
+    const grudging = this.day!.grudging && !special;
     const asleep = this.day!.asleepLines;
-    const lines: Line[] = asleep.length && !alone
+    const image: ImageKey | undefined =
+      special === 'party' ? 'drunk_party' : special === 'reset' ? 'wife_drunk_sleep' : special === 'drunk' ? 'wife_drunk_amae' : undefined;
+    const lines: Line[] = special === 'party'
+      ? [
+          // 夫婦そろって酔っ払い: 火種はうやむや
+          { who: 'narr', text: 'ガチャ……' },
+          { who: 'wife', text: 'あ〜〜！ おかえり〜〜！ のんでる〜？' },
+          { who: 'me', text: 'のんでる〜〜！' },
+          { who: 'wife', text: 'かんぱ〜〜い！！' },
+          ...say('narr', ['玄関で、夫婦の二次会が始まった。', '火種のことなんて、二人とも、もう覚えていない。', '──翌朝。', '二人そろって、ひどい二日酔いだった。']),
+        ]
+      : special === 'reset'
+      ? [
+          // 妻は玄関で寝落ち。話は何も覚えていない
+          { who: 'me', text: 'ただいま……' },
+          ...say('narr', ['玄関で、妻が寝落ちしていた。', 'ワイングラスを抱えたまま、幸せそうにいびきをかいている。']),
+          { who: 'wife', text: 'ん〜……おかえり〜……なんか、おこってたきがする……けど……わすれた……zzz' },
+          { who: 'narr', text: '……今夜は、何も聞かれなかった。' },
+        ]
+      : asleep.length && !alone
       ? [
           // 妻は先に寝ている: 誰も出てこない。ほかの火種への一言は翌朝に聞く
           { who: 'me', text: 'ただいま……（小声）' },
@@ -454,13 +481,18 @@ export class Game {
         ]
       : [
           { who: 'me', text: 'ただいま……' },
-          { who: 'wife', text: grudging ? '……おかえり。' : 'おかえり。' },
+          { who: 'wife', text: special === 'drunk' ? 'おかえり〜〜♡ ひっく' : grudging ? '……おかえり。' : 'おかえり。' },
           ...say('wife', successLines),
         ];
     const cleared = advanceRun(this.run);
     // 連続帰宅が伸びるのは帰宅できたときだけなので、最高記録の更新もここだけ
     if (saveBest(this.run.streak)) this.best = this.run.streak;
-    this.talk('home', lines, () => (cleared ? this.go({ name: 'clear' }) : this.beginDay()), { alone: alone || asleep.length > 0, grudging });
+    this.talk('home', lines, () => (cleared ? this.go({ name: 'clear' }) : this.beginDay()), {
+      // 寝落ちの妻の絵が無いあいだは、暗い玄関で代用（笑顔の妻が立っているのはおかしいので）
+      alone: special === 'reset' ? !this.images.get('wife_drunk_sleep') : (alone || asleep.length > 0) && !image,
+      grudging,
+      image,
+    });
   }
 
   /** 会話画面を最初の行から始める */
@@ -589,8 +621,8 @@ export class Game {
             : s.mood === 'home'
             ? s.alone
               ? { kind: 'bg', image: 'bg_door_dark' }
-              : { kind: 'home', grudging: s.grudging }
-            : { kind: 'angry', image: s.late ? 'wife_dark' : 'wife_angry' },
+              : { kind: 'home', grudging: s.grudging, image: s.image }
+            : { kind: 'angry', image: s.late ? 'wife_dark' : (s.image ?? 'wife_angry') },
         );
       }
     } else if (s.name === 'choice') {

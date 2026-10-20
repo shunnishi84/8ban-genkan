@@ -46,6 +46,11 @@ export const IMAGES = {
   wife_dark: { file: 'wife_dark.png', label: '無言の妻', color: '#2b2b38', fit: 'cover' },
   wife_smile: { file: 'wife_smile.png', label: 'おかえりの妻', color: '#f2c6a0', fit: 'cover' },
   wife_sullen: { file: 'wife_sullen.jpg', label: '渋々許す妻', color: '#d8c2b0', fit: 'cover' },
+  // 妻が酔っている日（無ければ通常の妻の絵で代用）
+  wife_drunk_karami: { file: 'wife_drunk_karami.jpg', label: 'からみ酒の妻', color: '#a03040', fit: 'cover' },
+  wife_drunk_amae: { file: 'wife_drunk_amae.jpg', label: '甘え上戸の妻', color: '#f2a7c3', fit: 'cover' },
+  wife_drunk_sleep: { file: 'wife_drunk_sleep.jpg', label: '玄関で寝落ちした妻', color: '#2b2b38', fit: 'cover' },
+  drunk_party: { file: 'drunk_party.jpg', label: '夫婦で宴会', color: '#c98a4a', fit: 'cover' },
   /** 暴言を送った日の結末: 邪悪なオーラを放つ魔王化した妻（無ければ wife_angry を紫に染めて代用） */
   // 3:4 の一枚絵。隅の正座する夫まで見せるため、cover ではなく横幅いっぱいで描く（renderer.ts の drawDemon）
   wife_demon: { file: 'wife_demon.jpg', label: '魔王化した妻', color: '#2a0640' },

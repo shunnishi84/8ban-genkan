@@ -1,4 +1,5 @@
 import type { Scenario } from '../core/types';
+import { DRUNK_WIFE_SCENARIOS } from './drunkWife';
 
 /**
  * シナリオ定義。新しいシナリオはこの配列に足すだけで抽選対象になる。
@@ -877,4 +878,5 @@ export const SCENARIOS: Scenario[] = [
   },
 ];
 
-export const SCENARIO_MAP: Record<string, Scenario> = Object.fromEntries(SCENARIOS.map((s) => [s.id, s]));
+/** 通常のシナリオと、妻が酔っている日のシナリオ（?debug&scenario=wife_drunk_amae などでも固定できる） */
+export const SCENARIO_MAP: Record<string, Scenario> = Object.fromEntries([...SCENARIOS, ...DRUNK_WIFE_SCENARIOS].map((s) => [s.id, s]));

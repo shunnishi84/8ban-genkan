@@ -779,6 +779,60 @@ Japanese manga-style digital illustration, clean bold black outlines, soft cel s
 muted warm and blue colors. No text, no letters, no watermark.
 ```
 
+## 15. 妻が酔っている日（4枚）— Gemini 用
+
+1/10 の確率で妻が酔っ払っている日の画像。未配置の間は既存の画像（wife_angry / wife_smile / wife_dark など）で代用される。
+
+### 15-1. wife_drunk_karami.jpg（添付: wife_suspicious.png）— からみ酒・逆魔王の怒り顔
+```
+Use the attached image as the character reference for the wife (same face, short dark bob
+hair, floral apron). Vertical 9:16. A Japanese apartment entrance (genkan) at night, seen
+from the doorway. The wife stands in the hallway clearly drunk: flushed red cheeks, half-
+closed glaring eyes, swaying slightly, pointing an accusing finger at the viewer while
+holding an open can of chuhai in the other hand. Her hair is a little messy and the apron
+is crooked. Several empty cans lie on the floor behind her. Angry but comically
+unreasonable mood, small cartoon "hic" bubbles (no letters) floating near her mouth.
+Japanese manga-style digital illustration, clean bold black outlines, flat cel shading.
+No text, no letters, no watermark.
+```
+
+### 15-2. wife_drunk_amae.jpg（添付: wife_smile.png）— 甘え上戸・酔った妻のおかえり
+```
+Use the attached image as the character reference for the wife (same face, short dark bob
+hair). Vertical 9:16. A Japanese apartment entrance at night, warm light. The wife has just
+come back from a girls' night out and is very tipsy and clingy: bright red cheeks, sleepy
+happy smile, arms stretched out toward the viewer asking for a hug, wearing a cute going-out
+blouse with a cardigan slipping off one shoulder, handbag dropped on the floor. Small pink
+hearts and sparkles float around her. Sweet, silly, affectionate mood.
+Japanese manga-style digital illustration, clean bold black outlines, flat cel shading.
+No text, no letters, no watermark.
+```
+
+### 15-3. wife_drunk_sleep.jpg（添付: wife_smile.png）— 記憶リセット・玄関で寝落ち
+```
+Use the attached image as the character reference for the wife (same face, short dark bob
+hair). Vertical 9:16. A Japanese apartment entrance at night, dim light from the hallway.
+The wife has fallen asleep right on the entrance step (agarikamachi), curled up hugging a
+large cushion, cheeks flushed from drinking, peaceful drooling smile, a blanket half on her.
+An empty wine glass and a can lie next to her shoes. A small "Zzz"-like sleep bubble drawn
+as symbols only (no letters). Quiet, comedic, relieved mood.
+Japanese manga-style digital illustration, clean bold black outlines, soft cel shading.
+No text, no letters, no watermark.
+```
+
+### 15-4. drunk_party.jpg（添付: wife_smile.png, hero.png）— 夫婦そろって酔っ払い・玄関で宴会
+```
+Use the attached images as character references: the woman is the wife (same face, short
+dark bob hair) and the man is the husband in a loosened business suit and tie. Vertical
+9:16. A Japanese apartment entrance at night turned into a party: the husband and the wife
+sit together on the entrance floor, both drunk with red cheeks, laughing loudly with their
+arms around each other's shoulders, clinking beer cans in a toast. The husband wears his
+necktie around his head like a headband. Snacks, a convenience-store bag and many empty
+cans scattered around. Confetti-like sparkles. Warm, chaotic, happy mood.
+Japanese manga-style digital illustration, clean bold black outlines, flat cel shading.
+No text, no letters, no watermark.
+```
+
 ---
 
 ## 置いたあとの確認

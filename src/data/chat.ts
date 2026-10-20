@@ -122,6 +122,14 @@ export const CHAT_TEMPLATES: ChatTemplate[] = [
     replyIrrelevant: '…………は？',
     demonLines: ['「自分で捨てておいてくれよ」。', '……ええ、捨ててあげる。何もかも。'],
   },
+  // 酔った妻（逆魔王）の暴言を、やさしくいなす
+  {
+    id: 'drunk_calm',
+    text: 'はいはい、飲みすぎだよ。水飲んで先に寝てな。帰ったら介抱するから',
+    onlyWith: 'wife_drunk_gyaku',
+    replyRelevant: '……うん。……おみず、のむ。',
+    replyIrrelevant: '……うん。',
+  },
   // 缶ビールを2本以上飲むと出る、妻を心配させる悪ふざけ。送った文面ごとに結末が変わる
   // （どれを送っても、火種を消していてもドアを開けたら失敗）
   {
@@ -474,7 +482,8 @@ export const CHAT_TEMPLATES: ChatTemplate[] = [
   {
     id: 'love',
     text: 'いつもありがとう。愛してるよ',
-    replyRelevant: '',
+    // 普段は罠。酔ってからんでくる妻にだけは正解
+    replyRelevant: 'えへへ〜……しってる〜♡ はやくかえってきて〜',
     replyIrrelevant: '……急にどうしたの？ 何かやましいことでも？ 今から電話します',
   },
   {

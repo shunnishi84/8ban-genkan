@@ -2,6 +2,7 @@
 import { CHAT_MAP, CHAT_TEMPLATES, AFTER_REPLIES, COLD_REPLIES, LATE_REPLIES } from '../data/chat';
 import { FINALES, FINALE_IDS, type Finale, type FinaleId } from '../data/finales';
 import { ITEM_MAP } from '../data/items';
+import { DRUNK_WIFE_SCENARIOS } from '../data/drunkWife';
 import { SCENARIOS, SCENARIO_MAP } from '../data/scenarios';
 import {
   CANCEL_DEADLINE,
@@ -10,6 +11,7 @@ import {
   GOAL_DAYS,
   NO_ANOMALY_RATE,
   TIME_LIMIT,
+  WIFE_DRUNK_RATE,
   LOCKOUT_TIME,
   DAWN_TIME,
   TRAVEL,
@@ -18,7 +20,7 @@ import {
   startTimeFor,
 } from './config';
 import { evaluate, flagsIn } from './requirement';
-import { seeded, shuffle, type Rng } from './rng';
+import { pick, seeded, shuffle, type Rng } from './rng';
 import type {
   ChatTemplate,
   Action,
@@ -93,6 +95,7 @@ export const buildDay = (day: number, scenarios: Scenario[], startTime: number, 
     asleepLines: scenarios.flatMap((s) => (s.asleep ? [s.asleep] : [])),
     homeAlone: scenarios.length > 0 && scenarios.every((s) => s.homeAlone),
     grudging: scenarios.some((s) => s.causes.some((c) => c.grudging)),
+    wifeDrunk: scenarios.find((s) => s.wifeDrunk)?.wifeDrunk ?? null,
     insultIds: pickInsults(seed),
     seed,
   };
@@ -101,6 +104,8 @@ export const buildDay = (day: number, scenarios: Scenario[], startTime: number, 
 export const startDay = (run: RunState, rng: Rng, pool: readonly Scenario[] = SCENARIOS): DayState => {
   const scenarios = chooseScenarios(run, rng, pool);
   run.used.push(...scenarios.map((s) => s.id));
+  // 1/10 で妻が酔っている（妻が家にいて起きている日だけ）
+  if (rng() < WIFE_DRUNK_RATE && !scenarios.some((s) => s.homeAlone || s.asleep)) scenarios.push(pick(rng, DRUNK_WIFE_SCENARIOS));
   return buildDay(run.day, scenarios, startTimeFor(run.day, rng()), rng());
 };
 
@@ -438,12 +443,27 @@ const act = (state: DayState, action: Action): ActionResult => {
         return result(false, ['ガチャ……ガツン！', 'チェーンロックがかかっていて、中に入れない！', '……朝まで、どこかで時間をつぶすしかない。']);
       }
       if (state.time > TIME_LIMIT) return result(true, [], 0, { kind: 'late' });
+      // 夫婦そろって酔っ払い: 火種はうやむやになって宴会
+      if (state.wifeDrunk && drunkLevel(state) >= 2) return result(true, [], 0, { kind: 'home', lines: [], special: 'party' });
       // 悪ふざけを送っていたら、火種に関係なく最初に送ったものの結末
       const prank = flagsWith(state, 'prank:')[0];
       if (prank) return result(true, [], 0, { kind: 'prank', template: prank.slice('prank:'.length) });
+      if (state.wifeDrunk === 'reset') {
+        // 寝落ちした妻は話を何も覚えていない。ただし物的証拠（捨て忘れ・着替え忘れ・消し忘れ）は翌朝バレる
+        const caught = state.causes.filter((c) => !evaluate(c.resolution, withHearsayForgotten(state, c)));
+        if (caught.length > 0) return result(true, [], 0, { kind: 'angry', causes: caught, morning: true });
+        return result(true, [], 0, { kind: 'home', lines: [], special: 'reset' });
+      }
       const angry = [...(state.flags.has('undressed') ? [UNDRESSED] : []), ...unresolvedCauses(state), ...provokeCauses(state)];
+      const special = state.wifeDrunk ? ('drunk' as const) : undefined;
+      // 甘え上戸の妻は、おねだりを聞いてもらえたら火種を1つだけ見逃してくれる
+      const amae = state.causes.find((c) => c.id === 'wife_drunk_amae');
+      if (amae && evaluate(amae.resolution, state.flags) && angry.length === 1) {
+        const lines = state.causes.filter((c) => evaluate(c.resolution, state.flags)).map((c) => c.successLine);
+        return result(true, [], 0, { kind: 'home', lines: [...lines, '……ん〜？ なんかあった気がするけど……まぁいっか〜♡ ゆるす〜♡'], special });
+      }
       if (angry.length > 0) return result(true, [], 0, { kind: 'angry', causes: angry });
-      return result(true, [], 0, { kind: 'home', lines: state.successLines });
+      return result(true, [], 0, { kind: 'home', lines: state.successLines, special });
     }
   }
 };
@@ -498,6 +518,15 @@ const markMisfiresRead = (state: DayState): string[] => {
   );
   hit.forEach((c) => state.flags.add(`readmsg:${c.id}`));
   return hit.length ? ['……あ。最初に誤爆したメッセージに既読がついた。', 'もう、取り消せない。'] : [];
+};
+
+/**
+ * 記憶をなくした妻にとっての火種の判定に使うフラグ。
+ * 物的証拠（捨てる・使う・投稿を消す）以外の手当て（チャット・注文・購入など）は、覚えていないので済んだことになる
+ */
+const withHearsayForgotten = (state: DayState, c: Cause): Set<string> => {
+  const evidence = /^(discarded|used|deleted|picked):/;
+  return new Set([...state.flags, ...flagsIn(c.resolution).filter((f) => !evidence.test(f))]);
 };
 
 /** 行動そのものが新しい火種になったときの、解消しようのない火種 */
