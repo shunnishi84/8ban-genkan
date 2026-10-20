@@ -119,6 +119,7 @@ export const IMAGES = {
   prank_tears: { file: 'prank_tears.jpg', label: '泣いている妻', color: '#3a3f55', fit: 'cover' },
   hospital_wife: { file: 'hospital_wife.jpg', label: '病室で怒る妻', color: '#d8dde2', fit: 'cover' },
   police_patrol: { file: 'police_patrol.jpg', label: '巡回中のお巡りさん', color: '#1f2a44', fit: 'cover' },
+  police_konbini: { file: 'police_konbini.jpg', label: 'コンビニに来たお巡りさん', color: '#dfe6ec', fit: 'cover' },
   ol_scream: { file: 'ol_scream.jpg', label: '悲鳴をあげる OL', color: '#2b2b38', fit: 'cover' },
   koban_wife: { file: 'koban_wife.jpg', label: '交番に迎えに来た妻', color: '#d8d2c0', fit: 'cover' },
   jail_cell: { file: 'jail_cell.jpg', label: '留置場', color: '#3a3d44', fit: 'cover' },

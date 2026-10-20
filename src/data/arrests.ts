@@ -42,7 +42,7 @@ export const ARRESTS: Record<ArrestId, PrankEnding> = {
     lines: [
       { who: 'other', name: '店員', text: '……少々、お待ちください。' },
       { who: 'narr', text: '店員が、レジの奥でそっと受話器を取った。' },
-      { who: 'narr', text: '──3分後。自動ドアが開いた。', bg: 'police_patrol', bgFallback: 'bg_konbini' },
+      { who: 'narr', text: '──3分後。自動ドアが開いた。', bg: 'police_konbini', bgFallback: 'bg_konbini' },
       { who: 'other', name: '警察官', text: '通報があったのは、こちらのお客さんですね？' },
       { who: 'other', name: '警察官', text: '服、どうされました？ ……ちょっと、お話聞かせてもらえます？' },
       ...KOBAN,

@@ -944,6 +944,22 @@ Japanese manga-style digital illustration, clean bold black outlines, flat cel s
 cold blue-gray colors. No text, no letters, no numbers, no watermark.
 ```
 
+### 18-5. police_konbini.jpg（添付: bg_konbini.png, police_patrol.jpg）
+コンビニで3回断られて通報されたときの絵。置くまでは bg_konbini で代用される。
+```
+Use the first attached image as the style and location reference (the convenience store
+interior) and the second as the character reference for the police officer (same face,
+uniform and cap). Vertical 9:16. Inside a brightly lit Japanese convenience store late at
+night, seen from the point of view of a customer standing near the register. The automatic
+glass door behind has just slid open and the police officer steps in, looking straight at
+the viewer with a calm but very doubtful expression, one hand raised in a polite "excuse me"
+gesture. Behind the register on the side, a young store clerk in a striped uniform points
+nervously toward the viewer while holding a phone receiver. A basket with milk and eggs sits
+abandoned on the floor. Comedic, slightly tense mood.
+Japanese manga-style digital illustration, clean bold black outlines, flat cel shading.
+No text, no letters, no logos, no watermark.
+```
+
 ---
 
 ## 置いたあとの確認
