@@ -167,7 +167,8 @@ cd android && ./gradlew assembleDebug   # → android/app/build/outputs/apk/debu
 | prank_police.jpg / prank_mummy.jpg / prank_tears.jpg | 酔った勢いの悪ふざけの結末（Gemini で生成） | ✅ |
 | wife_drunk_karami.jpg / wife_drunk_amae.jpg / wife_drunk_sleep.jpg / drunk_party.jpg | 妻が酔っている日（からみ酒・甘え上戸・寝落ち・夫婦で宴会。Gemini で生成） | ✅ |
 | hospital_wife.jpg | スピリタスで病院送り（病室で怒る妻。Gemini で生成） | ✅ |
-| police_patrol.jpg / ol_scream.jpg / koban_wife.jpg / jail_cell.jpg | 脱いだ格好で出歩いた結末（お巡りさん・悲鳴をあげる OL・交番に迎えに来た妻・留置場）。未配置なら既存画像で代用 | ⬜ |
+| police_patrol.jpg / ol_scream.jpg / koban_wife.jpg | 巡回中のお巡りさん・悲鳴をあげる OL・交番に迎えに来た妻（Gemini で生成） | ✅ |
+| jail_cell.jpg | 留置場。未配置なら bg_door_dark で代用 | ⬜ |
 | castle_gate.png | 魔王城フィナーレで玄関ドアに重ねる門（Gemini で生成） | ✅ |
 | bg_court.jpg / bg_siege.jpg / bg_exposed.jpg | 家庭裁判（法廷全体）・家族会議・公開処刑のフィナーレ背景（Gemini で生成） | ✅ |
 | bg_court_judge / defense / prosecutor / witness .jpg | 家庭裁判のカメラ切り替え（Gemini で生成。無ければ bg_court で代用） | ✅ |
