@@ -304,9 +304,13 @@ describe('新しい仕掛け', () => {
     perform(a, { type: 'dress' });
     expect(perform(a, { type: 'openDoor' }).outcome.kind).toBe('home');
 
+    // 脱いだままでは替えのシャツも売ってもらえないので、先に買っておく
     const b = day(['cabaret_lipstick']);
+    perform(b, { type: 'travel', to: 'town' });
+    perform(b, { type: 'travel', to: 'konbini' });
+    perform(b, { type: 'buy', item: 'spare_shirt' });
     perform(b, { type: 'undress' });
-    for (const x of solve(b)!) perform(b, x);
+    perform(b, { type: 'use', item: 'spare_shirt' });
     expect(b.flags.has('undressed')).toBe(false);
   });
 
@@ -672,6 +676,64 @@ describe('つぶやきーへの投稿と強い酒', () => {
   it('スピリタスは飲んだ瞬間に酔いつぶれて病院送り', () => {
     const s = day(['neighbor_curry']);
     expect(drink(s, 'spirytus').outcome).toEqual({ kind: 'collapse', item: 'spirytus' });
+  });
+});
+
+describe('脱いだ格好で出歩く', () => {
+  const toTown = (s: ReturnType<typeof day>) => perform(s, { type: 'travel', to: 'town' });
+
+  it('肌着で公園へ行くと、巡回中のお巡りさんに保護されて交番', () => {
+    const s = day(['neighbor_curry']);
+    perform(s, { type: 'undress' });
+    expect(toTown(s).outcome.kind).toBe('continue');
+    expect(perform(s, { type: 'travel', to: 'bench' }).outcome).toEqual({ kind: 'arrest', ending: 'koban_park' });
+  });
+
+  it('肌着のコンビニでは売ってもらえず、3回目で通報される', () => {
+    const s = day(['neighbor_curry']);
+    perform(s, { type: 'undress' });
+    toTown(s);
+    perform(s, { type: 'travel', to: 'konbini' });
+    expect(perform(s, { type: 'buy', item: 'milk' }).ok).toBe(false);
+    expect(perform(s, { type: 'buy', item: 'milk' }).ok).toBe(false);
+    expect(s.inventory).not.toContain('milk');
+    expect(perform(s, { type: 'buy', item: 'eggs' }).outcome).toEqual({ kind: 'arrest', ending: 'koban_konbini' });
+  });
+
+  it('脱いだワイシャツはゴミ捨て場に捨てられる。捨てたらもう着られない', () => {
+    const s = day(['neighbor_curry']);
+    perform(s, { type: 'undress' });
+    toTown(s);
+    perform(s, { type: 'travel', to: 'trash' });
+    expect(perform(s, { type: 'discardShirt' }).ok).toBe(true);
+    expect(perform(s, { type: 'dress' }).ok).toBe(false);
+    perform(s, { type: 'travel', to: 'town' });
+    perform(s, { type: 'travel', to: 'door' });
+    expect(perform(s, { type: 'openDoor' }).outcome).toMatchObject({ kind: 'angry', causes: [{ id: 'undressed' }] });
+  });
+
+  it('ズボンは肌着で酔い3のときだけ脱げる。パンツ一丁で街に出ると留置場', () => {
+    const s = day(['neighbor_curry']);
+    perform(s, { type: 'undress' });
+    expect(perform(s, { type: 'undressPants' }).ok).toBe(false);
+    for (let n = 1; n <= 3; n++) s.flags.add(`drunk:${n}`);
+    expect(perform(s, { type: 'undressPants' }).outcome.kind).toBe('continue'); // 玄関前なら誰にも見られない
+    expect(toTown(s).outcome).toEqual({ kind: 'arrest', ending: 'jail' });
+  });
+
+  it('パンツ一丁で帰るともっと怒られる。ズボンをはき直せば肌着に戻る', () => {
+    const s = day(['neighbor_curry']);
+    for (let n = 1; n <= 3; n++) s.flags.add(`drunk:${n}`);
+    perform(s, { type: 'undress' });
+    perform(s, { type: 'undressPants' });
+    expect(perform(s, { type: 'openDoor' }).outcome).toMatchObject({ kind: 'angry', causes: [{ id: 'pantsless' }] });
+    const t = day(['neighbor_curry']);
+    for (let n = 1; n <= 3; n++) t.flags.add(`drunk:${n}`);
+    perform(t, { type: 'undress' });
+    perform(t, { type: 'undressPants' });
+    perform(t, { type: 'dress' });
+    perform(t, { type: 'dress' });
+    expect(perform(t, { type: 'openDoor' }).outcome.kind).toBe('home');
   });
 });
 

@@ -14,6 +14,7 @@ import {
   hm,
   LOCKOUT_TIME,
   DAWN_TIME,
+  MAX_DRUNK,
   formatTime,
   startTimeFor,
 } from '../core/config';
@@ -35,12 +36,13 @@ import {
 } from '../core/engine';
 import { loadBest, saveBest } from '../core/save';
 import { solve } from '../core/solver';
-import type { Action, AppId, Cause, ChatTemplate, Speaker, ItemDef, ClueLocation, DayState, Location, RunState, SlotId, SpotId } from '../core/types';
+import type { Action, AppId, Cause, ChatTemplate, Speaker, ItemDef, ClueLocation, DayState, Location, PrankEnding, RunState, SlotId, SpotId } from '../core/types';
 import { APP_BASE, APP_LABEL, CHAT_HISTORY, SLOT_BASE, SLOT_LABEL, SPOT_BASE, SPOT_LABEL } from '../data/base';
 import { CHAT_MAP, CHAT_TEMPLATES } from '../data/chat';
 import { FINALES, FINALE_IDS, type Finale, type FinaleChoice, type FinaleCounter, type FinaleFx, type FinaleId, type FinaleLine } from '../data/finales';
 import { ITEM_MAP, itemsAt } from '../data/items';
 import { POSTS } from '../data/posts';
+import { ARRESTS } from '../data/arrests';
 import { SCENARIO_MAP } from '../data/scenarios';
 import { h, type Child } from './dom';
 import { pick } from '../core/rng';
@@ -274,6 +276,9 @@ export class Game {
       case 'collapse':
         this.collapseEnding(r.outcome.item);
         return false;
+      case 'arrest':
+        this.playEnding(ARRESTS[r.outcome.ending]);
+        return false;
     }
     this.render();
     return r.ok;
@@ -333,12 +338,8 @@ export class Game {
 
   /** 酔った勢いの悪ふざけを送っていた日: 送った文面ごとの結末 */
   private prankEnding(templateId: string) {
-    const e = CHAT_MAP[templateId].prankEnding!;
     this.audio.playSe('se_door');
-    this.talk('prank', e.lines, this.toGameOver(e.title), {
-      bgm: e.bgm,
-      scene: { kind: 'bg', image: e.scene as ImageKey, fallback: e.fallback as ImageKey },
-    });
+    this.playEnding(CHAT_MAP[templateId].prankEnding!);
   }
 
   /** 強すぎる酒（スピリタス）: 画面がぐるぐる回って暗転し、病院で目を覚ます */
@@ -350,11 +351,16 @@ export class Game {
     window.setTimeout(() => {
       this.root.classList.remove('collapse-spin');
       this.audio.playSe('se_angry');
-      this.talk('prank', e.lines, this.toGameOver(e.title), {
-        bgm: e.bgm,
-        scene: { kind: 'bg', image: e.scene as ImageKey, fallback: e.fallback as ImageKey },
-      });
+      this.playEnding(e);
     }, COLLAPSE_SPIN_MS);
+  }
+
+  /** 悪ふざけ・病院送り・交番などの、1本道の結末を流してゲームオーバーへ */
+  private playEnding(e: PrankEnding) {
+    this.talk('prank', e.lines, this.toGameOver(e.title), {
+      bgm: e.bgm,
+      scene: { kind: 'bg', image: e.scene as ImageKey, fallback: e.fallback as ImageKey },
+    });
   }
 
   // ---------------------------------------------------------------- フィナーレ（暴言4種コンプリート）
@@ -1009,17 +1015,9 @@ export class Game {
     return [
       h('div', { class: 'tabs' }, tabs, h('button', { class: 'tab', onclick: () => this.openModal({ kind: 'phone', app: null }) }, 'スマホ')),
       slot === 'shirt' && day.flags.has('undressed')
-        ? h('p', { class: 'desc' }, 'ワイシャツは脱いで手に持っている。今は肌着一枚だ。')
+        ? h('p', { class: 'desc' }, this.undressedText(day))
         : this.clueTexts(`slot:${slot}`, SLOT_BASE[slot]),
-      slot === 'shirt'
-        ? h(
-            'div',
-            { class: 'row-actions' },
-            day.flags.has('undressed')
-              ? h('button', { class: 'btn small', onclick: () => this.act({ type: 'dress' }, 'se_tap') }, `着る（${COST.dress}分）`)
-              : h('button', { class: 'btn small', onclick: () => this.act({ type: 'undress' }, 'se_tap') }, `脱ぐ（${COST.undress}分）`),
-          )
-        : null,
+      slot === 'shirt' ? h('div', { class: 'row-actions' }, this.dressButtons(day)) : null,
       items.map((item) =>
         this.itemRow(
           item,
@@ -1029,6 +1027,24 @@ export class Game {
             : null,
         ),
       ),
+    ];
+  }
+
+  /** 脱いでいるときのワイシャツ欄の説明 */
+  private undressedText(day: DayState): string {
+    const shirt = day.flags.has('shirt_discarded') ? 'ワイシャツは、ゴミ捨て場に捨ててしまった。' : 'ワイシャツは脱いで手に持っている。';
+    return shirt + (day.flags.has('pantsless') ? 'ズボンも脱いで、今はパンツ一丁だ。' : '今は肌着一枚だ。');
+  }
+
+  /** ワイシャツ欄の「脱ぐ・着る」ボタン。肌着で酔い3なら、ズボンも脱げる */
+  private dressButtons(day: DayState): Child {
+    const button = (label: string, action: Action, cost: number, danger = false) =>
+      h('button', { class: `btn small${danger ? ' danger' : ''}`, onclick: () => this.act(action, 'se_tap') }, `${label}（${cost}分）`);
+    if (!day.flags.has('undressed')) return button('脱ぐ', { type: 'undress' }, COST.undress);
+    if (day.flags.has('pantsless')) return button('ズボンをはく', { type: 'dress' }, COST.dress);
+    return [
+      day.flags.has('shirt_discarded') ? null : button('着る', { type: 'dress' }, COST.dress),
+      drunkLevel(day) >= MAX_DRUNK ? button('ズボンも脱ぐ', { type: 'undressPants' }, COST.undress, true) : null,
     ];
   }
 
@@ -1263,11 +1279,20 @@ export class Game {
   private viewTrash(): HTMLElement {
     const day = this.day!;
     const items = day.inventory.map((id) => ITEM_MAP[id]).filter((i) => i?.discardable);
+    const shirtInHand = day.flags.has('undressed') && !day.flags.has('shirt_discarded');
     return this.sheet(
       'ゴミ捨て場',
       [
         h('p', { class: 'dim' }, `集積所とコンビニ前のゴミ箱。（1点 ${COST.discard}分）`),
-        items.length === 0 ? h('p', { class: 'desc' }, '捨てられるものは持っていない。') : null,
+        // 脱いで手に持っているワイシャツも捨てられる
+        shirtInHand
+          ? this.itemRow(
+              ITEM_MAP.worn_shirt,
+              ITEM_MAP.worn_shirt.desc,
+              h('button', { class: 'btn small', onclick: () => this.act({ type: 'discardShirt' }, 'se_discard') }, '捨てる'),
+            )
+          : null,
+        items.length === 0 && !shirtInHand ? h('p', { class: 'desc' }, '捨てられるものは持っていない。') : null,
         items.map((item) =>
           this.itemRow(
             item,

@@ -31,10 +31,12 @@ import type {
   Clue,
   ClueLocation,
   DayState,
+  Location,
   Outcome,
   RunState,
   Scenario,
 } from './types';
+import type { ArrestId } from '../data/arrests';
 
 export const newRun = (): RunState => ({ day: 1, used: [], streak: 0 });
 
@@ -328,6 +330,13 @@ const act = (state: DayState, action: Action): ActionResult => {
       const item = ITEM_MAP[action.item];
       if (state.location !== 'konbini') return result(false, ['コンビニにいない。']);
       if (!item || item.source !== 'konbini') return result(false, ['その商品はコンビニに置いていない。']);
+      // 肌着（やパンツ一丁）では売ってもらえない。3回目で通報される
+      if (state.flags.has('undressed')) {
+        const n = flagsWith(state, 'refused:').length + 1;
+        state.flags.add(`refused:${n}`);
+        if (n >= REFUSALS_BEFORE_CALL) return result(true, [], COST.buy, { kind: 'arrest', ending: 'koban_konbini' });
+        return result(false, REFUSAL_LINES[n - 1]);
+      }
       if (item.maxStock) {
         const n = flagsWith(state, `buy:${item.id}:`).length;
         if (n >= item.maxStock) return result(false, ['店員「お客さん……今日はもう、そのへんにしときましょう」', 'これ以上は売ってもらえなかった。']);
@@ -398,13 +407,38 @@ const act = (state: DayState, action: Action): ActionResult => {
         COST.wait,
       );
 
-    case 'undress':
+    case 'undress': {
       if (state.flags.has('undressed')) return result(false, ['もう脱いでいる。']);
       state.flags.add('undressed');
-      return result(true, ['ワイシャツを脱いだ。肌着一枚になった。', '……夜風が、冷たい。'], COST.undress);
+      const msgs = ['ワイシャツを脱いだ。肌着一枚になった。', '……夜風が、冷たい。'];
+      // 公園には巡回のお巡りさんがいる
+      if (state.location === 'bench') return result(true, msgs, COST.undress, { kind: 'arrest', ending: 'koban_park' });
+      return result(true, msgs, COST.undress);
+    }
+
+    case 'undressPants': {
+      if (!state.flags.has('undressed')) return result(false, ['まずはワイシャツからだ。']);
+      if (state.flags.has('pantsless')) return result(false, ['もう脱いでいる。']);
+      if (drunkLevel(state) < MAX_DRUNK) return result(false, ['……さすがに、そこまで酔ってはいない。']);
+      state.flags.add('pantsless');
+      const msgs = ['ズボンも脱いだ。パンツ一丁になった。', '……なぜか、最高に気分がいい。'];
+      const ending = PANTSLESS_ARREST[state.location];
+      return result(true, msgs, COST.undress, ending ? { kind: 'arrest', ending } : undefined);
+    }
+
+    case 'discardShirt':
+      if (state.location !== 'trash') return result(false, ['ゴミ捨て場にいない。']);
+      if (!state.flags.has('undressed') || state.flags.has('shirt_discarded')) return result(false, ['捨てられるワイシャツが無い。']);
+      state.flags.add('shirt_discarded');
+      return result(true, ['脱いだワイシャツを、ゴミ袋の山に押し込んだ。', '……もう、着るものが無い。'], COST.discard);
 
     case 'dress':
+      if (state.flags.has('pantsless')) {
+        state.flags.delete('pantsless');
+        return result(true, ['ズボンをはき直した。'], COST.dress);
+      }
       if (!state.flags.has('undressed')) return result(false, ['ちゃんと着ている。']);
+      if (state.flags.has('shirt_discarded')) return result(false, ['ワイシャツは、ゴミ捨て場に捨ててしまった……。']);
       state.flags.delete('undressed');
       return result(true, ['ワイシャツを着直した。'], COST.dress);
 
@@ -498,6 +532,9 @@ const act = (state: DayState, action: Action): ActionResult => {
       const cost = TRAVEL[state.location][action.to];
       if (cost === undefined) return result(false, ['そこへは直接行けない。']);
       state.location = action.to;
+      // パンツ一丁でどこかへ行こうとすると、必ず夜の街を通る。肌着で公園へ行くと巡回中のお巡りさん
+      if (state.flags.has('pantsless')) return result(true, [], cost, { kind: 'arrest', ending: 'jail' });
+      if (state.flags.has('undressed') && action.to === 'bench') return result(true, [], cost, { kind: 'arrest', ending: 'koban_park' });
       return result(true, [], cost);
     }
 
@@ -522,7 +559,7 @@ const act = (state: DayState, action: Action): ActionResult => {
         if (caught.length > 0) return result(true, [], 0, { kind: 'angry', causes: caught, morning: true });
         return result(true, [], 0, { kind: 'home', lines: [], special: 'reset' });
       }
-      const angry = [...(state.flags.has('undressed') ? [UNDRESSED] : []), ...unresolvedCauses(state), ...provokeCauses(state)];
+      const angry = [...(state.flags.has('pantsless') ? [PANTSLESS] : state.flags.has('undressed') ? [UNDRESSED] : []), ...unresolvedCauses(state), ...provokeCauses(state)];
       const special = state.wifeDrunk ? ('drunk' as const) : undefined;
       // 甘え上戸の妻は、おねだりを聞いてもらえたら火種を1つだけ見逃してくれる
       const amae = state.causes.find((c) => c.id === 'wife_drunk_amae');
@@ -620,6 +657,23 @@ const UNDRESSED = angerCause('undressed', '肌着で帰宅', [
   'ご近所に見られたらどうするのよ！ シャツはどこ！？',
 ]);
 
+/** パンツ一丁で帰ると、もっと怒られる */
+const PANTSLESS = angerCause('pantsless', 'パンツ一丁で帰宅', [
+  '……ちょっと。',
+  'ズボンは！？',
+  'パンツ一丁で玄関に立ってる夫を、私が今どんな気持ちで見てると思う？',
+]);
+
+/** 脱いだ格好でコンビニに行ったときの、店員の断り文句（REFUSALS_BEFORE_CALL 回目で通報） */
+const REFUSALS_BEFORE_CALL = 3;
+const REFUSAL_LINES = [
+  ['店員「あの……お客様、さすがにその格好では……」', '売ってもらえなかった。'],
+  ['店員「……服を着てから、もう一度お越しください」', '店員の目が、だんだん冷たくなっていく。'],
+];
+
+/** ズボンを脱いだ場所ごとの結末（玄関前とゴミ捨て場は誰にも見られない） */
+const PANTSLESS_ARREST: Partial<Record<Location, ArrestId>> = { town: 'jail', bench: 'jail', konbini: 'koban_konbini' };
+
 /** 余計なひと言を送っていたら、それ自体が新しい火種になる */
 const provokeCauses = (state: DayState): Cause[] =>
   CHAT_TEMPLATES.filter((t) => t.provokeLines && state.flags.has(`provoked:${t.id}`)).map((t) =>
@@ -669,7 +723,7 @@ export const perform = (state: DayState, action: Action): ActionResult => {
   const r = act(state, action);
   state.time += r.cost;
   // 1:00 を過ぎても歩き回れる（ドアを開けたときに判定）。ただし暴言を送っていたら魔王が迎えに来る
-  if (state.time > TIME_LIMIT && (state.finale || state.flags.has('insulted'))) {
+  if (r.outcome.kind === 'continue' && state.time > TIME_LIMIT && (state.finale || state.flags.has('insulted'))) {
     const outcome: Outcome = state.finale ? { kind: 'finale', finale: state.finale } : demonOutcome(state);
     return { ...r, outcome };
   }

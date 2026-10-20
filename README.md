@@ -68,6 +68,8 @@ cd android && ./gradlew assembleDebug   # → android/app/build/outputs/apk/debu
 * 1/10 の確率で妻が酔っ払っている日がある（からみ酒・甘え上戸・記憶リセット・逆魔王の4タイプ）。チャットの様子で見分けて、その日だけの正解を探す。夫もビール2本以上飲んでいると、玄関で宴会になる
 * スマホの「つぶやきー」から投稿できる。しらふなら仕事の愚痴で無害だが、酔うほど妻の悪口がひどくなり、妻に見られる前に消さないと火種になる（酔い1は 0:00 まで、酔い2は10分）。酔い3の投稿は一瞬でバズって、暴言と同じく妻が魔王化する。3つ全部つぶやくと魔王城の最終形態
 * コンビニのカップ清酒は1杯で酔いが最大（3段階）まで回る。スピリタスを飲むと、その場で酔いつぶれて病院送り（ゲームオーバー）
+* ワイシャツを脱いで公園へ行くと、巡回中のお巡りさんに保護されて交番行き。脱いだままコンビニでは売ってもらえず、3回目で通報される。脱いだワイシャツはゴミ捨て場に捨てられる（捨てたら着られない）
+* 肌着で酔い3なら、ズボンも脱げる。パンツ一丁で夜の街へ出ると、OL に悲鳴をあげられて留置場行き
 
 ## シナリオの追加方法
 
@@ -165,6 +167,7 @@ cd android && ./gradlew assembleDebug   # → android/app/build/outputs/apk/debu
 | prank_police.jpg / prank_mummy.jpg / prank_tears.jpg | 酔った勢いの悪ふざけの結末（Gemini で生成） | ✅ |
 | wife_drunk_karami.jpg / wife_drunk_amae.jpg / wife_drunk_sleep.jpg / drunk_party.jpg | 妻が酔っている日（からみ酒・甘え上戸・寝落ち・夫婦で宴会。Gemini で生成） | ✅ |
 | hospital_wife.jpg | スピリタスで病院送り（病室で怒る妻。Gemini で生成） | ✅ |
+| police_patrol.jpg / ol_scream.jpg / koban_wife.jpg / jail_cell.jpg | 脱いだ格好で出歩いた結末（お巡りさん・悲鳴をあげる OL・交番に迎えに来た妻・留置場）。未配置なら既存画像で代用 | ⬜ |
 | castle_gate.png | 魔王城フィナーレで玄関ドアに重ねる門（Gemini で生成） | ✅ |
 | bg_court.jpg / bg_siege.jpg / bg_exposed.jpg | 家庭裁判（法廷全体）・家族会議・公開処刑のフィナーレ背景（Gemini で生成） | ✅ |
 | bg_court_judge / defense / prosecutor / witness .jpg | 家庭裁判のカメラ切り替え（Gemini で生成。無ければ bg_court で代用） | ✅ |

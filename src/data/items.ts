@@ -178,6 +178,8 @@ export const ITEMS: ItemDef[] = [
     slot: 'bag',
     discardable: true,
   },
+  // 脱いで手に持っているワイシャツ（持ち物には入らない。ゴミ捨て場の表示用）
+  { id: 'worn_shirt', name: '脱いだワイシャツ', desc: 'さっきまで着ていたやつ。少し汗くさい。', source: 'none', slot: 'shirt' },
   { id: 'ramen_receipt', name: 'ラーメン屋のレシート', desc: '『麺処 夜の蝶 — 特製味噌ラーメン ¥980／餃子 ¥380』', source: 'none', slot: 'wallet', discardable: true },
 ];
 

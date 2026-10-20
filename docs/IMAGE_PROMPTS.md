@@ -880,6 +880,70 @@ No text, no letters, no numbers, no watermark.
 ```
 → 順番に `item_milk / item_eggs / item_cup_sake / item_spirytus` として切り出す。
 
+## 18. 脱いだ格好で出歩いた結末（4枚）— Gemini 用
+
+どれも縦 9:16、文字なし。置くまでは既存の背景・妻の絵で代用される。
+
+| ファイル | 場面 | 添付する見本 |
+|---|---|---|
+| `police_patrol.jpg` | 肌着で公園 / コンビニで通報 → 懐中電灯を向けるお巡りさん | `bg_bench.jpg`（絵柄・背景合わせ） |
+| `ol_scream.jpg` | パンツ一丁で夜の街 → 悲鳴をあげる OL | `bg_town.jpg`（絵柄・背景合わせ） |
+| `koban_wife.jpg` | 交番に迎えに来た妻に怒られる | `wife_angry.png` と `hero.png` |
+| `jail_cell.jpg` | 留置場で一泊 | `hero.png` |
+
+### 18-1. police_patrol.jpg（添付: bg_bench.jpg）
+```
+Use the attached image as the style and location reference. Vertical 9:16. A small Japanese
+neighborhood park at night, seen from the point of view of a man sitting on the bench.
+A friendly but suspicious middle-aged Japanese police officer in a standard dark navy uniform
+and cap (no readable text or numbers on the badge) leans in toward the viewer, shining a
+flashlight directly at the viewer with a bright glare. His other hand is raised in a calm
+"excuse me" gesture, with a polite but very doubtful expression. A white police bicycle is
+parked behind him under a street lamp. Comedic, slightly tense mood.
+Japanese manga-style digital illustration, clean bold black outlines, flat cel shading.
+No text, no letters, no watermark.
+```
+
+### 18-2. ol_scream.jpg（添付: bg_town.jpg）
+```
+Use the attached image as the style and location reference. Vertical 9:16. A Japanese
+shopping street at night, seen from the point of view of the viewer who has just turned a
+corner. A young office lady in a beige trench coat over a business suit, with a shoulder bag
+and a convenience-store bag, freezes in shock and screams with her mouth wide open, eyes
+wide, one hand covering her eyes and the other already holding up her smartphone to call
+for help. Dramatic comedic shock lines radiate behind her and her bag is dropping from her
+hand. Only she is shown; the viewer is off-frame. Over-the-top comedic surprise, nothing
+indecent shown.
+Japanese manga-style digital illustration, clean bold black outlines, flat cel shading.
+No text, no letters, no watermark.
+```
+
+### 18-3. koban_wife.jpg（添付: wife_angry.png, hero.png）
+```
+Use the attached images as character references: the woman is the wife (same face, short
+dark bob hair) and the man is the husband. Vertical 9:16. Inside a small Japanese police box
+(koban) late at night: a simple desk, a wall map, fluorescent light. The husband sits shrunk
+on a folding chair in just a white undershirt and suit trousers, holding his head down in
+shame. The wife, wearing a coat thrown over her pajamas, bows politely toward a police officer
+on the right while turning her face toward her husband with a terrifying sideways glare,
+dark shadow over her eyes and an anger vein mark on her forehead. The officer looks awkward
+and sympathetic. Comedic but tense mood.
+Japanese manga-style digital illustration, clean bold black outlines, flat cel shading.
+No text, no letters, no watermark.
+```
+
+### 18-4. jail_cell.jpg（添付: hero.png）
+```
+Use the attached image as the character reference for the husband (same face and hair).
+Vertical 9:16. A Japanese police detention cell at night seen through the iron bars: a bare
+concrete floor, a thin folded futon, a small high window with moonlight, a clock outside the
+bars showing about three o'clock. The husband sits on the floor hugging his knees, wrapped
+in a gray standard-issue blanket up to his shoulders, looking hollow-eyed and deeply
+regretful. A single tear and sweat drops. Comedic yet pitiful mood, nothing indecent shown.
+Japanese manga-style digital illustration, clean bold black outlines, flat cel shading,
+cold blue-gray colors. No text, no letters, no numbers, no watermark.
+```
+
 ---
 
 ## 置いたあとの確認

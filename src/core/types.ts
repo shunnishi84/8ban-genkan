@@ -1,3 +1,4 @@
+import type { ArrestId } from '../data/arrests';
 import type { FinaleId } from '../data/finales';
 // ゲーム全体で使うデータ型。DOM に依存しないこと（Vitest から直接読み込むため）。
 
@@ -245,6 +246,10 @@ export type Action =
   | { type: 'pickup'; item: string }
   /** 着ているワイシャツを脱ぐ */
   | { type: 'undress' }
+  /** 肌着でさらに酔い3のとき、ズボンも脱ぐ */
+  | { type: 'undressPants' }
+  /** 脱いだワイシャツをゴミ捨て場に捨てる */
+  | { type: 'discardShirt' }
   /** 脱いだワイシャツを着直す */
   | { type: 'dress' }
   /** 締め出されたあと、公園のベンチで1時間つぶす */
@@ -268,6 +273,8 @@ export type Outcome =
   | { kind: 'prank'; template: string }
   /** 強すぎる酒で酔いつぶれた: その酒の結末（病院送りなど） */
   | { kind: 'collapse'; item: string }
+  /** 脱いだ格好で出歩いて、交番や留置場へ */
+  | { kind: 'arrest'; ending: ArrestId }
   /** 暴言を4種すべて送った: 7本からランダムに選ばれたフィナーレ */
   | { kind: 'finale'; finale: FinaleId }
   /**

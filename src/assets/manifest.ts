@@ -118,6 +118,10 @@ export const IMAGES = {
   prank_mummy: { file: 'prank_mummy.jpg', label: '包帯ぐるぐる巻き', color: '#e8e0cc', fit: 'cover' },
   prank_tears: { file: 'prank_tears.jpg', label: '泣いている妻', color: '#3a3f55', fit: 'cover' },
   hospital_wife: { file: 'hospital_wife.jpg', label: '病室で怒る妻', color: '#d8dde2', fit: 'cover' },
+  police_patrol: { file: 'police_patrol.jpg', label: '巡回中のお巡りさん', color: '#1f2a44', fit: 'cover' },
+  ol_scream: { file: 'ol_scream.jpg', label: '悲鳴をあげる OL', color: '#2b2b38', fit: 'cover' },
+  koban_wife: { file: 'koban_wife.jpg', label: '交番に迎えに来た妻', color: '#d8d2c0', fit: 'cover' },
+  jail_cell: { file: 'jail_cell.jpg', label: '留置場', color: '#3a3d44', fit: 'cover' },
   // スーパー夫婦大戦（ロボット大戦風フィナーレ）。背景が無ければ夜の街
   bg_battle: { file: 'bg_battle.jpg', label: '戦闘背景', color: '#1d2333', fit: 'cover' },
   robot_hero: { file: 'robot_hero.png', label: 'サラリーマンガーZ', color: '#8a96a8' },
@@ -129,6 +133,7 @@ export const IMAGES = {
 /** アイテムID → 一覧に出すイラスト */
 export const ITEM_ICONS: Partial<Record<string, ImageKey>> = {
   spare_shirt: 'shirt_clean',
+  worn_shirt: 'shirt_clean',
   cabaret_card: 'item_card',
   cabaret_receipt: 'item_receipt',
   ramen_receipt: 'item_receipt',
