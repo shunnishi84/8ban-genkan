@@ -115,7 +115,14 @@ export interface Finale {
    * 最終形態（缶ビールを3本飲んでから暴言を全部送った日）。intro・反撃・HP を差し替える。
    * 背景の魔王も赤黒い最終形態になる
    */
-  finalForm?: { intro: FinaleLine[]; counters: FinaleCounter[]; hp: number; knockout: FinaleLine[] };
+  finalForm?: {
+    intro: FinaleLine[];
+    /** つぶやきーで酔い3の投稿を3つともバズらせて最終形態になったときの intro */
+    tweetIntro?: FinaleLine[];
+    counters: FinaleCounter[];
+    hp: number;
+    knockout: FinaleLine[];
+  };
   choice?: {
     prompt: string;
     options: FinaleChoice[];
@@ -232,6 +239,15 @@ export const FINALES: Record<FinaleId, Finale> = {
         { who: 'narr', text: 'ギギギ……ガシャァァン！！ 門が、内側から吹き飛んだ。' },
         { who: 'wife', text: '……お酒のチカラを借りないと、何も言えないのね。' },
         { who: 'wife', text: '酔っぱらいの暴言、4件。……全部、スクショしてあるから。' },
+        { who: 'narr', text: 'まおうは　さいしゅうけいたいに　へんしんした！！' },
+      ],
+      tweetIntro: [
+        { who: 'narr', text: '門の向こうで、通知音が鳴りやまない。' },
+        { who: 'narr', text: 'ピロン。ピロン。ピロン。……3つの投稿に、あわせて19万のいいね。' },
+        { who: 'narr', text: 'ギギギ……ガシャァァン！！ 門が、内側から吹き飛んだ。' },
+        { who: 'wife', text: '……全世界に向けて、発信したのね。' },
+        { who: 'wife', text: '「魅力がない」「墓守」「人生最大の誤算」。……全部、引用して返事をしておいたわ。' },
+        { who: 'wife', text: '次は、あなたが全世界に謝る番よ。' },
         { who: 'narr', text: 'まおうは　さいしゅうけいたいに　へんしんした！！' },
       ],
       hp: 100,

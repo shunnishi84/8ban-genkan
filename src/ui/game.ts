@@ -260,7 +260,7 @@ export class Game {
         this.gameOver(r.outcome.kind, r.outcome.kind === 'angry' ? r.outcome.causes : [], r.outcome.kind === 'angry' && r.outcome.morning);
         return false;
       case 'demon':
-        this.demonEnding(r.outcome.lines);
+        this.demonEnding(r.outcome.lines, r.outcome.reason);
         return false;
       case 'finale':
         this.playFinale(r.outcome.finale);
@@ -317,7 +317,7 @@ export class Game {
   }
 
   /** 暴言を送っていた日: 火種に関係なく、ドアの向こうに魔王 */
-  private demonEnding(demonLines: string[]) {
+  private demonEnding(demonLines: string[], reason = DEMON_REASON) {
     this.audio.playSe('se_door');
     this.playSeAt('se_demon', 300);
     const alone = this.day!.homeAlone;
@@ -328,7 +328,7 @@ export class Game {
       ...say('wife', demonLines),
       { who: 'narr', text: '妻は、人であることをやめた。' },
     ];
-    this.talk('demon', lines, this.toGameOver(DEMON_REASON, { demon: true }));
+    this.talk('demon', lines, this.toGameOver(reason, { demon: true }));
   }
 
   /** 酔った勢いの悪ふざけを送っていた日: 送った文面ごとの結末 */
@@ -394,7 +394,9 @@ export class Game {
     const base = FINALES[id];
     // 缶ビール3本で暴言を送りきった日は、魔王が最終形態になっている
     const ff = base.finalForm && drunkLevel(this.day!) >= 3 ? base.finalForm : undefined;
-    const f: Finale = ff && base.choice ? { ...base, intro: ff.intro, choice: { ...base.choice, ...ff } } : base;
+    // つぶやきーで3つともバズらせた日は、その話から始まる
+    const intro = ff && this.day!.flags.has('finale_by_tweet') ? (ff.tweetIntro ?? ff.intro) : ff?.intro;
+    const f: Finale = ff && intro && base.choice ? { ...base, intro, choice: { ...base.choice, ...ff } } : base;
     this.finalForm = !!ff;
     this.court = f.choice?.style === 'court';
     this.audio.playSe('se_door');

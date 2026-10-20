@@ -6,7 +6,7 @@ import { solve } from '../src/core/solver';
 import { SCENARIO_MAP } from '../src/data/scenarios';
 import { CHAT_MAP, CHAT_TEMPLATES, COLD_REPLIES } from '../src/data/chat';
 import { FINALES, FINALE_IDS, type FinaleId } from '../src/data/finales';
-import { POSTS } from '../src/data/posts';
+import { POSTS, POST_MAP } from '../src/data/posts';
 
 // 暴言は毎日ランダムに4つ選ばれるが、テストでは定番の4つに固定する（ランダム選択そのものは別にテスト）
 const CLASSIC_INSULTS = ['insult_oni', 'insult_komakai', 'insult_kaachan', 'insult_gunsou'];
@@ -619,7 +619,7 @@ describe('つぶやきーへの投稿と強い酒', () => {
     expect(perform(late, { type: 'openDoor' }).outcome.kind).toBe('angry');
   });
 
-  it('酔い2は10分で見つかり、酔い3は一瞬でバズって消しても手遅れ', () => {
+  it('酔い2は10分で見つかり、酔い3は一瞬でバズって消しても手遅れ（妻が魔王化）', () => {
     const two = day(['neighbor_curry']);
     drink(two, 'beer', 2);
     perform(two, { type: 'post', post: 'tw_genkan' });
@@ -631,7 +631,33 @@ describe('つぶやきーへの投稿と強い酒', () => {
     drink(three, 'beer', 3);
     expect(perform(three, { type: 'post', post: 'tw_gosan' }).messages[0]).toContain('バズった');
     perform(three, { type: 'deletePost', clue: 'tw_gosan' });
-    expect(perform(three, { type: 'openDoor' }).outcome).toMatchObject({ kind: 'angry', causes: [{ id: 'tweet:tw_gosan' }] });
+    expect(perform(three, { type: 'openDoor' }).outcome).toEqual({
+      kind: 'demon',
+      lines: POST_MAP.tw_gosan.demonLines,
+      reason: 'つぶやきーの炎上による魔王化',
+    });
+  });
+
+  it('バズったあとは、何を送っても取りつく島もない', () => {
+    const s = day(['neighbor_curry']);
+    drink(s, 'cup_sake');
+    perform(s, { type: 'post', post: 'tw_hakamori' });
+    perform(s, { type: 'sendChat', template: 'coming_home' });
+    expect(COLD_REPLIES).toContain(s.chatLog.at(-1)!.text);
+  });
+
+  it('酔い3の投稿を3つともつぶやくと、魔王城の最終形態', () => {
+    const s = day(['neighbor_curry']);
+    drink(s, 'cup_sake');
+    perform(s, { type: 'post', post: 'tw_miryoku' });
+    perform(s, { type: 'post', post: 'tw_hakamori' });
+    expect(s.finale).toBeUndefined();
+    const r = perform(s, { type: 'post', post: 'tw_gosan' });
+    expect(r.messages).toEqual(expect.arrayContaining(FINALES.castle.trap!.warp));
+    expect(s.finale).toBe('castle');
+    expect(s.flags.has('finale_by_tweet')).toBe(true);
+    expect(s.flags.has('phone_broken')).toBe(true);
+    expect(perform(s, { type: 'openDoor' }).outcome).toEqual({ kind: 'finale', finale: 'castle' });
   });
 
   it('カップ清酒は1杯で酔い3。ビールを足しても3より上には行かない', () => {

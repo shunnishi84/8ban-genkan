@@ -263,7 +263,7 @@ export type Outcome =
   /** morning: 酔って寝落ちした妻に、翌朝バレた */
   | { kind: 'angry'; causes: Cause[]; morning?: boolean }
   /** 暴言を送っていた: 火種の有無に関係なく、魔王化した妻が待っている */
-  | { kind: 'demon'; lines: string[] }
+  | { kind: 'demon'; lines: string[]; reason?: string }
   /** 酔った勢いの悪ふざけを送っていた: 送った文面ごとの結末 */
   | { kind: 'prank'; template: string }
   /** 強すぎる酒で酔いつぶれた: その酒の結末（病院送りなど） */
@@ -308,6 +308,8 @@ export interface Post {
   reaction: string;
   /** 妻の悪口。これがあると火種になり、妻に見られる前に消さないと怒られる */
   angerLines?: string[];
+  /** 一瞬でバズって妻が魔王化する投稿（酔い3）。魔王のセリフ */
+  demonLines?: string[];
 }
 
 export type Speaker = 'me' | 'wife' | 'narr' | 'other';

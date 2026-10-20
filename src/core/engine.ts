@@ -2,7 +2,7 @@
 import { CHAT_MAP, CHAT_TEMPLATES, AFTER_REPLIES, COLD_REPLIES, LATE_REPLIES } from '../data/chat';
 import { FINALES, FINALE_IDS, type Finale, type FinaleId } from '../data/finales';
 import { ITEM_MAP } from '../data/items';
-import { POST_MAP } from '../data/posts';
+import { POSTS, POST_MAP } from '../data/posts';
 import { DRUNK_WIFE_SCENARIOS } from '../data/drunkWife';
 import { SCENARIOS, SCENARIO_MAP } from '../data/scenarios';
 import {
@@ -448,6 +448,26 @@ const act = (state: DayState, action: Action): ActionResult => {
         deletable: true,
         text: `@tanaka_salaryman（あなた）\n「${post.text}」\n${post.reaction}（${formatTime(state.time)}）`,
       });
+      // 酔い3: 一瞬でバズって妻が見る。暴言と同じく魔王化。3つ全部つぶやくと魔王城（最終形態）
+      if (post.demonLines) {
+        state.flags.add('insulted');
+        state.flags.add(`buzz:${post.id}`);
+        state.clues.push({ at: 'notice', text: `📣 つぶやきー: あなたの投稿が話題になっています（${post.reaction.split('　')[0]}）` });
+        const all = POSTS.filter((p) => p.demonLines).every((p) => state.flags.has(`buzz:${p.id}`));
+        const finale = all ? applyFinale(state, 'castle') : null;
+        if (finale) state.flags.add('finale_by_tweet');
+        return result(
+          true,
+          [
+            'つぶやいた。……一瞬でバズった。',
+            '通知が、鳴りやまない。……妻のアカウントから、いいねがついた。',
+            '背筋に、冷たいものが走った。',
+            ...(finale?.onTrigger ?? []),
+            ...(finale?.trap?.warp ?? []),
+          ],
+          COST.post,
+        );
+      }
       if (!post.angerLines) {
         if (state.time <= LOCKOUT_TIME) state.clues.push({ at: 'notice', text: `♥ 妻があなたの投稿にいいねしました:「${post.text}」` });
         return result(true, ['つぶやいた。……ちょっとすっきりした。'], COST.post);
@@ -459,10 +479,6 @@ const act = (state: DayState, action: Action): ActionResult => {
         angerLines: post.angerLines,
         successLine: '',
       });
-      if (post.level >= 3) {
-        state.clues.push({ at: 'notice', text: `📣 つぶやきー: あなたの投稿が話題になっています（${post.reaction.split('　')[0]}）` });
-        return result(true, ['つぶやいた。……一瞬でバズった。', '通知が、鳴りやまない。……妻のアカウントからも、いいねがついた。'], COST.post);
-      }
       return result(
         true,
         ['つぶやいた。', post.level === 2 ? '……いいねが、ものすごい勢いで増えていく。妻に見つかるのは時間の問題だ。' : '……そういえば、妻もこのアカウントをフォローしていた気がする。'],
@@ -632,10 +648,15 @@ const applyFinale = (state: DayState, id: FinaleId): Finale | null => {
   return finale;
 };
 
-/** 暴言を送った日の結末。最初に送った暴言のセリフを使う */
+/** 暴言を送った（またはつぶやきーでバズった）日の結末 */
 const demonOutcome = (state: DayState): Outcome => {
-  const first = flagsWith(state, 'insult:')[0]?.slice('insult:'.length);
-  const lines = (first && CHAT_MAP[first]?.demonLines) || ['…………。'];
+  // 最初にやらかしたもの（暴言のチャットか、バズった投稿）のセリフ
+  const first = [...state.flags].find((f) => f.startsWith('insult:') || f.startsWith('buzz:'));
+  if (first?.startsWith('buzz:')) {
+    const post = POST_MAP[first.slice('buzz:'.length)];
+    return { kind: 'demon', lines: post?.demonLines ?? ['…………。'], reason: 'つぶやきーの炎上による魔王化' };
+  }
+  const lines = (first && CHAT_MAP[first.slice('insult:'.length)]?.demonLines) || ['…………。'];
   return { kind: 'demon', lines };
 };
 
