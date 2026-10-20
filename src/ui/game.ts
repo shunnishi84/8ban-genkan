@@ -40,6 +40,7 @@ import { APP_BASE, APP_LABEL, CHAT_HISTORY, SLOT_BASE, SLOT_LABEL, SPOT_BASE, SP
 import { CHAT_MAP, CHAT_TEMPLATES } from '../data/chat';
 import { FINALES, FINALE_IDS, type Finale, type FinaleChoice, type FinaleCounter, type FinaleFx, type FinaleId, type FinaleLine } from '../data/finales';
 import { ITEM_MAP, itemsAt } from '../data/items';
+import { POSTS } from '../data/posts';
 import { SCENARIO_MAP } from '../data/scenarios';
 import { h, type Child } from './dom';
 import { pick } from '../core/rng';
@@ -134,6 +135,8 @@ const INTRO_FLAVOR = [
 ];
 
 const DEMON_REASON = '暴言による魔王化';
+/** スピリタスで画面がぐるぐる回って暗転するまでの時間 */
+const COLLAPSE_SPIN_MS = 2800;
 
 /** 0, 1, …, n-1 */
 const range = (n: number) => [...Array(n).keys()];
@@ -268,6 +271,9 @@ export class Game {
       case 'prank':
         this.prankEnding(r.outcome.template);
         return false;
+      case 'collapse':
+        this.collapseEnding(r.outcome.item);
+        return false;
     }
     this.render();
     return r.ok;
@@ -333,6 +339,22 @@ export class Game {
       bgm: e.bgm,
       scene: { kind: 'bg', image: e.scene as ImageKey, fallback: e.fallback as ImageKey },
     });
+  }
+
+  /** 強すぎる酒（スピリタス）: 画面がぐるぐる回って暗転し、病院で目を覚ます */
+  private collapseEnding(itemId: string) {
+    const e = ITEM_MAP[itemId].collapse!;
+    this.modal = null;
+    this.render();
+    this.root.classList.add('collapse-spin');
+    window.setTimeout(() => {
+      this.root.classList.remove('collapse-spin');
+      this.audio.playSe('se_angry');
+      this.talk('prank', e.lines, this.toGameOver(e.title), {
+        bgm: e.bgm,
+        scene: { kind: 'bg', image: e.scene as ImageKey, fallback: e.fallback as ImageKey },
+      });
+    }, COLLAPSE_SPIN_MS);
   }
 
   // ---------------------------------------------------------------- フィナーレ（暴言4種コンプリート）
@@ -1047,8 +1069,7 @@ export class Game {
         ),
       ];
     } else if (app === 'chat') body = this.viewChat();
-    // つぶやきーは自分の投稿があるときだけ専用の画面（無ければ普通のアプリと同じ）
-    else if (app === 'sns' && visibleClues(day, 'app:sns').length) body = this.viewSns();
+    else if (app === 'sns') body = this.viewSns();
     else if (app === 'shop') body = this.viewShop();
     else body = h('div', { class: `paper ${app}` }, this.clueTexts(`app:${app}`, APP_BASE[app] ?? ''));
 
@@ -1119,26 +1140,47 @@ export class Game {
     ];
   }
 
-  /** SNS（つぶやきー）: 自分の炎上投稿は削除できる。それ以外は文字だけ */
+  /**
+   * SNS（つぶやきー）: 自分の投稿は削除できる。下の欄から投稿もできる。
+   * 投稿できる文面は酔いの段階で変わり、酔うほど妻の悪口がひどくなる
+   */
   private viewSns(): Child {
     const day = this.day!;
     const clues = visibleClues(day, 'app:sns');
-    return h(
-      'div',
-      { class: 'sns-feed' },
-      clues.map((c) => {
-        if (!c.deletable) return h('div', { class: 'sns-post' }, h('p', { class: 'desc' }, c.text));
-        const deleted = day.flags.has(`deleted:${c.id}`);
-        return h(
-          'div',
-          { class: `sns-post mine${deleted ? ' deleted' : ''}` },
-          h('p', { class: 'desc' }, deleted ? 'この投稿は削除されました' : c.text),
-          deleted
-            ? null
-            : h('button', { class: 'btn small danger', onclick: () => this.act({ type: 'deletePost', clue: c.id! }, 'se_discard') }, `投稿を削除（${COST.deletePost}分）`),
-        );
-      }),
-    );
+    const level = drunkLevel(day);
+    const posts = POSTS.filter((p) => p.level === level && day.posts[p.id] === undefined);
+    return [
+      clues.length
+        ? h(
+            'div',
+            { class: 'sns-feed' },
+            // 新しい投稿ほど上に
+            [...clues].reverse().map((c) => {
+              if (!c.deletable) return h('div', { class: 'sns-post' }, h('p', { class: 'desc' }, c.text));
+              const deleted = day.flags.has(`deleted:${c.id}`);
+              return h(
+                'div',
+                { class: `sns-post mine${deleted ? ' deleted' : ''}` },
+                h('p', { class: 'desc' }, deleted ? 'この投稿は削除されました' : c.text),
+                deleted
+                  ? null
+                  : h('button', { class: 'btn small danger', onclick: () => this.act({ type: 'deletePost', clue: c.id! }, 'se_discard') }, `投稿を削除（${COST.deletePost}分）`),
+              );
+            }),
+          )
+        : h('div', { class: 'paper sns' }, APP_BASE.sns ?? ''),
+      posts.length
+        ? h(
+            'div',
+            { class: 'compose' },
+            h('small', { class: 'dim' }, `つぶやく（${COST.post}分）`),
+            level > 0 ? h('small', { class: 'insult-label' }, '🍺 酔った勢いでつぶやく（※おすすめしない）') : null,
+            posts.map((p) =>
+              h('button', { class: level > 0 ? 'template insult' : 'template', onclick: () => this.act({ type: 'post', post: p.id }, 'se_send') }, p.text),
+            ),
+          )
+        : null,
+    ];
   }
 
   private viewShop(): Child {

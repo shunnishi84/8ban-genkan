@@ -143,6 +143,10 @@ export interface ItemDef {
   /** 飲むと酔いが1段階進む（ビール）。useMessages は 1杯目, 2杯目, … のメッセージ */
   drink?: boolean;
   useMessages?: string[];
+  /** 飲むと一気にこの酔いの段階まで進む（カップ清酒） */
+  drunkTo?: number;
+  /** 飲んだ瞬間に酔いつぶれて、この結末になる（スピリタス） */
+  collapse?: PrankEnding;
 }
 
 export interface ChatTemplate {
@@ -217,6 +221,8 @@ export interface DayState {
   seed: number;
   /** 暴言を4種すべて送ったときに決まるフィナーレ */
   finale?: FinaleId;
+  /** つぶやきーに投稿したもの（投稿 ID -> 妻がそれを見る時刻）。見られる前に消せばセーフ */
+  posts: Record<string, Minutes>;
 }
 
 export interface RunState {
@@ -245,6 +251,7 @@ export type Action =
   | { type: 'wait' }
   | { type: 'unsend'; clue: string }
   | { type: 'deletePost'; clue: string }
+  | { type: 'post'; post: string }
   | { type: 'travel'; to: Location }
   | { type: 'openDoor' };
 
@@ -259,6 +266,8 @@ export type Outcome =
   | { kind: 'demon'; lines: string[] }
   /** 酔った勢いの悪ふざけを送っていた: 送った文面ごとの結末 */
   | { kind: 'prank'; template: string }
+  /** 強すぎる酒で酔いつぶれた: その酒の結末（病院送りなど） */
+  | { kind: 'collapse'; item: string }
   /** 暴言を4種すべて送った: 7本からランダムに選ばれたフィナーレ */
   | { kind: 'finale'; finale: FinaleId }
   /**
@@ -277,7 +286,7 @@ export interface ActionResult {
 
 
 /** 悪ふざけの結末。行ごとに背景（bg）を切り替えられる */
-interface PrankEnding {
+export interface PrankEnding {
   /** ゲームオーバー画面の「原因」 */
   title: string;
   /** 最初の背景（manifest の画像キー）と、その絵が無いときの代わり */
@@ -289,6 +298,18 @@ interface PrankEnding {
 }
 
 /** セリフの話し手。other は名札（name）で誰かを示す */
+/** つぶやきーに投稿できる文面。酔いの段階（level）ごとに出るものが変わる */
+export interface Post {
+  id: string;
+  /** この酔いの段階のときだけ投稿できる（0 = しらふ） */
+  level: number;
+  text: string;
+  /** 投稿についた反応（「♥ 3」など） */
+  reaction: string;
+  /** 妻の悪口。これがあると火種になり、妻に見られる前に消さないと怒られる */
+  angerLines?: string[];
+}
+
 export type Speaker = 'me' | 'wife' | 'narr' | 'other';
 
 /** 妻の酔い方: からみ酒 / 甘え上戸 / 記憶リセット / 逆魔王 */

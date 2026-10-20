@@ -113,6 +113,7 @@ export const IMAGES = {
   prank_police: { file: 'prank_police.jpg', label: '妻とおまわりさん', color: '#2b2b38', fit: 'cover' },
   prank_mummy: { file: 'prank_mummy.jpg', label: '包帯ぐるぐる巻き', color: '#e8e0cc', fit: 'cover' },
   prank_tears: { file: 'prank_tears.jpg', label: '泣いている妻', color: '#3a3f55', fit: 'cover' },
+  hospital_wife: { file: 'hospital_wife.jpg', label: '病室で怒る妻', color: '#d8dde2', fit: 'cover' },
   // スーパー夫婦大戦（ロボット大戦風フィナーレ）。背景が無ければ夜の街
   bg_battle: { file: 'bg_battle.jpg', label: '戦闘背景', color: '#1d2333', fit: 'cover' },
   robot_hero: { file: 'robot_hero.png', label: 'サラリーマンガーZ', color: '#8a96a8' },

@@ -833,6 +833,25 @@ Japanese manga-style digital illustration, clean bold black outlines, flat cel s
 No text, no letters, no watermark.
 ```
 
+## 16. スピリタスで病院送り（hospital_wife.jpg）— Gemini 用
+
+未配置の間は wife_angry で代用される。
+
+### 16-1. hospital_wife.jpg（添付: wife_angry.png, hero.png）
+```
+Use the attached images as character references: the woman is the wife (same face, short
+dark bob hair) and the man is the husband. Vertical 9:16. A Japanese hospital emergency room
+at night: white walls, a curtain partition, a heart monitor and an IV stand. The husband lies
+in the hospital bed in a patient gown with an IV drip in his arm, pale and sweating, staring
+at the ceiling in terror. The wife sits on a folding chair beside the bed with her arms
+crossed, wearing a coat thrown over her pajamas, smiling calmly but with a dark shadow over
+her eyes and a visible anger vein mark on her forehead — quietly furious. A tall bottle with
+a plain label reading nothing (no text) stands on the bedside table like evidence.
+Comedic but tense mood.
+Japanese manga-style digital illustration, clean bold black outlines, flat cel shading.
+No text, no letters, no watermark.
+```
+
 ---
 
 ## 置いたあとの確認

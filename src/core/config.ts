@@ -25,6 +25,9 @@ export const startTimeFor = (day: number, jitter: number): Minutes =>
 /** 何日目に原因がいくつ重なるか */
 export const causeCountFor = (day: number): number => (day >= 8 ? 3 : day >= 6 ? 2 : 1);
 
+/** 酔いの段階の上限（缶ビール3本 / カップ清酒1杯） */
+export const MAX_DRUNK = 3;
+
 /** 妻が酔っている日になる確率 */
 export const WIFE_DRUNK_RATE = 0.1;
 
@@ -47,6 +50,8 @@ export const COST = {
   pickup: 1,
   unsend: 2,
   deletePost: 2,
+  /** つぶやきーに投稿する */
+  post: 2,
   /** 締め出されたあと、公園のベンチで時間をつぶす */
   wait: 60,
   undress: 1,

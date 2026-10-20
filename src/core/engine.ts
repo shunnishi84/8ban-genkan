@@ -2,6 +2,7 @@
 import { CHAT_MAP, CHAT_TEMPLATES, AFTER_REPLIES, COLD_REPLIES, LATE_REPLIES } from '../data/chat';
 import { FINALES, FINALE_IDS, type Finale, type FinaleId } from '../data/finales';
 import { ITEM_MAP } from '../data/items';
+import { POST_MAP } from '../data/posts';
 import { DRUNK_WIFE_SCENARIOS } from '../data/drunkWife';
 import { SCENARIOS, SCENARIO_MAP } from '../data/scenarios';
 import {
@@ -14,6 +15,7 @@ import {
   WIFE_DRUNK_RATE,
   LOCKOUT_TIME,
   DAWN_TIME,
+  MAX_DRUNK,
   TRAVEL,
   causeCountFor,
   formatTime,
@@ -98,6 +100,7 @@ export const buildDay = (day: number, scenarios: Scenario[], startTime: number, 
     wifeDrunk: scenarios.find((s) => s.wifeDrunk)?.wifeDrunk ?? null,
     insultIds: pickInsults(seed),
     seed,
+    posts: {},
   };
 };
 
@@ -207,7 +210,7 @@ const look = (state: DayState, key: string, cost: number): ActionResult => {
 };
 
 /** スマホを使う行動（スマホが壊れたらできない） */
-const PHONE_ACTIONS = new Set<Action['type']>(['openApp', 'sendChat', 'order', 'cancelOrder', 'unsend', 'deletePost']);
+const PHONE_ACTIONS = new Set<Action['type']>(['openApp', 'sendChat', 'order', 'cancelOrder', 'unsend', 'deletePost', 'post']);
 
 const act = (state: DayState, action: Action): ActionResult => {
   if (state.flags.has('phone_broken') && PHONE_ACTIONS.has(action.type)) {
@@ -357,8 +360,14 @@ const act = (state: DayState, action: Action): ActionResult => {
         state.inventory[state.inventory.indexOf(item.useRequires)] = item.useResult;
       }
       state.flags.add(`used:${item.id}`);
+      if (item.collapse) return result(true, [], COST.use, { kind: 'collapse', item: item.id });
+      if (item.drunkTo) {
+        for (let n = 1; n <= item.drunkTo; n++) state.flags.add(`drunk:${n}`);
+        return result(true, [item.useMessage ?? `${item.name}を飲んだ。`], COST.use);
+      }
       if (item.drink) {
-        const level = drunkLevel(state) + 1;
+        // 酔いは3段階まで（カップ清酒のあとのビールは、それ以上は回らない）
+        const level = Math.min(drunkLevel(state) + 1, MAX_DRUNK);
         state.flags.add(`drunk:${level}`);
         const msgs = item.useMessages ?? [];
         return result(true, [msgs[Math.min(level, msgs.length) - 1] ?? `${item.name}を飲んだ。`], COST.use);
@@ -415,7 +424,50 @@ const act = (state: DayState, action: Action): ActionResult => {
       if (!clue) return result(false, ['削除できる投稿がない。']);
       if (state.flags.has(`deleted:${action.clue}`)) return result(false, ['もう削除した。']);
       state.flags.add(`deleted:${action.clue}`);
-      return result(true, ['投稿を削除した。……スクショは、たぶん出回っている。'], COST.deletePost);
+      const seenAt = state.posts[action.clue];
+      if (seenAt === undefined) return result(true, ['投稿を削除した。……スクショは、たぶん出回っている。'], COST.deletePost);
+      // その場の勢いでつぶやいた投稿: 妻に見られる前ならセーフ
+      if (state.time < seenAt) {
+        state.flags.add(`erased:${action.clue}`);
+        return result(true, ['投稿を削除した。……妻には、まだ見られていない。セーフ。'], COST.deletePost);
+      }
+      return result(true, ['投稿を削除した。……が、妻はもう見ていた。', 'スクショも、きっと撮られている。'], COST.deletePost);
+    }
+
+    case 'post': {
+      const post = POST_MAP[action.post];
+      if (!post) return result(false, ['そんな投稿は無い。']);
+      if (state.posts[post.id] !== undefined) return result(false, ['もう投稿した。']);
+      if (post.level !== drunkLevel(state)) return result(false, ['……今は、その言葉は出てこない。']);
+      const seenAt = postSeenAt(post.level, state.time);
+      state.posts[post.id] = seenAt;
+      state.flags.add(`posted:${post.id}`);
+      state.clues.push({
+        at: 'app:sns',
+        id: post.id,
+        deletable: true,
+        text: `@tanaka_salaryman（あなた）\n「${post.text}」\n${post.reaction}（${formatTime(state.time)}）`,
+      });
+      if (!post.angerLines) {
+        if (state.time <= LOCKOUT_TIME) state.clues.push({ at: 'notice', text: `♥ 妻があなたの投稿にいいねしました:「${post.text}」` });
+        return result(true, ['つぶやいた。……ちょっとすっきりした。'], COST.post);
+      }
+      state.causes.push({
+        id: `tweet:${post.id}`,
+        title: 'つぶやきーで悪口',
+        resolution: `erased:${post.id}`,
+        angerLines: post.angerLines,
+        successLine: '',
+      });
+      if (post.level >= 3) {
+        state.clues.push({ at: 'notice', text: `📣 つぶやきー: あなたの投稿が話題になっています（${post.reaction.split('　')[0]}）` });
+        return result(true, ['つぶやいた。……一瞬でバズった。', '通知が、鳴りやまない。……妻のアカウントからも、いいねがついた。'], COST.post);
+      }
+      return result(
+        true,
+        ['つぶやいた。', post.level === 2 ? '……いいねが、ものすごい勢いで増えていく。妻に見つかるのは時間の問題だ。' : '……そういえば、妻もこのアカウントをフォローしていた気がする。'],
+        COST.post,
+      );
     }
 
     case 'travel': {
@@ -459,7 +511,7 @@ const act = (state: DayState, action: Action): ActionResult => {
       // 甘え上戸の妻は、おねだりを聞いてもらえたら火種を1つだけ見逃してくれる
       const amae = state.causes.find((c) => c.id === 'wife_drunk_amae');
       if (amae && evaluate(amae.resolution, state.flags) && angry.length === 1) {
-        const lines = state.causes.filter((c) => evaluate(c.resolution, state.flags)).map((c) => c.successLine);
+        const lines = state.causes.filter((c) => evaluate(c.resolution, state.flags)).map((c) => c.successLine).filter(Boolean);
         return result(true, [], 0, { kind: 'home', lines: [...lines, '……ん〜？ なんかあった気がするけど……まぁいっか〜♡ ゆるす〜♡'], special });
       }
       if (angry.length > 0) return result(true, [], 0, { kind: 'angry', causes: angry });
@@ -524,8 +576,15 @@ const markMisfiresRead = (state: DayState): string[] => {
  * 記憶をなくした妻にとっての火種の判定に使うフラグ。
  * 物的証拠（捨てる・使う・投稿を消す）以外の手当て（チャット・注文・購入など）は、覚えていないので済んだことになる
  */
+/**
+ * つぶやいた悪口を妻が見る時刻。ひどいものほど早くバレる:
+ * 酔い1は 0:00 に妻がタイムラインを見るまで（0:00 以降の投稿は10分後）、酔い2は10分後、酔い3は一瞬でバズって即バレ
+ */
+const postSeenAt = (level: number, time: number): number =>
+  level >= 3 ? time : level === 2 || time > CANCEL_DEADLINE ? time + 10 : CANCEL_DEADLINE + 1;
+
 const withHearsayForgotten = (state: DayState, c: Cause): Set<string> => {
-  const evidence = /^(discarded|used|deleted|picked):/;
+  const evidence = /^(discarded|used|deleted|erased|picked):/;
   return new Set([...state.flags, ...flagsIn(c.resolution).filter((f) => !evidence.test(f))]);
 };
 

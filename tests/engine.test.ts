@@ -6,6 +6,7 @@ import { solve } from '../src/core/solver';
 import { SCENARIO_MAP } from '../src/data/scenarios';
 import { CHAT_MAP, CHAT_TEMPLATES, COLD_REPLIES } from '../src/data/chat';
 import { FINALES, FINALE_IDS, type FinaleId } from '../src/data/finales';
+import { POSTS } from '../src/data/posts';
 
 // 暴言は毎日ランダムに4つ選ばれるが、テストでは定番の4つに固定する（ランダム選択そのものは別にテスト）
 const CLASSIC_INSULTS = ['insult_oni', 'insult_komakai', 'insult_kaachan', 'insult_gunsou'];
@@ -570,6 +571,81 @@ describe('妻が酔っている日', () => {
       for (const a of plan!) last = perform(s, a);
       expect(last!.outcome.kind, id).toBe('home');
     }
+  });
+});
+
+describe('つぶやきーへの投稿と強い酒', () => {
+  /** コンビニで買って、その場で飲む */
+  const drink = (s: ReturnType<typeof day>, item: string, times = 1) => {
+    perform(s, { type: 'travel', to: 'town' });
+    perform(s, { type: 'travel', to: 'konbini' });
+    let last = perform(s, { type: 'buy', item });
+    for (let i = 0; i < times; i++) {
+      if (i > 0) perform(s, { type: 'buy', item });
+      last = perform(s, { type: 'use', item });
+    }
+    perform(s, { type: 'travel', to: 'town' });
+    perform(s, { type: 'travel', to: 'door' });
+    return last;
+  };
+  const postsAt = (level: number) => POSTS.filter((p) => p.level === level);
+
+  it('酔いの段階ごとに3つずつ投稿でき、しらふの投稿は無害', () => {
+    for (const level of [0, 1, 2, 3]) expect(postsAt(level)).toHaveLength(3);
+    const s = day(['neighbor_curry']);
+    expect(perform(s, { type: 'post', post: 'tw_de' }).ok).toBe(false); // しらふでは悪口は出てこない
+    expect(perform(s, { type: 'post', post: 'tw_kacho' }).cost).toBe(2);
+    expect(visibleClues(s, 'app:sns').some((c) => c.text.includes('課長の話が長すぎて'))).toBe(true);
+    expect(perform(s, { type: 'openDoor' }).outcome.kind).toBe('home');
+  });
+
+  it('酔い1の悪口: 0:00 に妻が見る前に消せばセーフ、見られたら怒られる', () => {
+    const safe = day(['neighbor_curry']);
+    drink(safe, 'beer');
+    perform(safe, { type: 'post', post: 'tw_kogoto' });
+    perform(safe, { type: 'deletePost', clue: 'tw_kogoto' });
+    expect(perform(safe, { type: 'openDoor' }).outcome.kind).toBe('home');
+
+    const kept = day(['neighbor_curry']);
+    drink(kept, 'beer');
+    perform(kept, { type: 'post', post: 'tw_kogoto' });
+    expect(perform(kept, { type: 'openDoor' }).outcome).toMatchObject({ kind: 'angry', causes: [{ id: 'tweet:tw_kogoto' }] });
+
+    const late = day(['neighbor_curry']);
+    drink(late, 'beer');
+    perform(late, { type: 'post', post: 'tw_kogoto' });
+    late.time = hm(24, 1);
+    expect(perform(late, { type: 'deletePost', clue: 'tw_kogoto' }).messages[0]).toContain('もう見ていた');
+    expect(perform(late, { type: 'openDoor' }).outcome.kind).toBe('angry');
+  });
+
+  it('酔い2は10分で見つかり、酔い3は一瞬でバズって消しても手遅れ', () => {
+    const two = day(['neighbor_curry']);
+    drink(two, 'beer', 2);
+    perform(two, { type: 'post', post: 'tw_genkan' });
+    two.time += 10;
+    perform(two, { type: 'deletePost', clue: 'tw_genkan' });
+    expect(perform(two, { type: 'openDoor' }).outcome.kind).toBe('angry');
+
+    const three = day(['neighbor_curry']);
+    drink(three, 'beer', 3);
+    expect(perform(three, { type: 'post', post: 'tw_gosan' }).messages[0]).toContain('バズった');
+    perform(three, { type: 'deletePost', clue: 'tw_gosan' });
+    expect(perform(three, { type: 'openDoor' }).outcome).toMatchObject({ kind: 'angry', causes: [{ id: 'tweet:tw_gosan' }] });
+  });
+
+  it('カップ清酒は1杯で酔い3。ビールを足しても3より上には行かない', () => {
+    const s = day(['neighbor_curry']);
+    drink(s, 'cup_sake');
+    expect(drunkLevel(s)).toBe(3);
+    drink(s, 'beer');
+    expect(drunkLevel(s)).toBe(3);
+    expect(perform(s, { type: 'post', post: 'tw_miryoku' }).ok).toBe(true);
+  });
+
+  it('スピリタスは飲んだ瞬間に酔いつぶれて病院送り', () => {
+    const s = day(['neighbor_curry']);
+    expect(drink(s, 'spirytus').outcome).toEqual({ kind: 'collapse', item: 'spirytus' });
   });
 });
 

@@ -66,6 +66,8 @@ cd android && ./gradlew assembleDebug   # → android/app/build/outputs/apk/debu
 * 関係ない謝罪チャットを送ると妻から電話で問い詰められ、8 分失う
 * 異変なしの日に引き返すと、時間だけが過ぎる
 * 1/10 の確率で妻が酔っ払っている日がある（からみ酒・甘え上戸・記憶リセット・逆魔王の4タイプ）。チャットの様子で見分けて、その日だけの正解を探す。夫もビール2本以上飲んでいると、玄関で宴会になる
+* スマホの「つぶやきー」から投稿できる。しらふなら仕事の愚痴で無害だが、酔うほど妻の悪口がひどくなり、妻に見られる前に消さないと火種になる（酔い1は 0:00 まで、酔い2は10分、酔い3は即バズって手遅れ）
+* コンビニのカップ清酒は1杯で酔いが最大（3段階）まで回る。スピリタスを飲むと、その場で酔いつぶれて病院送り（ゲームオーバー）
 
 ## シナリオの追加方法
 
@@ -162,6 +164,7 @@ cd android && ./gradlew assembleDebug   # → android/app/build/outputs/apk/debu
 | item_saru_recipe.png | メシマズの日の「火に油」アイテム、料理本のアイコン（Gemini で生成） | ✅ |
 | prank_police.jpg / prank_mummy.jpg / prank_tears.jpg | 酔った勢いの悪ふざけの結末（Gemini で生成） | ✅ |
 | wife_drunk_karami.jpg / wife_drunk_amae.jpg / wife_drunk_sleep.jpg / drunk_party.jpg | 妻が酔っている日（からみ酒・甘え上戸・寝落ち・夫婦で宴会。Gemini で生成） | ✅ |
+| hospital_wife.jpg | スピリタスで病院送り（病室で怒る妻）。未配置なら wife_angry で代用 | ⬜ |
 | castle_gate.png | 魔王城フィナーレで玄関ドアに重ねる門（Gemini で生成） | ✅ |
 | bg_court.jpg / bg_siege.jpg / bg_exposed.jpg | 家庭裁判（法廷全体）・家族会議・公開処刑のフィナーレ背景（Gemini で生成） | ✅ |
 | bg_court_judge / defense / prosecutor / witness .jpg | 家庭裁判のカメラ切り替え（Gemini で生成。無ければ bg_court で代用） | ✅ |
