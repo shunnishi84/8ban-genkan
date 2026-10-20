@@ -852,6 +852,34 @@ Japanese manga-style digital illustration, clean bold black outlines, flat cel s
 No text, no letters, no watermark.
 ```
 
+## 17. 持ち物アイコン追加（牛乳・卵・カップ清酒・スピリタス）— Gemini 用
+
+今は牛乳と卵が同じ買い物袋のアイコン（item_shopping_bag）、カップ清酒とスピリタスはアイコン無し（四角＋ラベル）。
+1枚のシートに 2×2 で描かせて、こちらで切り出す。添付する見本: `item_beer.png`（絵柄合わせ）
+
+```
+A sprite sheet of 4 separate game item icons in the same art style as the attached icon,
+arranged in a neat 2 columns x 2 rows grid on a plain pure white background. Each icon is a
+single object, centered in its own cell, with plenty of white space between icons, nothing
+touching or overlapping, no labels, no numbers, no frames.
+Row 1, left to right:
+1. a 1-liter Japanese milk carton with a gable top, white and light blue with a simple cow
+   silhouette
+2. a clear plastic pack of 6 white eggs (2 rows of 3), the kind sold at Japanese
+   convenience stores
+Row 2, left to right:
+3. a Japanese one-cup sake: a small glass cup filled to the brim with clear sake, a metal
+   pull-tab lid peeled halfway back, a plain red and white paper label with a small
+   staggering bird motif
+4. a tall slim clear glass bottle of extremely strong spirit with a plain white and red
+   label, a small flame warning symbol and a skull-free danger stripe, faint wavy heat lines
+   rising from the bottle to show it is dangerously strong
+Japanese manga-style digital illustration, clean bold black outlines, flat cel shading,
+simple and readable at small size, consistent style across all icons.
+No text, no letters, no numbers, no watermark.
+```
+→ 順番に `item_milk / item_eggs / item_cup_sake / item_spirytus` として切り出す。
+
 ---
 
 ## 置いたあとの確認
