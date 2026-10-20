@@ -61,7 +61,7 @@ export const ARRESTS: Record<ArrestId, PrankEnding> = {
       { who: 'narr', text: '──ピーポー、ピーポー。' },
       { who: 'other', name: '警察官', text: '……とりあえず、署まで来てもらおうか。ズボンは、どこに置いてきたの？' },
       { who: 'narr', text: '──留置場。冷たいコンクリートの床。鉄格子の向こうで、時計の針が3時を回った。', bg: 'jail_cell', bgFallback: 'bg_door_dark' },
-      { who: 'narr', text: '翌朝。面会室のアクリル板の向こうに、妻が座った。' },
+      { who: 'narr', text: '翌朝。面会室のアクリル板の向こうに、妻が座った。', bg: 'jail_visit', bgFallback: 'wife_dark' },
       { who: 'wife', text: '……ズボン、持ってきたわよ。' },
       { who: 'wife', text: 'ご近所にも、会社にも、もう知れ渡ってるから。' },
       { who: 'wife', text: '次の面会は、弁護士さんと来るわね。……離婚の。' },

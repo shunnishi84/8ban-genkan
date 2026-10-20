@@ -960,6 +960,22 @@ Japanese manga-style digital illustration, clean bold black outlines, flat cel s
 No text, no letters, no logos, no watermark.
 ```
 
+### 18-6. jail_visit.jpg（添付: wife_dark.png, hero.png）
+留置場の翌朝、面会室で妻と向かい合う絵。置くまでは wife_dark で代用される。
+```
+Use the attached images as character references: the woman is the wife (same face, short
+dark bob hair) and the man is the husband. Vertical 9:16. A Japanese police station
+visiting room in the morning, seen from the husband's side: a thick clear acrylic partition
+with a small circle of speaking holes divides the narrow room. On the far side the wife sits
+upright on a plain chair in a neat coat, perfectly calm, with a cold faint smile and a dark
+shadow over her eyes. On the counter in front of her lie a neatly folded pair of suit
+trousers and a large brown envelope. In the foreground, the back of the husband's head and
+shoulders wrapped in a gray blanket, slumped. Cold fluorescent light. Quietly terrifying,
+comedic mood.
+Japanese manga-style digital illustration, clean bold black outlines, flat cel shading,
+cool gray colors. No text, no letters, no watermark.
+```
+
 ---
 
 ## 置いたあとの確認
