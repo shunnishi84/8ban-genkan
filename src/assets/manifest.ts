@@ -111,6 +111,10 @@ export const IMAGES = {
   // 手がかりに添えるイラスト
   tv_capture: { file: 'tv_capture.jpg', label: 'テレビの画面', color: '#33415c' },
   kouhai_notice: { file: 'kouhai_notice.jpg', label: '後輩の通知', color: '#f2a7c3' },
+  costume_dress: { file: 'costume_dress.jpg', label: '余興のアイドル衣装', color: '#f5b8d0' },
+  yokyou_photo: { file: 'yokyou_photo.jpg', label: '余興の練習写真', color: '#f5b8d0' },
+  twoshot_edited: { file: 'twoshot_edited.jpg', label: '加工されたツーショット', color: '#f2c6d8' },
+  twoshot_original: { file: 'twoshot_original.jpg', label: '加工前のツーショット', color: '#c8d2e0' },
   group_photo: { file: 'group_photo.jpg', label: '飲み会の集合写真', color: '#c98a4a' },
   gravure_page: { file: 'gravure_page.jpg', label: '付箋のページ', color: '#5fb7d4' },
   // 酔った勢いの悪ふざけの結末（無ければ既存の絵で代用）

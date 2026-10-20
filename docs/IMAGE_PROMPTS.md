@@ -976,6 +976,65 @@ Japanese manga-style digital illustration, clean bold black outlines, flat cel s
 cool gray colors. No text, no letters, no watermark.
 ```
 
+## 19. 新しい異変（余興の衣装・加工ツーショット）— Gemini 用
+
+置くまでは文字だけで表示される（チャットの写真は本文のみ）。
+
+| ファイル | 場面 | 添付する見本 |
+|---|---|---|
+| `costume_dress.jpg` | 廊下の物干しに干された、ピンクのアイドル衣装（手がかり・横 4:3） | `bg_door.png`（絵柄合わせ） |
+| `yokyou_photo.jpg` | 余興の練習写真（チャットで送る写真・横 4:3） | `hero.png` |
+| `twoshot_edited.jpg` | 加工アプリで女の子にされた同僚とのツーショット（通知・縦 3:4） | `hero.png` |
+| `twoshot_original.jpg` | 加工前のツーショット（チャットで送る写真・縦 3:4） | `hero.png` と、できた `twoshot_edited.jpg` |
+
+### 19-1. costume_dress.jpg（添付: bg_door.png）
+```
+Use the attached image as the style reference. Horizontal 4:3. A narrow Japanese apartment
+hallway at night. On a small indoor drying rack hangs a frilly bright pink idol-style stage
+costume dress with big ribbons, puffy sleeves and a layered skirt — clearly far too large,
+an extra-large adult size — next to ordinary men's shirts and socks. A pair of sparkly pink
+knee socks dangles beside it. The scene is lit by a single ceiling light, slightly
+suspicious mood. Japanese manga-style digital illustration, clean bold black outlines, flat
+cel shading. No text, no letters, no watermark.
+```
+
+### 19-2. yokyou_photo.jpg（添付: hero.png）
+```
+Use the attached image as the character reference for the husband (same face and hair).
+Horizontal 4:3, a casual smartphone photo. Inside a Japanese karaoke room with a big screen
+and a tambourine on the table, three middle-aged office workers practice an idol dance for
+a year-end party: the husband in the center wears the frilly bright pink idol costume dress
+over his work clothes, striking a cute pose with a wink and a peace sign; on the left a
+bald, round section chief in a matching light blue idol dress poses enthusiastically; on
+the right a slim young male coworker in a yellow idol dress looks embarrassed. All three are
+clearly men, hilarious and wholesome. Japanese manga-style digital illustration, clean bold
+black outlines, flat cel shading. No text, no letters, no watermark.
+```
+
+### 19-3. twoshot_edited.jpg（添付: hero.png）
+```
+Use the attached image as the character reference for the husband (same face and hair).
+Vertical 3:4, a selfie-style photo taken at a Japanese izakaya. The husband, slightly drunk
+and smiling, has his arm around the shoulders of a cute young woman with big sparkly eyes,
+long glossy hair, pink cheeks and a soft smile, both making peace signs. The photo is
+covered with beauty-filter effects: soft pink glow, sparkles, heart stickers and cat-ear
+decorations on her. It should look like a suspicious couple photo at first glance.
+Japanese manga-style digital illustration, clean bold black outlines, flat cel shading.
+No text, no letters, no watermark.
+```
+
+### 19-4. twoshot_original.jpg（添付: hero.png, twoshot_edited.jpg）
+```
+Use the attached images as references: this is the SAME photo as the second attached image,
+the same pose, angle, izakaya background and composition, but WITHOUT any beauty filter.
+The husband is the same. The "cute woman" is revealed to be his male coworker: a stocky
+middle-aged Japanese man with short hair, a five-o'clock shadow, a loosened necktie and a
+big cheerful grin, making the same peace sign with his arm on the same spot. No sparkles,
+no hearts, no cat ears, plain lighting, slightly blurry like a real phone photo. Comedic
+before/after contrast. Japanese manga-style digital illustration, clean bold black outlines,
+flat cel shading. No text, no letters, no watermark.
+```
+
 ---
 
 ## 置いたあとの確認

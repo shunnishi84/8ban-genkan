@@ -48,6 +48,10 @@ export interface Clue {
   unsendable?: boolean;
   /** SNS アプリの自分の投稿: 「投稿を削除」できる（締切なし）。削除すると deleted:<id> */
   deletable?: boolean;
+  /** SNS 以外で deletable なとき（カレンダーの予定を断るなど）のボタン名・メッセージ・消したあとの表示 */
+  deleteLabel?: string;
+  deleteMessages?: string[];
+  deletedText?: string;
   /** 手がかりに添えるイラスト（assets/manifest.ts の IMAGES のキー） */
   image?: string;
   /** この条件を満たしたら表示しない（着替えたら口紅の描写が消える等） */

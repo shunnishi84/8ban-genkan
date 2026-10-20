@@ -815,6 +815,104 @@ export const SCENARIOS: Scenario[] = [
     ],
   },
 
+  // 女物の衣装が見つかって浮気を疑われる。正体は忘年会の余興衣装
+  {
+    id: 'costume_dress',
+    title: '女物の服が見つかった',
+    chatReplies: {
+      '*': ['話をそらさないで。あのワンピースは誰の？'],
+      coming_home: ['ワンピースの持ち主も一緒に？', '帰ってきたら、まず説明して。'],
+      sorry_generic: ['何に謝ってるの？ 謝るようなことがあるの？', 'ごめんじゃなくて、持ち主の名前を言って。'],
+      love: ['そのワンピースの子にも言ってる？'],
+    },
+    causes: [
+      {
+        id: 'costume_dress',
+        title: '女物の衣装',
+        resolution: 'chat:yokyou_photo',
+        angerLines: ['……で、あのワンピースは誰の？', 'サイズLL。……ずいぶん大柄な人なのね。', '今夜は、そのワンピースと一緒に寝たら？'],
+        successLine: '……課長のアイドル姿、保存しといた。本番の動画、絶対に撮ってきてね。',
+      },
+    ],
+    clues: [
+      {
+        at: 'spot:hallway',
+        cause: 'costume_dress',
+        image: 'costume_dress',
+        text: '廊下の物干しに、見覚えのないピンクのフリフリのワンピースが干してある。……タグには「LL」。',
+      },
+      { at: 'app:chat', cause: 'costume_dress', unread: true, text: '鞄を洗濯に出そうとしたら、女物のワンピースが出てきたんだけど。説明して（22:18）' },
+      { at: 'app:calendar', cause: 'costume_dress', text: '12/20（金）営業部 忘年会 ※余興：2課（あなた・課長・鈴木）' },
+      { at: 'app:memo', cause: 'costume_dress', text: '余興「アイドル」の振り付け練習 毎週水曜 カラオケで。衣装は各自持ち帰り' },
+    ],
+  },
+  // 女性とのツーショットがスマホと家のタブレットに同時に届く。正体は加工アプリで女の子にされた同僚
+  {
+    id: 'twoshot_photo',
+    title: '女性とのツーショット写真が届いた',
+    conflictsWith: ['kouhai_chat'],
+    chatReplies: {
+      '*': ['それより、タブレットの写真の子は誰？'],
+      coming_home: ['あの子のところじゃなくて、こっちに帰ってくるんだ？', '写真の説明、持って帰ってきて。'],
+      sorry_generic: ['何に謝ってるの？ やっぱりそういうこと？', 'ごめんじゃなくて、写真の子の名前。'],
+      love: ['写真の子にも言ってる？ 肩まで組んで。'],
+    },
+    causes: [
+      {
+        id: 'twoshot_photo',
+        title: '謎のツーショット',
+        resolution: 'chat:twoshot_original',
+        angerLines: ['……で、この子、誰？', '肩まで組んで、楽しそうね。', 'タブレットが家族共有なの、知ってて送らせたの？'],
+        successLine: '鈴木さんだったのね。……加工前の写真、タブレットの待ち受けにしといた。',
+      },
+    ],
+    clues: [
+      {
+        at: 'notice',
+        cause: 'twoshot_photo',
+        image: 'twoshot_edited',
+        text: '📷 鈴木: 今日の2ショット♡ 加工アプリ最高ｗ（リビングのタブレットにも同期されました）',
+      },
+      { at: 'app:chat', cause: 'twoshot_photo', unread: true, text: 'タブレットに、あなたと女の人のツーショットが届いたんだけど。誰？（22:44）' },
+      { at: 'spot:window', cause: 'twoshot_photo', text: '窓の向こうで、リビングのタブレットが光っている。……さっきの写真が表示されたままだ。' },
+    ],
+  },
+  // 週末の妻との買い物の日に、同僚とのゴルフを入れていた
+  {
+    id: 'weekend_golf',
+    title: '妻との約束の日にゴルフを入れていた',
+    chatReplies: {
+      '*': ['それより土曜の話。'],
+      coming_home: ['ゴルフバッグ、玄関に出しといたから。', '土曜の話は、帰ってきてからね。'],
+      sorry_generic: ['何が？ ゴルフのこと？ ……で、どうするの？', '謝るなら、予定をどうにかして。'],
+      love: ['ゴルフと、どっちを？'],
+    },
+    causes: [
+      {
+        id: 'weekend_golf',
+        title: '週末のダブルブッキング',
+        resolution: { all: ['deleted:cal_golf', 'ordered:dinner_reservation', 'chat:weekend_cancel'] },
+        angerLines: ['土曜、ソファを見に行く約束だったよね。', 'ゴルフ、楽しんできてね。……私は一人でソファを選んでおくから。', '請求書は、あなた宛てで。'],
+        successLine: '……イタリアン、楽しみにしてる。ソファも、ちゃんと一緒に選んでね。',
+      },
+    ],
+    clues: [
+      { at: 'spot:door', cause: 'weekend_golf', text: 'ドアの横に、ゴルフバッグが立てかけてある。……妻が、わざわざ出しておいたらしい。' },
+      { at: 'app:chat', cause: 'weekend_golf', unread: true, text: '土曜、買い物の約束だったよね？ カレンダーに「ゴルフ」って入ってるんだけど（22:36）' },
+      { at: 'app:calendar', cause: 'weekend_golf', text: '土曜 11:00 妻と買い物（新しいソファを見に行く）' },
+      {
+        at: 'app:calendar',
+        cause: 'weekend_golf',
+        id: 'cal_golf',
+        deletable: true,
+        deleteLabel: '鈴木に断りの連絡を入れる',
+        deleteMessages: ['鈴木「了解！ 奥さん孝行がんばれよ〜」', 'カレンダーから、土曜のゴルフを消した。'],
+        deletedText: '土曜 7:00 ゴルフ → キャンセル済み（鈴木に連絡した）',
+        text: '土曜 7:00 ゴルフ（鈴木・佐藤さんと）＠千葉',
+      },
+    ],
+  },
+
   // ================================================================ 異変なし（ニセ異変入り）
   {
     id: 'ramen_receipt',

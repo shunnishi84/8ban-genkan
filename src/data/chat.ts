@@ -112,6 +112,46 @@ export const CHAT_TEMPLATES: ChatTemplate[] = [
     replyRelevant: 'ふーん。……信じてあげる',
     replyIrrelevant: '佐藤さんって誰？？ 今すぐ電話します',
   },
+  {
+    id: 'yokyou_photo',
+    text: '【写真】忘年会の余興の練習中。課長と鈴木と3人でアイドルやるんだ。あの衣装は俺の（LL）',
+    // 余興の練習写真は、女物の衣装が見つかった日にしか出番がない
+    onlyWith: 'costume_dress',
+    image: 'yokyou_photo',
+    replyRelevant: '……課長、ノリノリじゃない。センターはあなたなの？',
+    replyIrrelevant: '急に写真？ 何かあったの？ 電話するね',
+  },
+  {
+    id: 'costume_surprise',
+    text: 'それ、お前へのサプライズプレゼントなんだ',
+    onlyWith: 'costume_dress',
+    replyRelevant: '……ふーん。サプライズ。',
+    replyIrrelevant: '……ふーん。サプライズ。',
+    provokeLines: ['サプライズ。', '……サイズ、LLだったけど。私のサイズ、知ってる？', '知らないなら、今夜じっくり教えてあげる。'],
+  },
+  {
+    id: 'twoshot_original',
+    text: '【写真】加工前の写真。隣は鈴木（男）だよ。加工アプリで女の子にされただけ。結婚式で乾杯の挨拶してくれた鈴木！',
+    onlyWith: 'twoshot_photo',
+    image: 'twoshot_original',
+    replyRelevant: 'ほんとだ、鈴木さん……！ ていうか、加工後の鈴木さんの方が私よりかわいくて腹立つ',
+    replyIrrelevant: '急に写真？ 何かあったの？ 電話するね',
+  },
+  {
+    id: 'twoshot_ateteme',
+    text: 'かわいいだろ？ 誰か当ててみ',
+    onlyWith: 'twoshot_photo',
+    replyRelevant: '……当ててみ？',
+    replyIrrelevant: '……当ててみ？',
+    provokeLines: ['当ててみ？', '……今、私がどんな顔でこのメッセージを読んでたと思う？', '当ててみて。'],
+  },
+  {
+    id: 'weekend_cancel',
+    text: '土曜のゴルフ、断った！ 買い物行こう。夜は駅前のイタリアンも予約したよ',
+    requires: { all: ['deleted:cal_golf', 'ordered:dinner_reservation'] },
+    replyRelevant: '……ほんと？ じゃあ、ソファの候補、3つに絞っとくね',
+    replyIrrelevant: 'ゴルフ？ 何の話？ 電話するね',
+  },
   // ゴミ出し忘れの日だけ出る、最悪の逆ギレ。送った瞬間に魔王城へ直行
   {
     id: 'garbage_yourself',

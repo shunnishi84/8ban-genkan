@@ -168,6 +168,7 @@ cd android && ./gradlew assembleDebug   # → android/app/build/outputs/apk/debu
 | wife_drunk_karami.jpg / wife_drunk_amae.jpg / wife_drunk_sleep.jpg / drunk_party.jpg | 妻が酔っている日（からみ酒・甘え上戸・寝落ち・夫婦で宴会。Gemini で生成） | ✅ |
 | hospital_wife.jpg | スピリタスで病院送り（病室で怒る妻。Gemini で生成） | ✅ |
 | police_patrol.jpg / ol_scream.jpg / koban_wife.jpg | 巡回中のお巡りさん・悲鳴をあげる OL・交番に迎えに来た妻（Gemini で生成） | ✅ |
+| costume_dress.jpg / yokyou_photo.jpg / twoshot_edited.jpg / twoshot_original.jpg | 余興のアイドル衣装・余興の練習写真・加工ツーショット（加工後 / 加工前）。未配置なら文字だけで表示 | ⬜ |
 | jail_cell.jpg / jail_visit.jpg / police_konbini.jpg | 留置場・面会室の妻・コンビニに来たお巡りさん（Gemini で生成） | ✅ |
 | castle_gate.png | 魔王城フィナーレで玄関ドアに重ねる門（Gemini で生成） | ✅ |
 | bg_court.jpg / bg_siege.jpg / bg_exposed.jpg | 家庭裁判（法廷全体）・家族会議・公開処刑のフィナーレ背景（Gemini で生成） | ✅ |

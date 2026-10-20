@@ -459,6 +459,7 @@ const act = (state: DayState, action: Action): ActionResult => {
       if (state.flags.has(`deleted:${action.clue}`)) return result(false, ['もう削除した。']);
       state.flags.add(`deleted:${action.clue}`);
       const seenAt = state.posts[action.clue];
+      if (clue.deleteMessages) return result(true, clue.deleteMessages, COST.deletePost);
       if (seenAt === undefined) return result(true, ['投稿を削除した。……スクショは、たぶん出回っている。'], COST.deletePost);
       // その場の勢いでつぶやいた投稿: 妻に見られる前ならセーフ
       if (state.time < seenAt) {

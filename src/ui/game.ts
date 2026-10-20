@@ -916,7 +916,21 @@ export class Game {
   private clueTexts(at: ClueLocation, base: string): Child {
     const clues = visibleClues(this.day!, at);
     if (clues.length === 0) return base ? h('p', { class: 'desc' }, base) : null;
-    return clues.map((c) => [this.illust(c.image, 'clue-img'), h('p', { class: 'desc' }, c.text)]);
+    return clues.map((c) => {
+      // カレンダーの予定を断るなど、その場で取り消せる手がかり
+      if (c.deletable && c.deleteLabel) {
+        const deleted = this.day!.flags.has(`deleted:${c.id}`);
+        return h(
+          'div',
+          { class: `sns-post mine${deleted ? ' deleted' : ''}` },
+          h('p', { class: 'desc' }, deleted ? (c.deletedText ?? c.text) : c.text),
+          deleted
+            ? null
+            : h('button', { class: 'btn small danger', onclick: () => this.act({ type: 'deletePost', clue: c.id! }, 'se_send') }, `${c.deleteLabel}（${COST.deletePost}分）`),
+        );
+      }
+      return [this.illust(c.image, 'clue-img'), h('p', { class: 'desc' }, c.text)];
+    });
   }
 
   private itemRow(item: ItemDef, sub: string, action: Child): HTMLElement {
