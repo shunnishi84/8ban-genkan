@@ -161,7 +161,7 @@ cd android && ./gradlew assembleDebug   # → android/app/build/outputs/apk/debu
 | gravure_page.jpg | 写真集を拾ったときに開く付箋のページ（Gemini で生成） | ✅ |
 | item_saru_recipe.png | メシマズの日の「火に油」アイテム、料理本のアイコン（Gemini で生成） | ✅ |
 | prank_police.jpg / prank_mummy.jpg / prank_tears.jpg | 酔った勢いの悪ふざけの結末（Gemini で生成） | ✅ |
-| wife_drunk_karami.jpg / wife_drunk_amae.jpg / wife_drunk_sleep.jpg / drunk_party.jpg | 妻が酔っている日（からみ酒・甘え上戸・寝落ち・夫婦で宴会）。未配置なら既存画像で代用 | ⬜ |
+| wife_drunk_karami.jpg / wife_drunk_amae.jpg / wife_drunk_sleep.jpg / drunk_party.jpg | 妻が酔っている日（からみ酒・甘え上戸・寝落ち・夫婦で宴会。Gemini で生成） | ✅ |
 | castle_gate.png | 魔王城フィナーレで玄関ドアに重ねる門（Gemini で生成） | ✅ |
 | bg_court.jpg / bg_siege.jpg / bg_exposed.jpg | 家庭裁判（法廷全体）・家族会議・公開処刑のフィナーレ背景（Gemini で生成） | ✅ |
 | bg_court_judge / defense / prosecutor / witness .jpg | 家庭裁判のカメラ切り替え（Gemini で生成。無ければ bg_court で代用） | ✅ |

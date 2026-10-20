@@ -203,8 +203,9 @@ export class Game {
 
   private go(screen: Screen) {
     if (screen.name !== this.screen.name) this.toastLayer.replaceChildren();
-    // ドアを開けた瞬間（帰宅・怒り・魔王・法廷など）に、酔いは一気にさめる
-    const sobered = this.screen.name === 'play' && screen.name !== 'play' && !!this.day && drunkLevel(this.day) > 0;
+    // ドアを開けた瞬間（帰宅・怒り・魔王・法廷など）に、酔いは一気にさめる。夫婦で宴会のときだけは飲み続ける
+    const partying = screen.name === 'talk' && screen.image === 'drunk_party';
+    const sobered = this.screen.name === 'play' && screen.name !== 'play' && !partying && !!this.day && drunkLevel(this.day) > 0;
     this.screen = screen;
     this.modal = null;
     this.render();
