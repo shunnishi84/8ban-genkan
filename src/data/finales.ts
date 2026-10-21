@@ -79,8 +79,10 @@ export interface FinaleChoice {
   replies: FinaleLine[][];
   /** true ならこの選択で次へ進む。false なら返答のあと（相手の反撃を挟んで）同じ選択肢に戻る */
   end?: boolean;
-  /** この持ち物を持っているときだけ出る選択肢。選ぶと1つ使ってなくなる */
+  /** 「どうぐ」の中に出る選択肢。この持ち物を持っているときだけ出て、選ぶと1つ使ってなくなる */
   item?: string;
+  /** 「どうぐ」。item 付きの選択肢を持っていれば、その一覧（＋いつもの返し）を開く */
+  tools?: boolean;
   /** 相手の反撃の代わりに、このダメージを一発で受ける（清酒で暴言を吐いて逆鱗に触れる等） */
   selfDamage?: number;
   /** 相手が酔っぱらって凶暴化する。以後の反撃は drunkCounters になる */
@@ -203,6 +205,7 @@ export const FINALES: Record<FinaleId, Finale> = {
         },
         {
           label: 'どうぐ',
+          tools: true,
           replies: [
             [{ who: 'narr', text: 'スイーツは　すべて　まおうに　たべられている！' }],
             [{ who: 'narr', text: 'あなたは　スマホを　とりだした。……われていた。' }],
@@ -211,7 +214,7 @@ export const FINALES: Record<FinaleId, Finale> = {
             [{ who: 'narr', text: 'あなたは　コンビニの　レシートを　みせた。まおうは　かけいぼに　きにゅうした。' }],
           ],
         },
-        // 持っているお酒は、魔王の前で使える（どれもろくなことにならない）
+        // 持っているお酒は「どうぐ」から使える（どれもろくなことにならない）
         {
           label: 'かんビール',
           item: 'beer',

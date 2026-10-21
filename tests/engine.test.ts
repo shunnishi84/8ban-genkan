@@ -822,7 +822,8 @@ describe('暴言のランダム選択', () => {
 
 describe('魔王城でお酒を使う', () => {
   const opt = (label: string) => FINALES.castle.choice!.options.find((o) => o.label === label)!;
-  it('缶ビール・カップ清酒・スピリタスは、持っているときだけ出る選択肢', () => {
+  it('缶ビール・カップ清酒・スピリタスは「どうぐ」の中にある、持っているときだけ出る選択肢', () => {
+    expect(opt('どうぐ').tools).toBe(true);
     for (const [label, item] of [['かんビール', 'beer'], ['カップざけ', 'cup_sake'], ['スピリタス', 'spirytus']]) {
       expect(opt(label).item).toBe(item);
       expect(ITEM_MAP[item]).toBeDefined();

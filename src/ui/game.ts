@@ -412,7 +412,8 @@ export class Game {
     let last: FinaleCounter | undefined;
     // スピリタスを飲ませてしまうと、魔王が酔っぱらって凶暴化する
     let drunkDemon = false;
-    const choice = () => {
+    // tools: 「どうぐ」を選んで、お酒を持っていたときの持ち物メニュー
+    const choice = (tools = false) => {
       if (!f.choice) return outro();
       const c = f.choice;
       const court = c.style === 'court';
@@ -420,15 +421,23 @@ export class Game {
       const gauge = (now: number, lost?: number): Gauge | undefined =>
         court && c.hp ? { label: c.gauge ?? 'こころのHP', now: Math.max(0, now), max: c.hp, lost } : undefined;
       const text = !court && c.hp ? `\n【あなたの ${c.gauge ?? 'こころのHP'}: ${Math.max(0, hp)} / ${c.hp}】` : '';
-      // お酒の選択肢は、持っているときだけ出る
+      // お酒は「どうぐ」の中。持っているものだけ出る
       const inventory = this.day!.inventory;
+      const toolsOption = c.options.find((o) => o.tools);
+      const held = c.options.filter((o) => o.item && inventory.includes(o.item));
+      const back: FinaleChoice = { label: 'もどる', replies: [] };
+      const options = tools && toolsOption
+        ? [...held, { label: 'ポケットを さぐる', replies: toolsOption.replies }, back]
+        : c.options.filter((o) => !o.item);
       this.go({
         name: 'choice',
-        prompt: c.prompt + text,
-        options: c.options.filter((o) => !o.item || inventory.includes(o.item)),
+        prompt: (tools ? 'どの　どうぐを　つかう？' : c.prompt) + text,
+        options,
         court,
         gauge: gauge(hp),
         onPick: (o) => {
+          if (o === back) return choice();
+          if (o.tools && held.length) return choice(true);
           const before = hp;
           let lines = this.expand(pick(Math.random, o.replies)).map((l) => ({ ...l, gauge: gauge(before) }));
           let next = () => (o.end ? outro() : choice());
