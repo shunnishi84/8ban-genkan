@@ -257,6 +257,8 @@ export const CHAT_TEMPLATES: ChatTemplate[] = [
     text: 'お詫びに料理本買ったよ！『サルでも出来る簡単レシピ』。これで一緒に練習しよう',
     onlyWith: 'sns_meshi',
     requires: 'bought:saru_recipe',
+    // 地雷だが、見た目は普通の定型文として並ぶ
+    disguised: true,
     replyRelevant: '…………サル。',
     replyIrrelevant: '…………サル。',
     provokeLines: [

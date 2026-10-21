@@ -658,6 +658,19 @@ export const SCENARIOS: Scenario[] = [
       love: ['マズい飯を作る嫁を？', '「唯一の楽しみ」はどうしたの？'],
     },
     conflictsWith: ['sns_kowai', 'sns_meiru'],
+    // 料理本『サルでも出来る簡単レシピ』を持ったまま帰ると、それだけで怒られる
+    carryAnger: [
+      {
+        item: 'saru_recipe',
+        title: 'サルでも出来るレシピ',
+        angerLines: [
+          '……その本、なに？',
+          '『サルでも出来る簡単レシピ』。',
+          '誰がサルだ。',
+          'トレンド入りした夜に、これを買ってくる神経がわからない。……明日からあなたがサルの飯を作りなさい。',
+        ],
+      },
+    ],
     causes: [
       {
         id: 'sns_meshi',

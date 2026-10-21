@@ -560,7 +560,8 @@ const act = (state: DayState, action: Action): ActionResult => {
         if (caught.length > 0) return result(true, [], 0, { kind: 'angry', causes: caught, morning: true });
         return result(true, [], 0, { kind: 'home', lines: [], special: 'reset' });
       }
-      const angry = [...(state.flags.has('pantsless') ? [PANTSLESS] : state.flags.has('undressed') ? [UNDRESSED] : []), ...unresolvedCauses(state), ...provokeCauses(state)];
+      // 帰宅した瞬間に目に入る・耳に入るもの（格好・余計なひと言・持ち物）から先に怒られる
+      const angry = [...(state.flags.has('pantsless') ? [PANTSLESS] : state.flags.has('undressed') ? [UNDRESSED] : []), ...provokeCauses(state), ...carriedCauses(state), ...unresolvedCauses(state)];
       const special = state.wifeDrunk ? ('drunk' as const) : undefined;
       // 甘え上戸の妻は、おねだりを聞いてもらえたら火種を1つだけ見逃してくれる
       const amae = state.causes.find((c) => c.id === 'wife_drunk_amae');
@@ -680,6 +681,13 @@ const provokeCauses = (state: DayState): Cause[] =>
   CHAT_TEMPLATES.filter((t) => t.provokeLines && state.flags.has(`provoked:${t.id}`)).map((t) =>
     angerCause(`provoke:${t.id}`, '火に油', t.provokeLines!),
   );
+
+/** 持って帰ると怒られる物（メシマズの日の料理本など）を持ったまま帰った */
+const carriedCauses = (state: DayState): Cause[] =>
+  state.scenarioIds
+    .flatMap((id) => SCENARIO_MAP[id]?.carryAnger ?? [])
+    .filter((c) => state.inventory.includes(c.item))
+    .map((c) => angerCause(`carry:${c.item}`, c.title, c.angerLines));
 
 /** 暴言を4種すべて送ったら、その日のフィナーレを決めて仕掛けを発動する */
 const triggerFinale = (state: DayState): Finale | null => {

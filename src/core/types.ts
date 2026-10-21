@@ -117,6 +117,8 @@ export interface Scenario {
    * 異変なしの日は常にこれを使う。
    */
   chatReplies?: Record<string, string[]>;
+  /** この持ち物を持ったまま帰ると、それ自体が新しい火種になる（メシマズの日の料理本など） */
+  carryAnger?: { item: string; title: string; angerLines: string[] }[];
 }
 
 type ShopKind = 'konbini' | 'mail';
@@ -183,6 +185,8 @@ export interface ChatTemplate {
    * 帰宅した瞬間に怒りシーン。妻のセリフ
    */
   provokeLines?: string[];
+  /** 余計なひと言だが、見た目は普通の定型文（普通の枠に並べる罠） */
+  disguised?: boolean;
   /** 酔った勢いの悪ふざけ（妻を心配させる嘘）。「余計なひと言」とは別の枠に出る */
   prank?: boolean;
   /** 悪ふざけを送っていた日の結末（火種に関係なく、ドアを開けるとこうなる） */

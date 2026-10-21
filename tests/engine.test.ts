@@ -203,11 +203,44 @@ describe('新しい仕掛け', () => {
     s.location = 'door';
     const o = perform(s, { type: 'openDoor' }).outcome;
     expect(o.kind).toBe('angry');
-    if (o.kind === 'angry') expect(o.causes.map((c) => c.title)).toEqual(['火に油']);
+    // 本も持ったままなので「誰がサルだ」も重なる
+    if (o.kind === 'angry') expect(o.causes.map((c) => c.title)).toEqual(['火に油', 'サルでも出来るレシピ']);
     const other = day(['ring_off']);
     other.location = 'konbini';
     perform(other, { type: 'buy', item: 'saru_recipe' });
     expect(perform(other, { type: 'sendChat', template: 'meshi_recipe' }).ok).toBe(false);
+  });
+
+  it('メシマズの日に料理本を持って帰ると「誰がサルだ」。捨ててから帰れば大丈夫。ほかの日は何も言われない', () => {
+    const carry = day(['sns_meshi'], hm(23, 0));
+    for (const a of solve(carry)!) if (a.type !== 'openDoor') perform(carry, a);
+    carry.location = 'konbini';
+    perform(carry, { type: 'buy', item: 'saru_recipe' });
+    carry.location = 'door';
+    const o = perform(carry, { type: 'openDoor' }).outcome;
+    expect(o).toMatchObject({ kind: 'angry', causes: [{ id: 'carry:saru_recipe' }] });
+    if (o.kind === 'angry') expect(o.causes[0].angerLines).toContain('誰がサルだ。');
+
+    const thrown = day(['sns_meshi'], hm(23, 0));
+    for (const a of solve(thrown)!) if (a.type !== 'openDoor') perform(thrown, a);
+    thrown.location = 'konbini';
+    perform(thrown, { type: 'buy', item: 'saru_recipe' });
+    thrown.location = 'trash';
+    perform(thrown, { type: 'discard', item: 'saru_recipe' });
+    thrown.location = 'door';
+    expect(perform(thrown, { type: 'openDoor' }).outcome.kind).toBe('home');
+
+    const other = day(['ring_off']);
+    for (const a of solve(other)!) if (a.type !== 'openDoor') perform(other, a);
+    other.location = 'konbini';
+    perform(other, { type: 'buy', item: 'saru_recipe' });
+    other.location = 'door';
+    expect(perform(other, { type: 'openDoor' }).outcome.kind).toBe('home');
+  });
+
+  it('料理本のメッセージは、余計なひと言なのに普通の定型文の顔をしている', () => {
+    expect(CHAT_MAP.meshi_recipe.provokeLines?.length).toBeGreaterThan(0);
+    expect(CHAT_MAP.meshi_recipe.disguised).toBe(true);
   });
 
   it('写真集の日だけ最低の言い訳が送れて、送ると火に油', () => {
