@@ -410,6 +410,8 @@ export class Game {
     const outro = () => this.finaleOutro(f);
     let hp = f.choice?.hp ?? 0;
     let last: FinaleCounter | undefined;
+    // スピリタスを飲ませてしまうと、魔王が酔っぱらって凶暴化する
+    let drunkDemon = false;
     const choice = () => {
       if (!f.choice) return outro();
       const c = f.choice;
@@ -418,19 +420,32 @@ export class Game {
       const gauge = (now: number, lost?: number): Gauge | undefined =>
         court && c.hp ? { label: c.gauge ?? 'こころのHP', now: Math.max(0, now), max: c.hp, lost } : undefined;
       const text = !court && c.hp ? `\n【あなたの ${c.gauge ?? 'こころのHP'}: ${Math.max(0, hp)} / ${c.hp}】` : '';
+      // お酒の選択肢は、持っているときだけ出る
+      const inventory = this.day!.inventory;
       this.go({
         name: 'choice',
         prompt: c.prompt + text,
-        options: c.options,
+        options: c.options.filter((o) => !o.item || inventory.includes(o.item)),
         court,
         gauge: gauge(hp),
         onPick: (o) => {
           const before = hp;
           let lines = this.expand(pick(Math.random, o.replies)).map((l) => ({ ...l, gauge: gauge(before) }));
           let next = () => (o.end ? outro() : choice());
-          if (!o.end && c.counters?.length) {
+          if (o.item) inventory.splice(inventory.indexOf(o.item), 1);
+          if (o.enrage) drunkDemon = true;
+          const counters = drunkDemon && c.drunkCounters?.length ? c.drunkCounters : c.counters;
+          if (o.selfDamage) {
+            // 反撃の代わりに、一発で大ダメージ
+            hp -= o.selfDamage;
+            lines = lines.map((l, i, all) => (i === all.length - 1 ? { ...l, gauge: gauge(hp, o.selfDamage) } : l));
+            if (hp <= 0) {
+              lines = lines.concat(this.expand(c.knockout ?? []).map((l) => ({ ...l, gauge: gauge(hp) })));
+              next = () => outro();
+            }
+          } else if (!o.end && counters?.length) {
             // 相手の反撃。1ターンごとに必ず返ってくる
-            const counter = pick(Math.random, c.counters.length > 1 ? c.counters.filter((x) => x !== last) : c.counters);
+            const counter = pick(Math.random, counters.length > 1 ? counters.filter((x) => x !== last) : counters);
             last = counter;
             hp -= counter.damage;
             // ゲージは penalty の行で削れる（無ければ最初の行で）

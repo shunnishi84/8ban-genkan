@@ -7,6 +7,7 @@ import { SCENARIO_MAP } from '../src/data/scenarios';
 import { CHAT_MAP, CHAT_TEMPLATES, COLD_REPLIES } from '../src/data/chat';
 import { FINALES, FINALE_IDS, type FinaleId } from '../src/data/finales';
 import { POSTS, POST_MAP } from '../src/data/posts';
+import { ITEM_MAP } from '../src/data/items';
 
 // 暴言は毎日ランダムに4つ選ばれるが、テストでは定番の4つに固定する（ランダム選択そのものは別にテスト）
 const CLASSIC_INSULTS = ['insult_oni', 'insult_komakai', 'insult_kaachan', 'insult_gunsou'];
@@ -816,6 +817,29 @@ describe('暴言のランダム選択', () => {
       expect(t.drunkText, t.id).toHaveLength(3);
       expect(t.demonLines?.length, t.id).toBeGreaterThan(1);
     }
+  });
+});
+
+describe('魔王城でお酒を使う', () => {
+  const opt = (label: string) => FINALES.castle.choice!.options.find((o) => o.label === label)!;
+  it('缶ビール・カップ清酒・スピリタスは、持っているときだけ出る選択肢', () => {
+    for (const [label, item] of [['かんビール', 'beer'], ['カップざけ', 'cup_sake'], ['スピリタス', 'spirytus']]) {
+      expect(opt(label).item).toBe(item);
+      expect(ITEM_MAP[item]).toBeDefined();
+    }
+  });
+  it('カップ清酒は暴言5種のどれかを吐いて、一発でこころのHPが尽きる', () => {
+    const sake = opt('カップざけ');
+    expect(sake.replies).toHaveLength(5);
+    expect(sake.selfDamage!).toBeGreaterThanOrEqual(FINALES.castle.choice!.hp!);
+    expect(sake.selfDamage!).toBeGreaterThanOrEqual(FINALES.castle.finalForm!.hp);
+  });
+  it('スピリタスは魔王を酔わせて、反撃が強くなる', () => {
+    expect(opt('スピリタス').enrage).toBe(true);
+    const max = (cs: { damage: number }[]) => Math.max(...cs.map((c) => c.damage));
+    const avg = (cs: { damage: number }[]) => cs.reduce((a, c) => a + c.damage, 0) / cs.length;
+    expect(avg(FINALES.castle.choice!.drunkCounters!)).toBeGreaterThan(avg(FINALES.castle.choice!.counters!));
+    expect(max(FINALES.castle.choice!.drunkCounters!)).toBeGreaterThan(0);
   });
 });
 

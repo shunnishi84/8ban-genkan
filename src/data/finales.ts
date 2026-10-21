@@ -79,6 +79,12 @@ export interface FinaleChoice {
   replies: FinaleLine[][];
   /** true ならこの選択で次へ進む。false なら返答のあと（相手の反撃を挟んで）同じ選択肢に戻る */
   end?: boolean;
+  /** この持ち物を持っているときだけ出る選択肢。選ぶと1つ使ってなくなる */
+  item?: string;
+  /** 相手の反撃の代わりに、このダメージを一発で受ける（清酒で暴言を吐いて逆鱗に触れる等） */
+  selfDamage?: number;
+  /** 相手が酔っぱらって凶暴化する。以後の反撃は drunkCounters になる */
+  enrage?: boolean;
 }
 
 /** 毎ターンの相手の反撃。damage だけ「こころのHP」が減る */
@@ -128,6 +134,8 @@ export interface Finale {
     options: FinaleChoice[];
     /** 選ぶたびに相手が反撃してくる（ランダム）。無ければ反撃なし */
     counters?: FinaleCounter[];
+    /** 相手が酔っぱらって凶暴化したあと（enrage）の反撃 */
+    drunkCounters?: FinaleCounter[];
     /** こころのHP。反撃で 0 になったら knockout を見せて先へ進む */
     hp?: number;
     knockout?: FinaleLine[];
@@ -203,6 +211,81 @@ export const FINALES: Record<FinaleId, Finale> = {
             [{ who: 'narr', text: 'あなたは　コンビニの　レシートを　みせた。まおうは　かけいぼに　きにゅうした。' }],
           ],
         },
+        // 持っているお酒は、魔王の前で使える（どれもろくなことにならない）
+        {
+          label: 'かんビール',
+          item: 'beer',
+          replies: [
+            [
+              { who: 'narr', text: 'あなたは　かんビールを　とりだした！' },
+              { who: 'narr', text: 'まおうは　すばやく　かんビールを　うばいとった！' },
+              { who: 'wife', text: '没収。' },
+            ],
+            [
+              { who: 'narr', text: 'プシュッ……と　あけた　しゅんかん、まおうの　てが　のびた！' },
+              { who: 'wife', text: 'これ、レシートと一緒に家計簿に貼っておくから。' },
+            ],
+            [
+              { who: 'narr', text: 'あなたは　かんビールを　くちに　はこんだ。' },
+              { who: 'narr', text: '……が、まおうに　うばわれ　ひといきで　のみほされた！' },
+              { who: 'wife', text: '……ぬるい。' },
+            ],
+          ],
+        },
+        {
+          label: 'カップざけ',
+          item: 'cup_sake',
+          selfDamage: 200,
+          // 5種の暴言のどれか。言ったあとは必ず逆鱗に触れる
+          replies: ([
+            [
+              { who: 'narr', text: 'あなたは　カップざけを　いっきのみした！　きが　おおきく　なった！' },
+              { who: 'me', text: 'うるせぇ！ このオニババ！ ツノ生えてんぞ！' },
+            ],
+            [
+              { who: 'narr', text: 'あなたは　カップざけを　いっきのみした！　きが　おおきく　なった！' },
+              { who: 'me', text: 'てめぇの料理より、コンビニ弁当のほうがうめぇんだよ！' },
+            ],
+            [
+              { who: 'narr', text: 'あなたは　カップざけを　いっきのみした！　きが　おおきく　なった！' },
+              { who: 'me', text: 'お前のいびき、工事現場よりうるせぇんだよ！' },
+            ],
+            [
+              { who: 'narr', text: 'あなたは　カップざけを　いっきのみした！　きが　おおきく　なった！' },
+              { who: 'me', text: '家計簿つけてるヒマがあったら、笑顔の練習でもしてろ！' },
+            ],
+            [
+              { who: 'narr', text: 'あなたは　カップざけを　いっきのみした！　きが　おおきく　なった！' },
+              { who: 'me', text: 'お義母さんにそっくりなんだよ！ 顔も性格も！' },
+            ],
+          ] as FinaleLine[][]).map((lines) => [
+            ...lines,
+            { who: 'narr' as const, text: 'まおうの　げきりんに　ふれた！' },
+            { who: 'wife' as const, text: '……もう一回、言ってごらん？' },
+            { who: 'narr' as const, text: 'まおうの　いかりの　いちげき！　200の　ダメージ！' },
+          ]),
+        },
+        {
+          label: 'スピリタス',
+          item: 'spirytus',
+          enrage: true,
+          replies: [
+            [
+              { who: 'narr', text: 'あなたは　スピリタスを　とりだした！' },
+              { who: 'narr', text: '……てが　すべった！　スピリタスは　まおうの　くちへ　ちょくげきした！' },
+              { who: 'narr', text: 'まおうは　スピリタスを　のみほした……。' },
+              { who: 'wife', text: 'ひっく。……なによこれ、96度？' },
+              { who: 'narr', text: 'まおうは　よっぱらって　さらに　きょうぼうに　なった！！' },
+            ],
+            [
+              { who: 'narr', text: 'あなたは　スピリタスを　かかげた！' },
+              { who: 'narr', text: '……びんが　すべって　まおうの　てのなかへ！' },
+              { who: 'wife', text: '……くれるの？ ありがと。（ごくごくごく）' },
+              { who: 'wife', text: 'ひっく。……あははは！ なんだか、なんでも壊せそう！' },
+              { who: 'narr', text: 'まおうは　よっぱらって　さらに　きょうぼうに　なった！！' },
+            ],
+          ],
+        },
         {
           label: 'どげざ',
           end: true,
@@ -227,6 +310,25 @@ export const FINALES: Record<FinaleId, Finale> = {
         { damage: 35, lines: [{ who: 'narr', text: 'まおうは　ぼうげんの　スクショを　4まい　ならべた！　35の　ダメージ！' }] },
         { damage: 40, lines: [{ who: 'narr', text: 'まおうは　だまって　ほほえんだ。……いちばん　こわい！　40の　ダメージ！' }] },
         { damage: 20, lines: [{ who: 'wife', text: 'お義母さんに電話しようかしら。' }, { who: 'narr', text: 'まおうは　スマホを　ちらつかせた！　20の　ダメージ！' }] },
+      ],
+      drunkCounters: [
+        {
+          damage: 50,
+          lines: [
+            { who: 'narr', text: 'よっぱらった　まおうの　からみざけ！' },
+            { who: 'wife', text: 'あたしと しごと、どっちが だいじなのよぉ〜！？' },
+            { who: 'narr', text: '50の　ダメージ！' },
+          ],
+        },
+        { damage: 45, lines: [{ who: 'narr', text: 'まおうは　「ひっく」と　しゃっくりを　した！　くうきが　ふるえた！　45の　ダメージ！' }] },
+        {
+          damage: 60,
+          lines: [
+            { who: 'wife', text: 'だいたいねぇ、結婚式のスピーチから気に入らなかったのよぉ！' },
+            { who: 'narr', text: '7ねんぶんの　せっきょうが　はじまった！　60の　ダメージ！' },
+          ],
+        },
+        { damage: 55, lines: [{ who: 'narr', text: 'まおうは　あなたの　ネクタイを　つかんで　ゆさぶった！　55の　ダメージ！' }] },
       ],
       knockout: [
         { who: 'narr', text: 'あなたの　こころは　おれた……。' },
