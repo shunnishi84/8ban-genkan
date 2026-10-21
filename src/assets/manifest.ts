@@ -16,8 +16,8 @@ export interface ImageEntry {
 }
 
 export const IMAGES = {
-  // --- 玄関前（bg_door は 224x367 の一枚絵。各パーツの当たり判定は renderer.ts の SPOT_RECTS） ---
-  bg_door: { file: 'bg_door.png', label: 'マンション廊下（夜）', color: '#2a2f3a' },
+  // --- 玄関前（bg_door は縦横比 224:367 の一枚絵。各パーツの当たり判定は renderer.ts の SPOT_RECTS） ---
+  bg_door: { file: 'bg_door.jpg', label: 'マンション廊下（夜）', color: '#2a2f3a' },
   bg_door_dark: { file: 'bg_door_dark.png', label: '玄関前（消灯）', color: '#161a22', fit: 'cover' },
   // 個別パーツ。bg_door が一枚絵として読めているときは、ファイルがあれば上に重ねるだけ（無ければ描かない）
   door: { file: 'door.png', label: 'ドア', color: '#6b4a32' },

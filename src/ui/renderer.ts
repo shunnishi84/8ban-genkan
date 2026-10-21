@@ -16,8 +16,8 @@ interface Rect {
 }
 
 /**
- * 玄関前は bg_door（224x367 の一枚絵）を横幅いっぱいに上詰めで描く。
- * 当たり判定とオーバーレイは、その絵のピクセル座標で書いて論理座標に変換する。
+ * 玄関前は bg_door（縦横比 224:367 の一枚絵。今の絵は 1080x1770）を横幅いっぱいに上詰めで描く。
+ * 当たり判定とオーバーレイは、幅 224 に縮めたときのピクセル座標で書いて論理座標に変換する。
  */
 const ART_W = 224;
 const ART_H = 367;
@@ -29,20 +29,22 @@ const DOOR_BG_RECT = art(0, 0, ART_W, ART_H);
 const SPOT_RECTS: Record<SpotId, Rect> = {
   hallway: art(0, 40, 58, 290),
   door: art(63, 95, 107, 205),
-  window: art(176, 93, 43, 93),
+  window: art(179, 98, 45, 87),
   nameplate: art(23, 124, 38, 25),
   floor: art(50, 303, 132, 32),
 };
 
-/** 窓枠ごと差し替える絵（window_*）の位置。窓のタップ範囲より 1px 右が絵とぴったり合う */
-const WINDOW_OVERLAY = art(177, 93, 43, 93);
+/**
+ * 窓の中身を差し替える絵（window_*）。どれも旧い bg_door の窓枠ごと描かれているので、
+ * 絵のガラス部分（WINDOW_ART_GLASS、絵に対する割合）だけを切り出して、今の bg_door のガラス（WINDOW_GLASS）に
+ * 縦横比を保って敷き詰める（はみ出しは切る）。枠は bg_door のものがそのまま見える
+ */
+const WINDOW_GLASS = art(186, 107, 36, 67);
+const WINDOW_ART_GLASS = { x: 7 / 43, y: 12 / 93, w: 33 / 43, h: 72 / 93 };
+const WINDOW_OVERLAYS = new Set(['window_garland', 'window_candle', 'window_dark', 'window_tv']);
 
-/** オーバーレイの描画位置 */
+/** オーバーレイの描画位置（窓の絵は WINDOW_GLASS） */
 const OVERLAY_RECTS: Record<string, Rect> = {
-  window_garland: WINDOW_OVERLAY,
-  window_candle: WINDOW_OVERLAY,
-  window_dark: WINDOW_OVERLAY,
-  window_tv: WINDOW_OVERLAY,
   garbage_bag: art(2, 270, 40, 48),
   wet_floor: art(48, 316, 136, 23),
   castle_gate: art(52, 80, 130, 228),
@@ -187,6 +189,7 @@ export class Renderer {
       if (!composite || this.images.get(spot)) this.drawImage(spot, SPOT_RECTS[spot]);
     }
     for (const v of visuals) {
+      if (WINDOW_OVERLAYS.has(v)) this.drawWindowGlass(v as ImageKey);
       const rect = OVERLAY_RECTS[v];
       if (rect && v in IMAGES) this.drawImage(v as ImageKey, rect);
     }
@@ -375,6 +378,22 @@ export class Renderer {
     if (level >= 8 && Math.sin(t * 9) > 0.6) {
       this.fillAll('rgba(255,0,30,0.12)');
     }
+  }
+
+  /** 窓の絵のガラス部分だけを、今の窓のガラスに敷き詰める */
+  private drawWindowGlass(key: ImageKey) {
+    const img = this.images.get(key);
+    if (!img) return;
+    const r = WINDOW_GLASS;
+    const g = WINDOW_ART_GLASS;
+    const gw = img.naturalWidth * g.w;
+    const gh = img.naturalHeight * g.h;
+    const scale = Math.max(r.w / gw, r.h / gh);
+    const sw = r.w / scale;
+    const sh = r.h / scale;
+    const sx = img.naturalWidth * g.x + (gw - sw) / 2;
+    const sy = img.naturalHeight * g.y + (gh - sh) / 2;
+    this.ctx.drawImage(img, sx, sy, sw, sh, r.x, r.y, r.w, r.h);
   }
 
   /** 画像があれば描き、無ければ「仮の四角＋ラベル」 */

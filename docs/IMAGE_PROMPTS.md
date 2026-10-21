@@ -17,7 +17,7 @@ consistent with a mobile casual game, no text, no letters, no watermark
 * 背景は **縦 9:16**（例: 1080×1920）。少しはみ出しても中央基準で切り取って表示される
 * アイテム・オーバーレイは **透過 PNG**。透過が出せない場合は「plain white background」で生成すれば、こちらで抜き処理できる
 * PNG 以外（JPG など）で置くときは、`src/assets/manifest.ts` の `file` の拡張子も合わせる
-* できれば既存の `bg_door.png` を参照画像（image-to-image / スタイル参照）に指定すると絵柄が揃う
+* できれば既存の `bg_door.jpg` を参照画像（image-to-image / スタイル参照）に指定すると絵柄が揃う
 
 ---
 
@@ -68,7 +68,7 @@ celebratory feeling
 ## 2. 玄関前のオーバーレイ（透過 PNG）
 
 窓の上に重ねる画像は、**窓枠ごと**描く（既存の `window_garland.png` と同じ作り）。
-縦横比は **約 1:2.2（例: 430×930）**。`bg_door.png` の右側の窓と同じ枠になるよう、参照画像に指定するのが確実。
+縦横比は **約 1:2.2（例: 430×930）**。`bg_door.jpg` の右側の窓と同じ枠になるよう、参照画像に指定するのが確実。
 
 | ファイル | 用途 | 縦横比 |
 |---|---|---|
@@ -221,9 +221,9 @@ No blood, no gore, no weapons, no text, no letters, no watermark.
 ## 6. Gemini で残りをまとめて作る（貼るだけ版）
 
 Gemini は透過 PNG を出せないことが多いので、背景は**白**で作って、こちらで抜く。
-窓の絵は `bg_door.png` と `window_garland.png` を、取材画面は `hero.png` を添付して使う。
+窓の絵は `bg_door.jpg` と `window_garland.png` を、取材画面は `hero.png` を添付して使う。
 
-### 6-1. window_candle.png（添付: bg_door.png, window_garland.png）
+### 6-1. window_candle.png（添付: bg_door.jpg, window_garland.png）
 ```
 The first attached image is a Japanese apartment entrance at night. The second attached image
 shows how the narrow window on the right side of the door was redrawn on its own, with
@@ -236,7 +236,7 @@ Japanese manga-style digital illustration, clean bold black outlines, flat cel s
 same art style as the references. No text, no letters, no watermark.
 ```
 
-### 6-2. window_tv.png（添付: bg_door.png, window_garland.png）
+### 6-2. window_tv.png（添付: bg_door.jpg, window_garland.png）
 ```
 The first attached image is a Japanese apartment entrance at night. The second attached image
 shows how the narrow window on the right side of the door was redrawn on its own. Make another
@@ -320,16 +320,16 @@ clean bold black outlines, flat cel shading. No readable text, no watermark.
 
 | ファイル | 用途 | 添付する見本 |
 |---|---|---|
-| `castle_gate.png` | 魔王城: 玄関ドアに重ねる魔王城の門 | `bg_door.png` |
+| `castle_gate.png` | 魔王城: 玄関ドアに重ねる魔王城の門 | `bg_door.jpg` |
 | `bg_court.jpg` | 家庭裁判の法廷 | `wife_suspicious.png` |
 | `bg_siege.jpg` | 包囲網: 玄関に集まった家族会議の面々 | `wife_suspicious.png` |
-| `bg_lockout.jpg` | 締め出し: 布団が出された玄関前 | `bg_door.png` |
+| `bg_lockout.jpg` | 締め出し: 布団が出された玄関前 | `bg_door.jpg` |
 | `bg_exposed.jpg` | 公開処刑: 全部の窓が開いたマンション | `wife_smile.png` |
 | `item_*.png` 8種 × 2枚 | 持ち物アイコン（シートで作ってこちらで切り出す） | なし |
 
 背景は縦 9:16。門とアイコンは白背景で作れば、こちらで抜く。
 
-### 7-1. castle_gate.png（添付: bg_door.png）
+### 7-1. castle_gate.png（添付: bg_door.jpg）
 ```
 The attached image is a Japanese apartment entrance at night. Redraw ONLY its front door
 (including the door frame), keeping the same straight-on angle and the same tall
@@ -368,7 +368,7 @@ Japanese manga-style digital illustration, clean bold black outlines, flat cel s
 No text, no letters, no watermark.
 ```
 
-### 7-4. bg_lockout.jpg（添付: bg_door.png）
+### 7-4. bg_lockout.jpg（添付: bg_door.jpg）
 ```
 Use the attached image as the reference for the location: the same Japanese apartment
 outdoor corridor and front door at night. Vertical 9:16. The door is shut. On the floor
@@ -982,12 +982,12 @@ cool gray colors. No text, no letters, no watermark.
 
 | ファイル | 場面 | 添付する見本 |
 |---|---|---|
-| `costume_dress.jpg` | 廊下の物干しに干された、ピンクのアイドル衣装（手がかり・横 4:3） | `bg_door.png`（絵柄合わせ） |
+| `costume_dress.jpg` | 廊下の物干しに干された、ピンクのアイドル衣装（手がかり・横 4:3） | `bg_door.jpg`（絵柄合わせ） |
 | `yokyou_photo.jpg` | 余興の練習写真（チャットで送る写真・横 4:3） | `hero.png` |
 | `twoshot_edited.jpg` | 加工アプリで女の子にされた同僚とのツーショット（通知・縦 3:4） | `hero.png` |
 | `twoshot_original.jpg` | 加工前のツーショット（チャットで送る写真・縦 3:4） | `hero.png` と、できた `twoshot_edited.jpg` |
 
-### 19-1. costume_dress.jpg（添付: bg_door.png）
+### 19-1. costume_dress.jpg（添付: bg_door.jpg）
 ```
 Use the attached image as the style reference. Horizontal 4:3. A narrow Japanese apartment
 hallway at night. On a small indoor drying rack hangs a frilly bright pink idol-style stage

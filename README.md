@@ -133,7 +133,7 @@ cd android && ./gradlew assembleDebug   # → android/app/build/outputs/apk/debu
 
 | ファイル | 用途 | 状態 |
 |---|---|---|
-| bg_door.png | 玄関前の一枚絵（224x367 基準。当たり判定は `renderer.ts` の `SPOT_RECTS`） | ✅ |
+| bg_door.jpg | 玄関前の一枚絵（224x367 基準。当たり判定は `renderer.ts` の `SPOT_RECTS`） | ✅ |
 | bg_door_dark.png | N日目の幕間 | ✅ |
 | bg_title.png | タイトル背景 | ✅ |
 | hero.png | 主人公（タイトル・幕間） | ✅ |
