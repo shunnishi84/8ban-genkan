@@ -280,6 +280,8 @@ const act = (state: DayState, action: Action): ActionResult => {
         state.flags.add(`provoked:${t.id}`);
         return replied(t.replyRelevant, '……妙に静かだ。', '言わなくていいことを言った気がする。');
       }
+      // 余計なひと言のあとでは、正しい定型文を送っても手遅れ
+      if (t.afterProvoked && state.flags.has(`provoked:${t.afterProvoked.by}`)) return replied(t.afterProvoked.reply, '……もう、手遅れらしい。');
       const relevant = isChatRelevant(state, t.id);
       // 関係ない定型文には、その日の状況に合わせた返事（無ければ定型文の既定の返事）
       const situational = relevant ? undefined : situationalReply(state, t.id);
@@ -679,7 +681,7 @@ const PANTSLESS_ARREST: Partial<Record<Location, ArrestId>> = { town: 'jail', be
 /** 余計なひと言を送っていたら、それ自体が新しい火種になる */
 const provokeCauses = (state: DayState): Cause[] =>
   CHAT_TEMPLATES.filter((t) => t.provokeLines && state.flags.has(`provoked:${t.id}`)).map((t) =>
-    angerCause(`provoke:${t.id}`, '火に油', t.provokeLines!),
+    angerCause(`provoke:${t.id}`, '火に油', t.provokeLinesIf && evaluate(t.provokeLinesIf.when, state.flags) ? t.provokeLinesIf.lines : t.provokeLines!),
   );
 
 /** 持って帰ると怒られる物（メシマズの日の料理本など）を持ったまま帰った */

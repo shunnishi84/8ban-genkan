@@ -187,6 +187,10 @@ export interface ChatTemplate {
   provokeLines?: string[];
   /** 余計なひと言だが、見た目は普通の定型文（普通の枠に並べる罠） */
   disguised?: boolean;
+  /** 条件を満たしているときは provokeLines の代わりにこちらで怒られる（温泉を予約済みなら温泉の話で返す等） */
+  provokeLinesIf?: { when: Requirement; lines: string[] };
+  /** この余計なひと言（by）を送ったあとに送ると、妻の返事がこれになる（もう手遅れ） */
+  afterProvoked?: { by: string; reply: string };
   /** 酔った勢いの悪ふざけ（妻を心配させる嘘）。「余計なひと言」とは別の枠に出る */
   prank?: boolean;
   /** 悪ふざけを送っていた日の結末（火種に関係なく、ドアを開けるとこうなる） */

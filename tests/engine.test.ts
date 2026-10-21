@@ -238,6 +238,25 @@ describe('新しい仕掛け', () => {
     expect(perform(other, { type: 'openDoor' }).outcome.kind).toBe('home');
   });
 
+  it('テレビで鬼の日に「そのまんまの意味だよ」を送ると、温泉を取っても手遅れ', () => {
+    const s = day(['tv_interview'], hm(23, 0));
+    expect(perform(s, { type: 'sendChat', template: 'tv_sonomama' }).ok).toBe(true);
+    for (const a of solve(s)!) if (a.type !== 'openDoor') perform(s, a);
+    expect(s.flags.has('ordered:onsen_ticket')).toBe(true);
+    expect(s.chatLog.at(-1)!.text).toContain('そのまんまの意味だよ」って言ったよね');
+    const o = perform(s, { type: 'openDoor' }).outcome;
+    expect(o).toMatchObject({ kind: 'angry', causes: [{ id: 'provoke:tv_sonomama' }] });
+    if (o.kind === 'angry') expect(o.causes[0].angerLines).toContain('鬼と一緒じゃ、気が休まらないでしょ。');
+
+    // 温泉を取っていなければ、金棒の方
+    const t = day(['tv_interview'], hm(23, 0));
+    perform(t, { type: 'sendChat', template: 'tv_sonomama' });
+    const o2 = perform(t, { type: 'openDoor' }).outcome;
+    if (o2.kind === 'angry') expect(o2.causes[0].angerLines).toContain('金棒、どこにしまったかしら。');
+    expect(CHAT_MAP.tv_sonomama.disguised).toBe(true);
+    expect(perform(day(['ring_off']), { type: 'sendChat', template: 'tv_sonomama' }).ok).toBe(false);
+  });
+
   it('料理本のメッセージは、余計なひと言なのに普通の定型文の顔をしている', () => {
     expect(CHAT_MAP.meshi_recipe.provokeLines?.length).toBeGreaterThan(0);
     expect(CHAT_MAP.meshi_recipe.disguised).toBe(true);

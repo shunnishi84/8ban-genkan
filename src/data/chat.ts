@@ -95,6 +95,21 @@ export const CHAT_TEMPLATES: ChatTemplate[] = [
     requires: 'ordered:onsen_ticket',
     replyRelevant: '……苦しい言い訳。でも温泉は行く',
     replyIrrelevant: 'テレビ？ 何に出たの？ 電話するね',
+    afterProvoked: { by: 'tv_sonomama', reply: '「鬼のように優しい」？ さっき「そのまんまの意味だよ」って言ったよね。' },
+  },
+  // テレビで「うちの嫁は鬼です」の日だけ出る、普通の顔をした最悪の返し。送ったら何をしても手遅れ
+  {
+    id: 'tv_sonomama',
+    text: 'そのまんまの意味だよ',
+    onlyWith: 'tv_interview',
+    disguised: true,
+    replyRelevant: '……そう。そのまんまの意味ね。',
+    replyIrrelevant: '……そう。そのまんまの意味ね。',
+    provokeLines: ['「そのまんまの意味」。', '……そう。じゃあ、そのまんまの鬼でお出迎えしてあげる。', '金棒、どこにしまったかしら。'],
+    provokeLinesIf: {
+      when: 'ordered:onsen_ticket',
+      lines: ['温泉？', '鬼と一緒じゃ、気が休まらないでしょ。', '「そのまんまの意味」なんだもんね。……温泉は、私ひとりで行ってくるから。'],
+    },
   },
   {
     id: 'kouhai_photo',
