@@ -34,7 +34,8 @@ import {
   unresolvedCauses,
   visibleClues,
 } from '../core/engine';
-import { loadBest, saveBest } from '../core/save';
+import { loadBest, loadSeen, saveBest, saveSeen } from '../core/save';
+import { COLLECTION, collectible, collectionCount, collectionRate } from '../core/collection';
 import { solve } from '../core/solver';
 import type { Action, AppId, Cause, ChatTemplate, Speaker, ItemDef, ClueLocation, DayState, Location, PrankEnding, RunState, SlotId, SpotId } from '../core/types';
 import { APP_BASE, APP_LABEL, CHAT_HISTORY, SLOT_BASE, SLOT_LABEL, SPOT_BASE, SPOT_LABEL } from '../data/base';
@@ -105,6 +106,7 @@ type TalkScreen = {
 
 type Screen =
   | { name: 'title' }
+  | { name: 'collection' }
   | { name: 'howto' }
   | { name: 'intro' }
   | { name: 'play' }
@@ -178,6 +180,8 @@ export class Game {
   /** 酔いの霧（画面全体に重ねる） */
   private fog: HTMLElement;
   private best = loadBest();
+  /** 遭遇した異変（異変コレクション） */
+  private seen = loadSeen();
   /** ?debug のときだけ URL のパラメータ（シナリオ・フィナーレ・時刻の固定）を読む */
   private debug = new URLSearchParams(location.search).has('debug') ? new URLSearchParams(location.search) : null;
 
@@ -229,6 +233,8 @@ export class Game {
     this.day = scenarios?.length
       ? buildDay(this.run.day, scenarios, startTimeFor(this.run.day, Math.random()), Math.random())
       : startDay(this.run, Math.random);
+    // デバッグで固定した日は数えない
+    if (!scenarios?.length) saveSeen(this.seen, collectible(this.day.scenarioIds));
     // ?debug&finale=court で、暴言4種コンプリート時のフィナーレを固定できる
     const finale = this.debug?.get('finale') as FinaleId | null | undefined;
     if (finale && FINALE_IDS.includes(finale)) this.day.seed = finaleSeed(finale);
@@ -593,6 +599,7 @@ export class Game {
         void NativeApp.exitApp();
         return;
       case 'howto':
+      case 'collection':
       case 'gameover':
       case 'clear':
         this.go({ name: 'title' });
@@ -728,6 +735,8 @@ export class Game {
         return this.viewTitle();
       case 'howto':
         return this.viewHowto();
+      case 'collection':
+        return this.viewCollection();
       case 'intro':
         return this.viewIntro();
       case 'play':
@@ -774,7 +783,45 @@ export class Game {
         h('p', { class: 'sub' }, '異変を見つけて、妻の怒りの火種をすべて消してからドアを開けろ。'),
         h('button', { class: 'btn primary', onclick: () => this.startRun() }, 'はじめる'),
         h('button', { class: 'btn', onclick: () => this.go({ name: 'howto' }) }, '遊び方'),
+        h('button', { class: 'btn', onclick: () => this.go({ name: 'collection' }) }, '異変コレクション'),
         h('p', { class: 'best' }, `最高連続帰宅: ${this.best} / ${GOAL_DAYS} 日`),
+        h('p', { class: 'best' }, `異変回収率: ${collectionRate(this.seen)}%`),
+      ),
+    ];
+  }
+
+  /** 異変コレクション: 遭遇した異変は名前、まだのものは「???????」 */
+  private viewCollection(): Child[] {
+    const { got, total } = collectionCount(this.seen);
+    let no = 0;
+    return [
+      h(
+        'div',
+        { class: 'center-card collection' },
+        h('h2', {}, '異変コレクション'),
+        h('p', { class: 'best' }, `回収率 ${collectionRate(this.seen)}%（${got} / ${total}）`),
+        h(
+          'div',
+          { class: 'collection-list' },
+          COLLECTION.map((g) => [
+            h('h3', {}, g.label),
+            h(
+              'ol',
+              {},
+              g.scenarios.map((s) => {
+                no += 1;
+                const seen = this.seen.has(s.id);
+                return h(
+                  'li',
+                  { class: seen ? 'seen' : 'unseen' },
+                  h('span', { class: 'no' }, `No.${String(no).padStart(2, '0')}`),
+                  seen ? s.title : '???????',
+                );
+              }),
+            ),
+          ]),
+        ),
+        h('button', { class: 'btn primary', onclick: () => this.go({ name: 'title' }) }, '戻る'),
       ),
     ];
   }

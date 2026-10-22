@@ -239,6 +239,48 @@ button:disabled {
 .howto li {
   margin-bottom: 0.4em;
 }
+.collection {
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100% - 32px);
+}
+.collection h2,
+.collection > .best {
+  text-align: center;
+  margin: 0.2em 0;
+}
+.collection-list {
+  overflow-y: auto;
+  min-height: 0;
+  margin: 0.4em 0 0.8em;
+}
+.collection h3 {
+  font-size: 0.95em;
+  margin: 0.8em 0 0.3em;
+  color: var(--accent);
+}
+.collection ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.collection li {
+  display: flex;
+  gap: 0.6em;
+  padding: 0.35em 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  line-height: 1.4;
+}
+.collection li.unseen {
+  opacity: 0.5;
+  letter-spacing: 0.1em;
+}
+.collection .no {
+  flex: none;
+  opacity: 0.6;
+  font-variant-numeric: tabular-nums;
+}
 .intro {
   cursor: pointer;
 }

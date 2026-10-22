@@ -6,7 +6,7 @@
 
 * TypeScript + Vite / HTML5 Canvas + DOM（ランタイム依存なし）
 * スマホ縦画面（9:16）優先。PC ブラウザでも中央に縦長で表示
-* セーブは localStorage に最高連続記録のみ
+* セーブは localStorage に最高連続記録と、遭遇した異変（タイトルの「異変コレクション」で回収率つきの一覧を見られる）
 
 設計（ディレクトリ構成・状態遷移・データ型）は [docs/DESIGN.md](docs/DESIGN.md) を参照。
 
