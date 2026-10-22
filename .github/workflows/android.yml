@@ -1,0 +1,53 @@
+# 8番玄関の Android APK をビルドする。
+# 出来た APK は実行結果ページの「Artifacts」からダウンロードして、スマホに直接インストールする。
+name: 8番玄関 Android APK
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: android-actions/setup-android@v3
+        with:
+          # 既定の 'tools' は今の SDK に存在せず失敗するので、必要なものを明示する
+          packages: platform-tools platforms;android-36
+
+      - name: 依存関係のインストール
+        run: npm ci
+
+      - name: テスト（シナリオ整合性など）
+        run: npm test
+
+      - name: Web 版のビルド
+        run: npm run build
+
+      - name: Android プロジェクトへ反映
+        run: npx cap sync android
+
+      - name: APK のビルド
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon -PversionCode=${{ github.run_number }}
+
+      - name: APK の名前を整える
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk "8ban-genkan-v1.0.${{ github.run_number }}.apk"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: 8ban-genkan-apk-v1.0.${{ github.run_number }}
+          path: 8ban-genkan-v1.0.${{ github.run_number }}.apk
+          retention-days: 30

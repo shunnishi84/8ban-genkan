@@ -13,6 +13,7 @@
 ## 起動方法
 
 ```bash
+git clone https://github.com/shunnishi84/8ban-genkan.git
 cd 8ban-genkan
 npm install
 npm run dev        # 開発サーバ（http://localhost:5173）
@@ -28,8 +29,8 @@ npm run preview    # ビルド結果の確認
 Web 版をそのまま Android アプリに同梱している（`capacitor.config.ts`、`android/`）。
 アプリ ID は `com.shunnishi.hachibangenkan`。
 
-**APK の入手（おすすめ）**: `8ban-genkan/` を変更してプッシュすると、GitHub Actions
-（`.github/workflows/android-8ban-genkan.yml`）が APK を作る。Actions の実行結果ページの
+**APK の入手（おすすめ）**: プッシュすると、GitHub Actions
+（`.github/workflows/android.yml`）が APK を作る。Actions の実行結果ページの
 「Artifacts」から zip をダウンロードし、中の APK をスマホで開いてインストールする
 （初回は「提供元不明のアプリ」の許可が必要）。手動で動かすときは Actions 画面の「Run workflow」。
 
