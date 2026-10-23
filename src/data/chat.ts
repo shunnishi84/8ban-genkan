@@ -549,6 +549,56 @@ export const CHAT_TEMPLATES: ChatTemplate[] = [
     replyRelevant: '',
     replyIrrelevant: '何が？？ ちょっと電話するね',
   },
+  // 「ほんとにごめん…」のあと、ランダムな順で1つずつ出てくる追いごめん。3つ送ると夫がブチギレる
+  {
+    id: 'sorry_more_honto',
+    text: 'ほんとに悪いと思ってる',
+    sorryMore: true,
+    neutral: true,
+    replyRelevant: '',
+    replyIrrelevant: '',
+  },
+  {
+    id: 'sorry_more_itsumo',
+    text: 'いつもごめん。',
+    sorryMore: true,
+    neutral: true,
+    replyRelevant: '',
+    replyIrrelevant: '',
+  },
+  {
+    id: 'sorry_more_hansei',
+    text: '信じてもらえないかもしれないけど反省してる',
+    sorryMore: true,
+    neutral: true,
+    replyRelevant: '',
+    replyIrrelevant: '',
+  },
+  // 謝りすぎて逆ギレ。ブチギレたあとはこれしか送れない。送ると魔王化
+  {
+    id: 'snap_nandayo',
+    text: 'こんだけ謝ってんのに、なんなんだよ！！',
+    snap: true,
+    replyRelevant: '',
+    replyIrrelevant: '既読',
+    demonLines: ['……「こんだけ謝ってるのに」？', '謝れば済むと思ってたのね。', '……じゃあ、もう謝らなくていいわ。', '今夜から私は、この家の魔王です。'],
+  },
+  {
+    id: 'snap_katteni',
+    text: 'もういい！ 勝手にしろ！',
+    snap: true,
+    replyRelevant: '',
+    replyIrrelevant: '既読',
+    demonLines: ['……勝手にしろ？', 'ええ。勝手にさせてもらうわ。', '鍵も、通帳も、あなたの部屋も。', '全部、勝手にね。'],
+  },
+  {
+    id: 'snap_sonshita',
+    text: '謝って損した。二度と謝らねえからな',
+    snap: true,
+    replyRelevant: '',
+    replyIrrelevant: '既読',
+    demonLines: ['……損した？', '私はこの7年間、ずっと損してたけど。', '二度と謝らなくていいわよ。', '謝る相手が、いなくなるから。'],
+  },
 ];
 
 /** 火種を全部消して仲直りしたあとの返事（シナリオ側に `:after` が無いとき）。電話は来ない */

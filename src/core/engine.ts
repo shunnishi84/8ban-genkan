@@ -153,6 +153,9 @@ const isChatRelevant = (state: DayState, templateId: string): boolean =>
 /** 定型文を今送れない理由（送れるなら null）。UI のボタンと sendChat の両方がこれを使う */
 const chatBlockReason = (state: DayState, t: ChatTemplate): string | null => {
   if (state.flags.has(`chat:${t.id}`)) return 'それはもう送った。';
+  // 謝りすぎてブチギレたら、怒りのメッセージしか出てこない
+  if (state.flags.has('snapped') !== !!t.snap) return t.snap ? 'まだ、そこまで怒ってはいない。' : '……もう、謝る気になれない。';
+  if (t.sorryMore && t.id !== nextSorry(state)) return 'まだそれを言える状況じゃない。';
   if (t.requires && !evaluate(t.requires, state.flags)) return 'まだそれを言える状況じゃない。';
   if (t.onlyWith && !state.causes.some((c) => c.id === t.onlyWith)) return '今それを言う意味がない。';
   if (t.insult && !state.insultIds.includes(t.id)) return '……今日は、その言葉は出てこない。';
@@ -166,6 +169,19 @@ export const canSendChat = (state: DayState, templateId: string): boolean =>
 const INSULTS_PER_DAY = 4;
 
 /** その日の暴言を全種からランダムに選ぶ（日ごとの seed で決まる。並びは定義順） */
+/** 追いごめんの順番（その日の乱数で決まる） */
+const SORRY_MORE = CHAT_TEMPLATES.filter((t) => t.sorryMore).map((t) => t.id);
+const sorryOrder = (seed: number): string[] => shuffle(seeded(Math.floor(seed * 2 ** 31) ^ 0x2545f491), SORRY_MORE);
+
+/** 次に送れる追いごめん（「ほんとにごめん…」を送ってから、送った数だけ進む） */
+const nextSorry = (state: DayState): string | undefined => {
+  if (!state.flags.has('chat:sorry_generic')) return undefined;
+  return sorryOrder(state.seed)[SORRY_MORE.filter((id) => state.flags.has(`chat:${id}`)).length];
+};
+
+/** 追いごめんへの妻の返事。段々冷えていく */
+const SORRY_MORE_REPLIES = ['……で？', '謝ればいいと思ってる？', 'その「ごめん」、今日で何回目？ 数えてるんだけど。'];
+
 const pickInsults = (seed: number): string[] => {
   const all = CHAT_TEMPLATES.filter((t) => t.insult).map((t) => t.id);
   const chosen = new Set(shuffle(seeded(Math.floor(seed * 2 ** 31) ^ 0x5bd1e995), all).slice(0, INSULTS_PER_DAY));
@@ -254,7 +270,7 @@ const act = (state: DayState, action: Action): ActionResult => {
       // 一度でも暴言を送ったら、以後は何を送っても取りつく島もない返事だけ（電話も来ない）
       const coldReply = () => COLD_REPLIES[state.chatLog.filter((m) => m.from === 'wife').length % COLD_REPLIES.length];
       const alreadyInsulted = state.flags.has('insulted');
-      if (t.insult || t.finale) {
+      if (t.insult || t.finale || t.snap) {
         state.flags.add('insulted');
         state.flags.add(`insult:${t.id}`);
         state.chatLog.push({ from: 'wife', text: alreadyInsulted ? coldReply() : t.replyIrrelevant || '既読' });
@@ -270,6 +286,13 @@ const act = (state: DayState, action: Action): ActionResult => {
       // 2:00 を過ぎたら妻はもう寝ている。何を送っても既読にならない
       if (state.time > LOCKOUT_TIME) {
         return result(true, send('……既読がつかない。', '妻はもう、寝てしまったようだ。'), COST.sendChat);
+      }
+      if (t.sorryMore) {
+        const n = SORRY_MORE.filter((id) => state.flags.has(`chat:${id}`)).length;
+        if (n < SORRY_MORE.length) return replied(SORRY_MORE_REPLIES[n - 1]);
+        // 3つ目まで謝っても許してもらえない。夫がブチギレる
+        state.flags.add('snapped');
+        return replied(SORRY_MORE_REPLIES[n - 1], '……プツン、と何かが切れた音がした。', 'もう、謝る言葉が出てこない。');
       }
       if (t.prank) {
         state.flags.add(`prank:${t.id}`);

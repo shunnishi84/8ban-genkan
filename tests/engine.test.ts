@@ -790,6 +790,45 @@ describe('脱いだ格好で出歩く', () => {
   });
 });
 
+describe('謝りすぎてブチギレ', () => {
+  const sorries = CHAT_TEMPLATES.filter((t) => t.sorryMore).map((t) => t.id);
+  const snaps = CHAT_TEMPLATES.filter((t) => t.snap).map((t) => t.id);
+  const available = (s: ReturnType<typeof day>, ids: string[]) => ids.filter((id) => CHAT_MAP[id] && perform({ ...s, flags: new Set(s.flags), chatLog: [...s.chatLog], clues: [...s.clues] }, { type: 'sendChat', template: id }).ok);
+
+  it('「ほんとにごめん…」のあと、追いごめんが1つずつランダムな順で出てくる', () => {
+    const orders = new Set<string>();
+    for (let i = 0; i < 30; i++) {
+      const s = buildDay(1, [SCENARIO_MAP.ring_off], hm(23, 0), i / 30);
+      expect(available(s, sorries)).toEqual([]);
+      perform(s, { type: 'sendChat', template: 'sorry_generic' });
+      const order: string[] = [];
+      for (let k = 0; k < 3; k++) {
+        const next = available(s, sorries);
+        expect(next).toHaveLength(1);
+        order.push(next[0]);
+        perform(s, { type: 'sendChat', template: next[0] });
+      }
+      orders.add(order.join(','));
+    }
+    expect(orders.size).toBeGreaterThan(1);
+  });
+
+  it('3つ目の追いごめんで夫がブチギレて、怒りのメッセージしか送れなくなり、送ると魔王', () => {
+    const s = day(['ring_off']);
+    expect(available(s, snaps)).toEqual([]);
+    perform(s, { type: 'sendChat', template: 'sorry_generic' });
+    for (let k = 0; k < 2; k++) perform(s, { type: 'sendChat', template: available(s, sorries)[0] });
+    expect(s.flags.has('snapped')).toBe(false);
+    const r = perform(s, { type: 'sendChat', template: available(s, sorries)[0] });
+    expect(r.messages.join('')).toContain('プツン');
+    expect(s.flags.has('snapped')).toBe(true);
+    expect(available(s, snaps).sort()).toEqual([...snaps].sort());
+    expect(available(s, ['coming_home', 'love', 'insult_oni'])).toEqual([]);
+    perform(s, { type: 'sendChat', template: 'snap_katteni' });
+    expect(perform(s, { type: 'openDoor' }).outcome).toEqual({ kind: 'demon', lines: CHAT_MAP.snap_katteni.demonLines });
+  });
+});
+
 describe('暴言のランダム選択', () => {
   it('暴言は全部で10種あり、毎日そのうち4つが日ごとに変わる', () => {
     const all = CHAT_TEMPLATES.filter((t) => t.insult);

@@ -187,6 +187,10 @@ export interface ChatTemplate {
   provokeLines?: string[];
   /** 余計なひと言だが、見た目は普通の定型文（普通の枠に並べる罠） */
   disguised?: boolean;
+  /** 「ほんとにごめん…」のあとに続けて送れる謝罪（何段目か）。3段目まで送ると夫がブチギレる */
+  sorryMore?: boolean;
+  /** 謝りすぎてブチギレた夫の怒りのメッセージ。ブチギレたあとはこれしか送れず、送ると暴言と同じく魔王化 */
+  snap?: boolean;
   /** 条件を満たしているときは provokeLines の代わりにこちらで怒られる（温泉を予約済みなら温泉の話で返す等） */
   provokeLinesIf?: { when: Requirement; lines: string[] };
   /** この余計なひと言（by）を送ったあとに送ると、妻の返事がこれになる（もう手遅れ） */

@@ -1200,10 +1200,11 @@ export class Game {
     };
     // 定型文の枠: [見出し（無ければなし）, その枠に入る定型文, ボタンの class]
     const groups: [string | null, (t: ChatTemplate) => boolean, string][] = [
-      [null, (t) => !t.insult && !t.finale && !t.prank && (!t.provokeLines || !!t.disguised), 'template'],
+      [null, (t) => !t.insult && !t.snap && !t.finale && !t.prank && (!t.provokeLines || !!t.disguised), 'template'],
       ['😏 余計なひと言（※おすすめしない）', (t) => !t.prank && !t.disguised && !!(t.provokeLines || t.finale), 'template insult'],
       ['🍺 酔った勢いの悪ふざけ（※おすすめしない）', (t) => !!t.prank, 'template insult'],
-      ['😤 感情のままに送る（※おすすめしない）', (t) => !!t.insult, 'template insult'],
+      ['😤 感情のままに送る（※おすすめしない）', (t) => !!t.insult && !day.flags.has('snapped'), 'template insult'],
+      ['💢 もう我慢できない', (t) => !!t.snap, 'template insult'],
     ];
     return [
       h(
