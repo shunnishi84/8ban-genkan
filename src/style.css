@@ -2020,3 +2020,92 @@ button:disabled {
   inset: 0;
   background: rgba(0, 0, 0, 0.55);
 }
+
+/* ---------------------------------------------------------------- 魔王城の結界に弾かれる */
+.barrier-flash {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 55%, rgba(255, 255, 255, 0.95), rgba(220, 200, 255, 0.55) 35%, rgba(160, 120, 255, 0) 70%);
+  animation: barrier-flash 0.85s ease-out forwards;
+}
+.barrier-flash .ring {
+  position: absolute;
+  left: 50%;
+  top: 55%;
+  width: 40px;
+  height: 40px;
+  margin: -20px 0 0 -20px;
+  border-radius: 50%;
+  border: 4px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 0 24px 8px rgba(200, 170, 255, 0.8), inset 0 0 16px 4px rgba(255, 255, 255, 0.7);
+  animation: barrier-ring 0.7s ease-out forwards;
+}
+.barrier-flash .ring.late {
+  animation-delay: 0.12s;
+  opacity: 0;
+}
+@keyframes barrier-flash {
+  0% {
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes barrier-ring {
+  0% {
+    transform: scale(0.3);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(9);
+    opacity: 0;
+  }
+}
+/* 弾き返されて、画面が奥へ押し戻される */
+.barrier-hit .ui {
+  animation: barrier-knock 0.55s cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+.barrier-hit .stage {
+  animation: barrier-knock-stage 0.55s cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+@keyframes barrier-knock {
+  0% {
+    transform: scale(1);
+  }
+  20% {
+    transform: scale(0.94) translateY(10px);
+  }
+  45% {
+    transform: scale(1.02) translateY(-4px);
+  }
+  100% {
+    transform: none;
+  }
+}
+@keyframes barrier-knock-stage {
+  0% {
+    transform: translateY(-50%) scale(1);
+  }
+  20% {
+    transform: translateY(-50%) scale(0.94) translateY(10px);
+  }
+  45% {
+    transform: translateY(-50%) scale(1.02) translateY(-4px);
+  }
+  100% {
+    transform: translateY(-50%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .barrier-hit .ui,
+  .barrier-hit .stage,
+  .barrier-flash .ring {
+    animation: none;
+  }
+}

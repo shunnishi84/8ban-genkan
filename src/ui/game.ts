@@ -631,7 +631,21 @@ export class Game {
   private travel(to: Location) {
     this.audio.playSe('se_walk');
     this.modal = null;
-    this.act({ type: 'travel', to });
+    const trapped = !!this.day?.finale && !!FINALES[this.day.finale].trap;
+    const moved = this.act({ type: 'travel', to });
+    // 魔王城の結界に弾かれた: 白い光がはじけて、画面が跳ね返される
+    if (trapped && !moved) this.barrierFlash();
+  }
+
+  private barrierFlash() {
+    this.audio.playSe('se_angry');
+    this.root.classList.remove('barrier-hit');
+    void this.root.offsetWidth; // 連続で弾かれてもアニメーションをやり直す
+    this.root.classList.add('barrier-hit');
+    const flash = h('div', { class: 'barrier-flash' }, h('i', { class: 'ring' }), h('i', { class: 'ring late' }));
+    this.root.append(flash);
+    window.setTimeout(() => flash.remove(), 900);
+    window.setTimeout(() => this.root.classList.remove('barrier-hit'), 600);
   }
 
   private toast(messages: string[], minutes: number) {
