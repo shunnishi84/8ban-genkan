@@ -42,7 +42,7 @@ export const IMAGES = {
   bg_bench: { file: 'bg_bench.jpg', label: '公園のベンチ', color: '#25352a', fit: 'cover' },
   // --- 人物・結末 ---
   hero: { file: 'hero.png', label: '主人公', color: '#4b5a74' },
-  wife_angry: { file: 'wife_angry.png', label: '鬼の形相の妻', color: '#7a1010', fit: 'cover' },
+  wife_angry: { file: 'wife_angry.jpg', label: '鬼の形相の妻', color: '#7a1010', fit: 'cover' },
   wife_dark: { file: 'wife_dark.png', label: '無言の妻', color: '#2b2b38', fit: 'cover' },
   wife_smile: { file: 'wife_smile.png', label: 'おかえりの妻', color: '#f2c6a0', fit: 'cover' },
   wife_sullen: { file: 'wife_sullen.jpg', label: '渋々許す妻', color: '#d8c2b0', fit: 'cover' },

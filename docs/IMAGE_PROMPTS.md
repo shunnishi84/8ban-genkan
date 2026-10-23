@@ -162,10 +162,10 @@ unreadable blurred message text, glowing in a dark room, 4:3
 |---|---|---|
 | `wife_demon.jpg` | 暴言チャットを送った日、ドアを開けると待っている魔王 ✅ 作成済み（3:4 のまま横幅いっぱいで表示） | 縦長、背景つき |
 
-画像が無いあいだは、`wife_angry.png` を紫に染めた代用表示になる（オーラ・火の粉・稲妻はコード側で重ねる）。
+画像が無いあいだは、`wife_angry.jpg` を紫に染めた代用表示になる（オーラ・火の粉・稲妻はコード側で重ねる）。
 
 **Gemini での作り方**
-1. Gemini に `public/assets/images/wife_angry.png`（鬼の形相の妻）を**添付**する
+1. Gemini に `public/assets/images/wife_angry.jpg`（鬼の形相の妻）を**添付**する
 2. 下のプロンプトを貼る（英語版の方が絵柄は安定しやすい。日本語版でも可）
 3. 気に入らなければ「もっとコミカルに」「オーラをもっと大きく」など追加で指示して描き直す
 
@@ -602,7 +602,7 @@ warm cheerful colors, comedic. No text, no letters, no signs with writing, no wa
 暴言を4種送ったあとのフィナーレのひとつ。90年代のロボットSRPGの戦闘シーン風に、
 ロボット大戦と同じく味方（主人公）は右側から左へ攻撃し、敵（妻の巨大な機体）は左側。下のメッセージ欄にパイロットの顔が出る。
 機体の向きが逆に生成されても、取り込むときに左右反転すればよい（robot_hero.png は反転して左向きにしてある）。
-置いていない絵は、機体は四角＋名前、顔は既存の `hero.png` / `wife_angry.png`、背景は `bg_town.jpg` で代用される。
+置いていない絵は、機体は四角＋名前、顔は既存の `hero.png` / `wife_angry.jpg`、背景は `bg_town.jpg` で代用される。
 
 | ファイル | 用途 | 添付する見本 |
 |---|---|---|
@@ -837,7 +837,7 @@ No text, no letters, no watermark.
 
 未配置の間は wife_angry で代用される。
 
-### 16-1. hospital_wife.jpg（添付: wife_angry.png, hero.png）
+### 16-1. hospital_wife.jpg（添付: wife_angry.jpg, hero.png）
 ```
 Use the attached images as character references: the woman is the wife (same face, short
 dark bob hair) and the man is the husband. Vertical 9:16. A Japanese hospital emergency room
@@ -888,7 +888,7 @@ No text, no letters, no numbers, no watermark.
 |---|---|---|
 | `police_patrol.jpg` | 肌着で公園 / コンビニで通報 → 懐中電灯を向けるお巡りさん | `bg_bench.jpg`（絵柄・背景合わせ） |
 | `ol_scream.jpg` | パンツ一丁で夜の街 → 悲鳴をあげる OL | `bg_town.jpg`（絵柄・背景合わせ） |
-| `koban_wife.jpg` | 交番に迎えに来た妻に怒られる | `wife_angry.png` と `hero.png` |
+| `koban_wife.jpg` | 交番に迎えに来た妻に怒られる | `wife_angry.jpg` と `hero.png` |
 | `jail_cell.jpg` | 留置場で一泊 | `hero.png` |
 
 ### 18-1. police_patrol.jpg（添付: bg_bench.jpg）
@@ -918,7 +918,7 @@ Japanese manga-style digital illustration, clean bold black outlines, flat cel s
 No text, no letters, no watermark.
 ```
 
-### 18-3. koban_wife.jpg（添付: wife_angry.png, hero.png）
+### 18-3. koban_wife.jpg（添付: wife_angry.jpg, hero.png）
 ```
 Use the attached images as character references: the woman is the wife (same face, short
 dark bob hair) and the man is the husband. Vertical 9:16. Inside a small Japanese police box
