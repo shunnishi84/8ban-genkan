@@ -28,6 +28,7 @@ import {
   finaleSeed,
   sentText,
   hasUnreadChat,
+  onDay,
   newRun,
   perform,
   startDay,
@@ -254,7 +255,11 @@ export class Game {
     if (!day) return false;
     const before = day.time;
     const from = day.location;
+    const noticesBefore = day.clues.filter((c) => c.at === 'notice').length;
     const r = perform(day, action);
+    // 通知が一気に何件も届いた（悪ふざけの嘘・バズ・家族会議の呼び出しなど）
+    const fresh = day.clues.filter((c) => c.at === 'notice').slice(noticesBefore).map((c) => c.text);
+    if (fresh.length >= 2 || fresh.some((t) => t.startsWith('📣'))) this.notificationFlood(fresh);
     // 魔王城の結界などで場所が勝手に変わったら、開いていた画面を閉じて現在地を見せる
     if (action.type !== 'travel' && day.location !== from) this.modal = null;
     if (se && r.ok) this.audio.playSe(se);
@@ -635,6 +640,25 @@ export class Game {
     const moved = this.act({ type: 'travel', to });
     // 魔王城の結界に弾かれた: 白い光がはじけて、画面が跳ね返される
     if (trapped && !moved) this.barrierFlash();
+  }
+
+  /** 通知のバナーが画面上部に次々と降ってくる。件数が少なければ似た通知で水増しして「鳴りやまない」感じにする */
+  private notificationFlood(texts: string[]) {
+    const calls = texts.some((t) => t.startsWith('📞'));
+    const filler = calls
+      ? ['📞 不在着信（妻）', '📞 不在着信（妻）', '💬 妻: 電話に出て！！', '📞 不在着信（妻）', '💬 妻: どこにいるの！？']
+      : ['🔁 あなたの投稿がリポストされました', '♥ あなたの投稿に「いいね」されました', '💬 返信: 「奥さん見てますよ」', '🔁 あなたの投稿がリポストされました', '💬 返信: 「これ特定されてない？」', '♥ あなたの投稿に「いいね」されました'];
+    const list = [...texts];
+    for (let i = 0; list.length < 9; i++) list.splice(Math.min(list.length, 1 + i * 2), 0, filler[i % filler.length]);
+    const layer = h('div', { class: 'notif-flood' }, list.map((t, i) => h('div', { class: 'notif-banner', style: `animation-delay: ${i * 0.22}s` }, t)));
+    this.root.append(layer);
+    window.setTimeout(() => layer.remove(), list.length * 220 + 2600);
+    for (let i = 0; i < Math.min(list.length, 5); i++) this.playSeAt('se_tap', i * 220);
+    try {
+      navigator.vibrate?.([120, 80, 120, 80, 120, 80, 300]);
+    } catch {
+      // 振動できない端末は無視
+    }
   }
 
   private barrierFlash() {
@@ -1266,7 +1290,7 @@ export class Game {
     const day = this.day!;
     const clues = visibleClues(day, 'app:sns');
     const level = drunkLevel(day);
-    const posts = POSTS.filter((p) => p.level === level && day.posts[p.id] === undefined);
+    const posts = POSTS.filter((p) => (p.onlyWith ? onDay(day, p.onlyWith) : p.level === level) && day.posts[p.id] === undefined);
     return [
       clues.length
         ? h(

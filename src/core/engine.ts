@@ -151,13 +151,16 @@ const isChatRelevant = (state: DayState, templateId: string): boolean =>
   state.causes.some((c) => flagsIn(c.resolution).includes(`chat:${templateId}`));
 
 /** 定型文を今送れない理由（送れるなら null）。UI のボタンと sendChat の両方がこれを使う */
+/** その日の火種か、その日のシナリオ（妻の帰省など火種の無い日も含む）に id があるか */
+export const onDay = (state: DayState, id: string): boolean => state.causes.some((c) => c.id === id) || state.scenarioIds.includes(id);
+
 const chatBlockReason = (state: DayState, t: ChatTemplate): string | null => {
   if (state.flags.has(`chat:${t.id}`)) return 'それはもう送った。';
   // 謝りすぎてブチギレたら、怒りのメッセージしか出てこない
   if (state.flags.has('snapped') !== !!t.snap) return t.snap ? 'まだ、そこまで怒ってはいない。' : '……もう、謝る気になれない。';
   if (t.sorryMore && t.id !== nextSorry(state)) return 'まだそれを言える状況じゃない。';
   if (t.requires && !evaluate(t.requires, state.flags)) return 'まだそれを言える状況じゃない。';
-  if (t.onlyWith && !state.causes.some((c) => c.id === t.onlyWith)) return '今それを言う意味がない。';
+  if (t.onlyWith && !onDay(state, t.onlyWith)) return '今それを言う意味がない。';
   if (t.insult && !state.insultIds.includes(t.id)) return '……今日は、その言葉は出てこない。';
   return null;
 };
@@ -498,7 +501,7 @@ const act = (state: DayState, action: Action): ActionResult => {
       const post = POST_MAP[action.post];
       if (!post) return result(false, ['そんな投稿は無い。']);
       if (state.posts[post.id] !== undefined) return result(false, ['もう投稿した。']);
-      if (post.level !== drunkLevel(state)) return result(false, ['……今は、その言葉は出てこない。']);
+      if (post.onlyWith ? !onDay(state, post.onlyWith) : post.level !== drunkLevel(state)) return result(false, ['……今は、その言葉は出てこない。']);
       const seenAt = postSeenAt(post.level, state.time);
       state.posts[post.id] = seenAt;
       state.flags.add(`posted:${post.id}`);
@@ -513,7 +516,7 @@ const act = (state: DayState, action: Action): ActionResult => {
         state.flags.add('insulted');
         state.flags.add(`buzz:${post.id}`);
         state.clues.push({ at: 'notice', text: `📣 つぶやきー: あなたの投稿が話題になっています（${post.reaction.split('　')[0]}）` });
-        const all = POSTS.filter((p) => p.demonLines).every((p) => state.flags.has(`buzz:${p.id}`));
+        const all = POSTS.filter((p) => p.demonLines && p.level === MAX_DRUNK && !p.onlyWith).every((p) => state.flags.has(`buzz:${p.id}`));
         const finale = all ? applyFinale(state, 'castle') : null;
         if (finale) state.flags.add('finale_by_tweet');
         return result(

@@ -333,6 +333,8 @@ export interface Post {
   angerLines?: string[];
   /** 一瞬でバズって妻が魔王化する投稿（酔い3）。魔王のセリフ */
   demonLines?: string[];
+  /** その日（火種かシナリオの id）だけ、酔いの段階に関係なく投稿できる */
+  onlyWith?: string;
 }
 
 export type Speaker = 'me' | 'wife' | 'narr' | 'other';

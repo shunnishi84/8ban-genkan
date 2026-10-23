@@ -645,7 +645,7 @@ describe('つぶやきーへの投稿と強い酒', () => {
     perform(s, { type: 'travel', to: 'door' });
     return last;
   };
-  const postsAt = (level: number) => POSTS.filter((p) => p.level === level);
+  const postsAt = (level: number) => POSTS.filter((p) => p.level === level && !p.onlyWith);
 
   it('酔いの段階ごとに3つずつ投稿でき、しらふの投稿は無害', () => {
     for (const level of [0, 1, 2, 3]) expect(postsAt(level)).toHaveLength(3);
@@ -826,6 +826,34 @@ describe('謝りすぎてブチギレ', () => {
     expect(available(s, ['coming_home', 'love', 'insult_oni'])).toEqual([]);
     perform(s, { type: 'sendChat', template: 'snap_katteni' });
     expect(perform(s, { type: 'openDoor' }).outcome).toEqual({ kind: 'demon', lines: CHAT_MAP.snap_katteni.demonLines });
+  });
+});
+
+describe('妻が実家に帰っている日', () => {
+  it('「気が楽」は普通の顔をした地雷。帰ると妻が実家から戻ってきている', () => {
+    const s = day(['wife_away']);
+    expect(CHAT_MAP.away_kiraku.disguised).toBe(true);
+    expect(perform(s, { type: 'sendChat', template: 'away_kiraku' }).ok).toBe(true);
+    expect(perform(s, { type: 'openDoor' }).outcome).toMatchObject({ kind: 'angry', causes: [{ id: 'provoke:away_kiraku' }] });
+  });
+
+  it('「淋しい」「よろしく」は何も起きない（電話のペナルティもなし）', () => {
+    const s = day(['wife_away']);
+    expect(perform(s, { type: 'sendChat', template: 'away_samishii' }).cost).toBe(2);
+    expect(perform(s, { type: 'sendChat', template: 'away_yoroshiku' }).cost).toBe(2);
+    expect(perform(s, { type: 'openDoor' }).outcome.kind).toBe('home');
+  });
+
+  it('「鬼が不在だからノビノビ」は、しらふでもつぶやけてバズり、魔王', () => {
+    const s = day(['wife_away']);
+    expect(perform(s, { type: 'post', post: 'tw_nobinobi' }).messages[0]).toContain('バズった');
+    expect(perform(s, { type: 'openDoor' }).outcome).toMatchObject({ kind: 'demon', lines: POST_MAP.tw_nobinobi.demonLines });
+  });
+
+  it('ほかの日には出てこない。酔い3の3連投の最終形態にも数えない', () => {
+    const s = day(['ring_off']);
+    for (const t of ['away_kiraku', 'away_samishii', 'away_yoroshiku']) expect(perform(s, { type: 'sendChat', template: t }).ok).toBe(false);
+    expect(perform(s, { type: 'post', post: 'tw_nobinobi' }).ok).toBe(false);
   });
 });
 

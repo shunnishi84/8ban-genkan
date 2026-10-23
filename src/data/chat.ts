@@ -574,6 +574,32 @@ export const CHAT_TEMPLATES: ChatTemplate[] = [
     replyRelevant: '',
     replyIrrelevant: '',
   },
+  // 妻が実家に帰っている日だけ出る定型文。「気が楽」は普通の顔をした地雷、ほかの2つは何も起きない
+  {
+    id: 'away_kiraku',
+    text: '今日は気が楽だわ',
+    onlyWith: 'wife_away',
+    disguised: true,
+    replyRelevant: '……ふーん。気が楽なんだ。',
+    replyIrrelevant: '……ふーん。気が楽なんだ。',
+    provokeLines: ['……おかえり。', '「気が楽」なんでしょ？ だから、実家から急いで帰ってきてあげたの。', 'タクシーで。……気、休まらないね？'],
+  },
+  {
+    id: 'away_samishii',
+    text: 'お前がいなくて淋しい',
+    onlyWith: 'wife_away',
+    neutral: true,
+    replyRelevant: 'え〜、ほんと？ 日曜には帰るから、いい子にしててね♡',
+    replyIrrelevant: 'え〜、ほんと？ 日曜には帰るから、いい子にしててね♡',
+  },
+  {
+    id: 'away_yoroshiku',
+    text: 'お義父さん、お義母さんによろしく',
+    onlyWith: 'wife_away',
+    neutral: true,
+    replyRelevant: '伝えとくね！ お母さんが「今度一緒においで」だって',
+    replyIrrelevant: '伝えとくね！ お母さんが「今度一緒においで」だって',
+  },
   // 謝りすぎて逆ギレ。ブチギレたあとはこれしか送れない。送ると魔王化
   {
     id: 'snap_nandayo',

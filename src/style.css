@@ -2109,3 +2109,76 @@ button:disabled {
     animation: none;
   }
 }
+
+/* ---------------------------------------------------------------- 通知が鳴りやまない */
+.notif-flood {
+  position: absolute;
+  left: 4%;
+  right: 4%;
+  top: 0.4em;
+  z-index: 25;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: flex-end;
+  max-height: 58%;
+  overflow: hidden;
+  /* いちばん下の古い通知は、はみ出したぶん薄く切れて見える */
+  -webkit-mask-image: linear-gradient(#000 75%, transparent);
+  mask-image: linear-gradient(#000 75%, transparent);
+}
+.notif-banner {
+  flex: none;
+  margin-top: 0.3em;
+  padding: 0.5em 0.8em;
+  border-radius: 12px;
+  background: rgba(248, 249, 252, 0.97);
+  color: #1c2230;
+  font-size: 0.85em;
+  line-height: 1.35;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+  opacity: 0;
+  transform: translateY(-140%);
+  animation: notif-drop 2.6s cubic-bezier(0.2, 0.9, 0.3, 1.2) forwards;
+}
+@keyframes notif-drop {
+  0% {
+    opacity: 0;
+    transform: translateY(-140%) scale(0.96);
+  }
+  12% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  16% {
+    transform: translateY(0) rotate(-1deg);
+  }
+  20% {
+    transform: translateY(0) rotate(1deg);
+  }
+  24% {
+    transform: translateY(0) rotate(0);
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .notif-banner {
+    animation-name: notif-fade;
+  }
+  @keyframes notif-fade {
+    0%,
+    100% {
+      opacity: 0;
+    }
+    10%,
+    85% {
+      opacity: 1;
+    }
+  }
+}

@@ -95,6 +95,21 @@ export const POSTS: Post[] = [
       'でもその前に……魔王からは、逃げられないわよ。',
     ],
   },
+
+  // ---------------------------------------------------------------- 妻が実家に帰っている日だけ
+  {
+    id: 'tw_nobinobi',
+    level: 3,
+    onlyWith: 'wife_away',
+    text: '今日は鬼が不在だからノビノビ〜！ 自由サイコー！ｗ',
+    reaction: '🔁 9,800　♥ 3.1万',
+    demonLines: [
+      '……鬼が不在？',
+      '実家のリビングで、お父さんとお母さんと3人で見てたわよ。',
+      '「ノビノビ」できてよかったわね。',
+      '鬼は、新幹線で帰ってきたわ。',
+    ],
+  },
 ];
 
 export const POST_MAP: Record<string, Post> = Object.fromEntries(POSTS.map((p) => [p.id, p]));
