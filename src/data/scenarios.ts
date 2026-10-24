@@ -946,8 +946,8 @@ export const SCENARIOS: Scenario[] = [
       },
     ],
     clues: [
-      { at: 'spot:hallway', cause: 'laundry_dye', image: 'clue_pink_blouse', text: 'ベランダの物干しに、ほんのりピンク色のブラウスが1枚だけ干してある。……あれ、白じゃなかったか？' },
-      { at: 'app:chat', cause: 'laundry_dye', unread: true, text: 'ねえ、私の白いブラウスがピンクになってるんだけど。白物のカゴに何入れた？（22:15）' },
+      { at: 'spot:hallway', cause: 'laundry_dye', text: '廊下に面した浴室の小窓ごしに、ほんのりピンク色のブラウスが1枚だけ干してあるのが見える。……あれ、白じゃなかったか？' },
+      { at: 'app:chat', cause: 'laundry_dye', unread: true, image: 'clue_pink_blouse', text: 'ねえ、私の白いブラウスがピンクになってるんだけど。白物のカゴに何入れた？（22:15）' },
       { at: 'app:memo', cause: 'laundry_dye', text: '朝の洗濯当番: 白物と色物はカゴを分ける！（妻）……そういえば、紺の靴下を白物のカゴに入れた気がする' },
     ],
   },

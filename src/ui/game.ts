@@ -1325,6 +1325,9 @@ export class Game {
         { class: 'chat-log' },
         CHAT_HISTORY.map((m) => bubble(m.from, m.text, 'old')),
         chatTimeline(day).map((c) => {
+          // 妻から写真つきで届いたメッセージ
+          if (!c.text.startsWith(ME) && c.image && this.images.get(c.image as ImageKey))
+            return h('div', { class: `bubble wife photo${c.unread ? ' unread' : ''}` }, this.illust(c.image, 'chat-photo'), c.text);
           if (!c.text.startsWith(ME)) return bubble('wife', c.text, c.unread ? 'unread' : '');
           if (!c.unsendable) return bubble('me', c.text.slice(ME.length));
           // 誤爆メッセージ: 既読になる 0:00 まで（かつ追加で何か送るまで）は送信取消できる
