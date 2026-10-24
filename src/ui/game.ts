@@ -1373,11 +1373,12 @@ export class Game {
             { class: 'sns-feed' },
             // 新しい投稿ほど上に
             [...clues].reverse().map((c) => {
-              if (!c.deletable) return h('div', { class: 'sns-post' }, h('p', { class: 'desc' }, c.text));
+              if (!c.deletable) return h('div', { class: 'sns-post' }, this.illust(c.image, 'clue-img'), h('p', { class: 'desc' }, c.text));
               const deleted = day.flags.has(`deleted:${c.id}`);
               return h(
                 'div',
                 { class: `sns-post mine${deleted ? ' deleted' : ''}` },
+                deleted ? null : this.illust(c.image, 'clue-img'),
                 h('p', { class: 'desc' }, deleted ? 'この投稿は削除されました' : c.text),
                 deleted
                   ? null

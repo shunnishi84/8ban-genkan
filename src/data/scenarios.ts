@@ -946,7 +946,7 @@ export const SCENARIOS: Scenario[] = [
       },
     ],
     clues: [
-      { at: 'spot:hallway', cause: 'laundry_dye', text: 'ベランダの物干しに、ほんのりピンク色のブラウスが1枚だけ干してある。……あれ、白じゃなかったか？' },
+      { at: 'spot:hallway', cause: 'laundry_dye', image: 'clue_pink_blouse', text: 'ベランダの物干しに、ほんのりピンク色のブラウスが1枚だけ干してある。……あれ、白じゃなかったか？' },
       { at: 'app:chat', cause: 'laundry_dye', unread: true, text: 'ねえ、私の白いブラウスがピンクになってるんだけど。白物のカゴに何入れた？（22:15）' },
       { at: 'app:memo', cause: 'laundry_dye', text: '朝の洗濯当番: 白物と色物はカゴを分ける！（妻）……そういえば、紺の靴下を白物のカゴに入れた気がする' },
     ],
@@ -971,7 +971,7 @@ export const SCENARIOS: Scenario[] = [
       },
     ],
     clues: [
-      { at: 'slot:bag', cause: 'pudding_eaten', text: '鞄の底から、プラスチックのスプーンが出てきた。……そういえば昨夜、冷蔵庫のプリンを食べた。ふたに何か書いてあった気がする。' },
+      { at: 'slot:bag', cause: 'pudding_eaten', image: 'clue_pudding_lid', text: '鞄の底から、プラスチックのスプーンが出てきた。……そういえば昨夜、冷蔵庫のプリンを食べた。ふたに何か書いてあった気がする。' },
       { at: 'app:chat', cause: 'pudding_eaten', unread: true, text: 'ねえ、冷蔵庫の私の「贅沢窯焼きプリン」知らない？ ふたに名前書いといたんだけど（22:30）' },
     ],
   },
@@ -1003,6 +1003,7 @@ export const SCENARIOS: Scenario[] = [
         cause: 'sns_tsuno',
         id: 'post_tsuno',
         deletable: true,
+        image: 'clue_tsuno_post',
         text: '@tanaka_salaryman（あなた）\n「結婚7年。家庭に愛情は芽生えないけど、妻の頭から鬼の角が生えてきた」\n🔁 1.9万　♥ 4.6万（21:05）',
       },
       { at: 'app:sns', text: 'リプライ: 「座布団一枚」「奥さん見てますよ」「角、写真ください」「大喜利うまいけど人生は下手」' },
@@ -1034,7 +1035,7 @@ export const SCENARIOS: Scenario[] = [
       },
     ],
     clues: [
-      { at: 'spot:door', cause: 'bento_mold', text: 'ドアの前に、ゴミ袋に入った弁当箱が置いてある。……ふたの隙間から、緑色のふわふわが見える。' },
+      { at: 'spot:door', cause: 'bento_mold', image: 'clue_moldy_bento', text: 'ドアの前に、ゴミ袋に入った弁当箱が置いてある。……ふたの隙間から、緑色のふわふわが見える。' },
       { at: 'app:chat', cause: 'bento_mold', unread: true, text: '押し入れの奥から、あなたが「なくした」って言ってたお弁当箱が出てきたんだけど。カビだらけで（22:05）' },
       { at: 'app:calendar', cause: 'bento_mold', text: '3か月前の金曜: 飲み会（翌朝「弁当箱なくした」と申告）' },
     ],
