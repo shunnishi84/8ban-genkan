@@ -151,7 +151,7 @@ const range = (n: number) => [...Array(n).keys()];
 const say = (who: Speaker, texts: string[]): Line[] => texts.map((text) => ({ who, text }));
 
 /** 商品の値段と説明の1行 */
-const priceLine = (item: ItemDef | undefined, note: string) => `¥${item?.price?.toLocaleString()}　${note}`;
+const priceLine = (item: ItemDef | undefined, note: string) => (item?.price ? `¥${item.price.toLocaleString()}　${note}` : note);
 
 const LOCATION_LABEL: Record<Location, string> = {
   door: '自宅の玄関前',
@@ -325,6 +325,7 @@ export class Game {
 
   /** inside: もう玄関の中で迎えられたあと（ドアの音と「ガチャ……」を出さない） */
   private gameOver(kind: 'late' | 'dawn' | 'angry', causes: Cause[], morning = false, inside = false) {
+    this.recordEnding(endingId('normal', kind));
     if (!inside) this.audio.playSe(kind === 'angry' ? 'se_door' : 'se_late');
     this.playSeAt('se_angry', 250);
     const lines: Line[] =
@@ -365,6 +366,7 @@ export class Game {
 
   /** 暴言を送っていた日: 火種に関係なく、ドアの向こうに魔王 */
   private demonEnding(demonLines: string[], reason = DEMON_REASON) {
+    this.recordEnding(endingId('normal', 'demon'));
     this.audio.playSe('se_door');
     this.playSeAt('se_demon', 300);
     const alone = this.day!.homeAlone;
@@ -892,7 +894,7 @@ export class Game {
             ),
           ]),
           // 異変ではないので回収率とは別に数える
-          h('h3', { class: 'special' }, `特殊エンディング（${SPECIAL_ENDINGS.filter((e) => this.endings.has(e.id)).length} / ${SPECIAL_ENDINGS.length}）`),
+          h('h3', { class: 'special' }, `エンディング（${SPECIAL_ENDINGS.filter((e) => this.endings.has(e.id)).length} / ${SPECIAL_ENDINGS.length}）`),
           h(
             'ol',
             {},
@@ -1431,11 +1433,11 @@ export class Game {
       'コンビニ',
       [
         h('p', { class: 'dim' }, `いらっしゃいませー（1点 ${COST.buy}分）`),
-        itemsAt('konbini').map((item) =>
+        itemsAt('konbini').filter((item) => !item.onlyWith || onDay(this.day!, item.onlyWith)).map((item) =>
           this.itemRow(
             item,
             priceLine(item, item.desc),
-            h('button', { class: 'btn small', onclick: () => this.act({ type: 'buy', item: item.id }, 'se_buy') }, '買う'),
+            h('button', { class: 'btn small', onclick: () => this.act({ type: 'buy', item: item.id }, 'se_buy') }, item.buyLabel ?? '買う'),
           ),
         ),
       ],

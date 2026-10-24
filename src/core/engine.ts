@@ -395,6 +395,7 @@ const act = (state: DayState, action: Action): ActionResult => {
       const item = ITEM_MAP[action.item];
       if (state.location !== 'konbini') return result(false, ['コンビニにいない。']);
       if (!item || item.source !== 'konbini') return result(false, ['その商品はコンビニに置いていない。']);
+      if (item.onlyWith && !onDay(state, item.onlyWith)) return result(false, ['その商品は、今日は置いていない。']);
       // 肌着（やパンツ一丁）では売ってもらえない。3回目で通報される
       if (state.flags.has('undressed')) {
         const n = flagsWith(state, 'refused:').length + 1;
@@ -409,7 +410,7 @@ const act = (state: DayState, action: Action): ActionResult => {
       }
       state.inventory.push(item.id);
       state.flags.add(`bought:${item.id}`);
-      return result(true, [`「${item.name}」を買った。`], COST.buy);
+      return result(true, [item.buyLabel ? `「${item.name}」を${item.buyLabel.replace('る', 'った')}。` : `「${item.name}」を買った。`], COST.buy);
     }
 
     case 'discard': {

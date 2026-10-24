@@ -1021,6 +1021,34 @@ describe('鬼のお面', () => {
   });
 });
 
+describe('洗濯・プリン・角・弁当箱・鍵', () => {
+  it.each([
+    ['laundry_dye', 'laundry_kawaii'],
+    ['pudding_eaten', 'pudding_namae'],
+    ['bento_mold', 'bento_shiranai'],
+  ])('%s の日の「%s」は普通の顔をした地雷', (scenario, trap) => {
+    expect(CHAT_MAP[trap].disguised).toBe(true);
+    const s = day([scenario], hm(23, 0));
+    perform(s, { type: 'sendChat', template: trap });
+    for (const a of solve(s)!) if (a.type !== 'openDoor') perform(s, a);
+    s.location = 'door';
+    expect(perform(s, { type: 'openDoor' }).outcome).toMatchObject({ kind: 'angry', causes: [{ id: `provoke:${trap}` }] });
+  });
+
+  it('なくした鍵はその日だけコンビニで受け取れる（0円）。受け取らずに帰るとインターホン越しに怒られる', () => {
+    const other = day(['ring_off']);
+    other.location = 'konbini';
+    expect(perform(other, { type: 'buy', item: 'house_key' }).ok).toBe(false);
+    const s = day(['key_lost']);
+    expect(perform(s, { type: 'openDoor' }).outcome).toMatchObject({ kind: 'angry', causes: [{ id: 'key_lost' }] });
+    const t = day(['key_lost']);
+    t.location = 'konbini';
+    expect(perform(t, { type: 'buy', item: 'house_key' }).messages[0]).toContain('受け取った');
+    t.location = 'door';
+    expect(perform(t, { type: 'openDoor' }).outcome.kind).toBe('home');
+  });
+});
+
 describe('暴言のランダム選択', () => {
   it('暴言は全部で10種あり、毎日そのうち4つが日ごとに変わる', () => {
     const all = CHAT_TEMPLATES.filter((t) => t.insult);

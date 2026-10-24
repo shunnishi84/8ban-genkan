@@ -137,6 +137,8 @@ export interface ItemDef {
   onlyWith?: string;
   /** 特急便ではなく、注文から何日後に届くか（ノートパソコンは2日後） */
   deliveryDays?: number;
+  /** コンビニの「買う」ボタンの代わりの文言（落とし物を受け取るなど） */
+  buyLabel?: string;
   price?: number;
   /** 所持品画面でどの入れ物に入っているか */
   slot: SlotId;

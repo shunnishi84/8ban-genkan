@@ -34,10 +34,15 @@ export const collectionCount = (seen: Set<string>): { got: number; total: number
 });
 
 /**
- * 特殊エンディング（異変ではないので、回収率とは別に数える）。
+ * エンディング一覧（ふつうの怒られエンド＋特殊エンディング。異変ではないので、回収率とは別に数える）。
  * id はゲーム側で記録するときのキー（endingId で作る）
  */
 export const SPECIAL_ENDINGS: { id: string; title: string }[] = [
+  // ふつうの怒られエンド
+  { id: endingId('normal', 'angry'), title: '妻の怒り（鬼）' },
+  { id: endingId('normal', 'demon'), title: '魔王化' },
+  { id: endingId('normal', 'late'), title: '遅すぎる帰宅' },
+  { id: endingId('normal', 'dawn'), title: '朝帰り' },
   ...FINALE_IDS.flatMap((id) => [
     { id: endingId('finale', id), title: FINALES[id].title },
     ...(FINALES[id].finalForm ? [{ id: endingId('finale', `${id}_final`), title: `${FINALES[id].title}（最終形態）` }] : []),
@@ -49,6 +54,6 @@ export const SPECIAL_ENDINGS: { id: string; title: string }[] = [
 ];
 
 /** 特殊エンディングの記録キー */
-export function endingId(kind: 'finale' | 'prank' | 'collapse' | 'arrest' | 'party', id = ''): string {
+export function endingId(kind: 'normal' | 'finale' | 'prank' | 'collapse' | 'arrest' | 'party', id = ''): string {
   return id ? `${kind}:${id}` : kind;
 }

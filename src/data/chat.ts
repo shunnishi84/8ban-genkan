@@ -167,6 +167,65 @@ export const CHAT_TEMPLATES: ChatTemplate[] = [
     replyRelevant: '……ほんと？ じゃあ、ソファの候補、3つに絞っとくね',
     replyIrrelevant: 'ゴルフ？ 何の話？ 電話するね',
   },
+  // 洗濯物の色移り
+  {
+    id: 'laundry_sorry',
+    text: 'ブラウス、俺が紺の靴下と一緒に洗っちゃった。ごめん。同じのを特急便で注文した、明日の朝届く',
+    requires: 'ordered:blouse_same',
+    replyRelevant: '……同じの、ちゃんと探してくれたんだ',
+    replyIrrelevant: 'ブラウス？ 何の話？ 電話するね',
+  },
+  {
+    id: 'laundry_kawaii',
+    text: 'ピンクのブラウスも、かわいいと思うよ',
+    onlyWith: 'laundry_dye',
+    disguised: true,
+    replyRelevant: '……かわいい？',
+    replyIrrelevant: '……かわいい？',
+    provokeLines: ['……かわいい？', '白いブラウスがピンクになったのを、「かわいい」で済ませるのね。', '明日から、あなたのワイシャツも全部ピンクにしてあげる。'],
+  },
+  // 妻のプリンを食べた
+  {
+    id: 'pudding_ate_sorry',
+    text: 'ごめん、冷蔵庫のプリン食べたの俺。同じのを3個パックで買ったから許して',
+    requires: 'bought:pudding_3pack',
+    replyRelevant: '……3個パックなら、許す',
+    replyIrrelevant: 'プリン？ 何の話？ 電話するね',
+  },
+  {
+    id: 'pudding_namae',
+    text: '名前書いてなかったから、誰のかわからなくて',
+    onlyWith: 'pudding_eaten',
+    disguised: true,
+    replyRelevant: '……書いてあったわよ。',
+    replyIrrelevant: '……書いてあったわよ。',
+    provokeLines: ['……書いてあったわよ。', 'ふたに、マジックで、大きく「ママ」って。', '……次は、あなたのおでこに書いておくわね。'],
+  },
+  // 「妻の頭から鬼の角」がバズった
+  {
+    id: 'sns_tsuno_sorry',
+    text: '投稿消しました。角なんて生えてません。ヘッドスパを予約したので、ゆっくりしてきてください',
+    requires: { all: ['deleted:post_tsuno', 'ordered:headspa_ticket'] },
+    replyRelevant: '……頭、ほぐしてもらってくる',
+    replyIrrelevant: 'ヘッドスパ？ 急にどうしたの？ 電話するね',
+  },
+  // カビだらけの弁当箱
+  {
+    id: 'bento_sorry',
+    text: '弁当箱、本当はなくしたんじゃなくて、押し入れに隠してた。ごめん。新しいのを特急便で注文した',
+    requires: 'ordered:bento_box',
+    replyRelevant: '……正直に言ってくれたから、今回だけね',
+    replyIrrelevant: 'お弁当箱？ 何の話？ 電話するね',
+  },
+  {
+    id: 'bento_shiranai',
+    text: 'それ、俺のじゃないかも',
+    onlyWith: 'bento_mold',
+    disguised: true,
+    replyRelevant: '……あなたのよ。',
+    replyIrrelevant: '……あなたのよ。',
+    provokeLines: ['……あなたのよ。', 'ふたの裏に、私が書いた「パパ」の文字があるの。', 'カビと一緒に、あなたの言い訳も捨てておくわね。'],
+  },
   // ゴミ出し忘れの日だけ出る、最悪の逆ギレ。送った瞬間に魔王城へ直行
   {
     id: 'garbage_yourself',

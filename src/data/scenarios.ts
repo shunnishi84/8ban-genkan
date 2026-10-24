@@ -927,6 +927,141 @@ export const SCENARIOS: Scenario[] = [
     ],
   },
 
+  // 洗濯物の色移り
+  {
+    id: 'laundry_dye',
+    title: '妻の白いブラウスを色移りさせた',
+    chatReplies: {
+      '*': ['それより、ピンクになったブラウスの話。'],
+      coming_home: ['帰ってきたら、洗濯機の前に来て。', 'ピンクのブラウスが、お待ちしてます。'],
+      sorry_generic: ['何に謝ってるの？ ブラウスのこと？', '謝るなら、白物と色物くらい分けて。'],
+    },
+    causes: [
+      {
+        id: 'laundry_dye',
+        title: 'ブラウスの色移り',
+        resolution: { all: ['ordered:blouse_same', 'chat:laundry_sorry'] },
+        angerLines: ['……これ、何色に見える？', '白だったの。お気に入りの、白いブラウス。', 'あなたの紺の靴下と一緒に洗ったのね。……「白物」のカゴに。'],
+        successLine: '同じの、頼んでくれたんだ。……洗濯は、しばらく私がやるから。',
+      },
+    ],
+    clues: [
+      { at: 'spot:hallway', cause: 'laundry_dye', text: 'ベランダの物干しに、ほんのりピンク色のブラウスが1枚だけ干してある。……あれ、白じゃなかったか？' },
+      { at: 'app:chat', cause: 'laundry_dye', unread: true, text: 'ねえ、私の白いブラウスがピンクになってるんだけど。白物のカゴに何入れた？（22:15）' },
+      { at: 'app:memo', cause: 'laundry_dye', text: '朝の洗濯当番: 白物と色物はカゴを分ける！（妻）……そういえば、紺の靴下を白物のカゴに入れた気がする' },
+    ],
+  },
+  // 妻のプリンを食べた
+  {
+    id: 'pudding_eaten',
+    title: '妻の好きなプリンを食べてしまった',
+    conflictsWith: ['pudding_promise'],
+    chatReplies: {
+      '*': ['それより、冷蔵庫のプリン。'],
+      coming_home: ['プリン泥棒が帰ってくるのね。', '帰ってきたら、冷蔵庫の前で正座。'],
+      sorry_generic: ['何に謝ってるの？ プリンのこと？', '謝るなら、同じの買ってきて。'],
+    },
+    causes: [
+      {
+        id: 'pudding_eaten',
+        title: 'プリンを食べた',
+        resolution: { all: ['bought:pudding_3pack', 'chat:pudding_ate_sorry'] },
+        angerLines: ['……私のプリン、どこ？', 'ふたに「ママ」って書いてあったよね。', '空の容器、ゴミ箱の一番下に隠してあったわよ。'],
+        successLine: '3個パック……！ ……2個は私のだからね。',
+      },
+    ],
+    clues: [
+      { at: 'slot:bag', cause: 'pudding_eaten', text: '鞄の底から、プラスチックのスプーンが出てきた。……そういえば昨夜、冷蔵庫のプリンを食べた。ふたに何か書いてあった気がする。' },
+      { at: 'app:chat', cause: 'pudding_eaten', unread: true, text: 'ねえ、冷蔵庫の私のプリン知らない？ ふたに名前書いといたんだけど（22:30）' },
+    ],
+  },
+  // つぶやきーで「妻の頭から鬼の角」がバズった
+  {
+    id: 'sns_tsuno',
+    title: 'SNSで「妻の頭から鬼の角が生えてきた」がバズった',
+    chatReplies: {
+      '*': ['それより、角の生えた妻の話は？'],
+      coming_home: ['角の生えた妻が、お待ちしてます。', '帰ってきたら、角、見せてあげるね。'],
+      'coming_home:after': ['……角、引っ込めといてあげる。'],
+      sorry_generic: ['謝るくらいなら、最初からつぶやかないで。', 'ごめんで角は引っ込まないよ。'],
+      love: ['角の生えた妻を？', '愛情は芽生えないんじゃなかったっけ？'],
+    },
+    conflictsWith: ['sns_kowai', 'sns_meshi', 'sns_meiru'],
+    causes: [
+      {
+        id: 'sns_tsuno',
+        title: 'SNSで悪口がバズった',
+        resolution: { all: ['deleted:post_tsuno', 'ordered:headspa_ticket', 'chat:sns_tsuno_sorry'] },
+        angerLines: ['「愛情は芽生えないけど」。', '「妻の頭から鬼の角が生えてきた」。', '……生えてるわよ。ほら。'],
+        successLine: 'ヘッドスパね。……角、ほぐしてきてあげる。',
+        grudging: true,
+      },
+    ],
+    clues: [
+      {
+        at: 'app:sns',
+        cause: 'sns_tsuno',
+        id: 'post_tsuno',
+        deletable: true,
+        text: '@tanaka_salaryman（あなた）\n「結婚7年。家庭に愛情は芽生えないけど、妻の頭から鬼の角が生えてきた」\n🔁 1.9万　♥ 4.6万（21:05）',
+      },
+      { at: 'app:sns', text: 'リプライ: 「座布団一枚」「奥さん見てますよ」「角、写真ください」「大喜利うまいけど人生は下手」' },
+      {
+        at: 'notice',
+        cause: 'sns_tsuno',
+        text: '📣 つぶやきー: あなたの投稿が話題になっています（🔁1.9万）',
+        hiddenWhen: 'deleted:post_tsuno',
+      },
+      { at: 'app:chat', cause: 'sns_tsuno', unread: true, text: '「妻の頭から鬼の角が生えてきた」……4.6万いいね。角、見に帰ってくる？（22:20）' },
+    ],
+  },
+  // なくしたと言っていた弁当箱が、押し入れの奥からカビだらけで出てきた
+  {
+    id: 'bento_mold',
+    title: 'なくしたはずの弁当箱がカビだらけで出てきた',
+    chatReplies: {
+      '*': ['それより、押し入れの弁当箱。'],
+      coming_home: ['お弁当箱、玄関に置いといたから。', '「なくした」お弁当箱、見つかったよ。'],
+      sorry_generic: ['何に謝ってるの？ お弁当箱？', '「なくした」って言ったよね？'],
+    },
+    causes: [
+      {
+        id: 'bento_mold',
+        title: 'カビだらけの弁当箱',
+        resolution: { all: ['ordered:bento_box', 'chat:bento_sorry'] },
+        angerLines: ['……「なくした」んじゃ、なかったの？', '押し入れの奥。ビールの空き缶と一緒に。', '中身、3か月前の唐揚げ弁当よね。……私が作った。'],
+        successLine: '新しいの、ちゃんと毎日持って帰ってきてよ？ ……洗ってね。',
+      },
+    ],
+    clues: [
+      { at: 'spot:door', cause: 'bento_mold', text: 'ドアの前に、ゴミ袋に入った弁当箱が置いてある。……ふたの隙間から、緑色のふわふわが見える。' },
+      { at: 'app:chat', cause: 'bento_mold', unread: true, text: '押し入れの奥から、あなたが「なくした」って言ってたお弁当箱が出てきたんだけど。カビだらけで（22:05）' },
+      { at: 'app:calendar', cause: 'bento_mold', text: '3か月前の金曜: 飲み会（翌朝「弁当箱なくした」と申告）' },
+    ],
+  },
+  // 家の鍵をなくした
+  {
+    id: 'key_lost',
+    title: '家の鍵をなくした',
+    chatReplies: {
+      coming_home: ['はーい。鍵、持ってるよね？', 'おかえり〜。チェーンは外しとくね'],
+    },
+    causes: [
+      {
+        id: 'key_lost',
+        title: '鍵をなくした',
+        resolution: 'bought:house_key',
+        angerLines: ['……ピンポーン。', '（インターホン越しに）……鍵は？', 'なくした？ 家の鍵を？ 酔っ払って？', '鍵屋さんの番号、ポストに入れておくわね。おやすみ。'],
+        successLine: 'おかえり。……今日はちゃんと鍵で開けたのね。',
+      },
+    ],
+    clues: [
+      { at: 'spot:door', cause: 'key_lost', text: 'ドアノブに手をかけて気づいた。……鍵が、ない。' },
+      { at: 'slot:bag', cause: 'key_lost', text: 'いつもの内ポケットに、家の鍵がない……！ 鞄をひっくり返しても出てこない。' },
+      { at: 'notice', cause: 'key_lost', text: '📞 留守電（ポチマ駅前店）: お客様の落とし物の鍵をお預かりしております（22:40）' },
+    ],
+  },
+
   // ================================================================ 異変なし（ニセ異変入り）
   {
     id: 'ramen_receipt',

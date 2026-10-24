@@ -89,6 +89,9 @@ export const ITEMS: ItemDef[] = [
       'プシュッ。……ぷはぁ〜〜。世界がぐるぐる回っている。怖いものなんて、何もない。',
     ],
   },
+  { id: 'pudding_3pack', name: '濃厚たまごプリン 3個パック', desc: '妻がいつも買っているやつ。', source: 'konbini', price: 398, slot: 'bag' },
+  // 鍵をなくした日だけ。店員が預かっていた落とし物を受け取る
+  { id: 'house_key', name: '家の鍵（落とし物）', desc: 'レジ横で店員が預かっていた。キーホルダーは妻とおそろいのクマ。', source: 'konbini', price: 0, slot: 'wallet', onlyWith: 'key_lost', buyLabel: '受け取る' },
   // 持って帰ると、必ず妻が鬼になる
   { id: 'oni_mask', name: '鬼のお面', desc: '節分の売れ残り。赤鬼。……なぜ買う？', source: 'konbini', price: 330, slot: 'bag', discardable: true },
   {
@@ -145,6 +148,9 @@ export const ITEMS: ItemDef[] = [
   { id: 'dinner_reservation', name: 'ペアディナー予約（駅前のイタリアン）', desc: '土曜の夜、2名で予約。明朝、確定メールが届く。', source: 'mail', price: 12000, slot: 'bag' },
   // 「そろそろパソコンほしいな」の日だけ並ぶ。2日後に届く（妻に相談してから買うこと）
   { id: 'laptop', name: 'ノートパソコン「ポチPC Air 14」（2日後お届け）', desc: '本日限定セール。……19万8千円。', source: 'mail', price: 198000, slot: 'bag', onlyWith: 'pc_hint', deliveryDays: 2 },
+  { id: 'blouse_same', name: '白いブラウス（同じもの・特急便）', desc: '妻のお気に入りと同じブランド、同じサイズ。', source: 'mail', price: 5900, slot: 'bag' },
+  { id: 'headspa_ticket', name: 'ヘッドスパ＆マッサージ券（eチケット）', desc: '頭皮をほぐす90分コース。明朝メールで届く。', source: 'mail', price: 8800, slot: 'bag' },
+  { id: 'bento_box', name: '曲げわっぱの弁当箱（特急便）', desc: '職人の手作り。……今度こそ毎日洗って持って帰る。', source: 'mail', price: 4200, slot: 'bag' },
   { id: 'onsen_ticket', name: '温泉ペア宿泊ギフト（eギフト）', desc: '箱根の老舗旅館。明朝メールで届く。', source: 'mail', price: 39800, slot: 'bag' },
   { id: 'spa_ticket', name: 'スパ＆マッサージ ペアチケット（eチケット）', desc: '都内ホテルのスパ。明朝メールで届く。', source: 'mail', price: 24000, slot: 'bag' },
   { id: 'kashiori', name: '老舗の菓子折り「千年最中」', desc: '義母が好きなやつ。', source: 'mail', price: 3240, slot: 'bag' },
