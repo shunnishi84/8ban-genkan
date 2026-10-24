@@ -1051,12 +1051,24 @@ describe('洗濯・プリン・角・弁当箱・鍵', () => {
     const other = day(['ring_off']);
     other.location = 'konbini';
     expect(perform(other, { type: 'buy', item: 'house_key' }).ok).toBe(false);
+    // 鍵が無いとドアは開かない（時間も進まない）。インターホンを押すしかない
     const s = day(['key_lost']);
-    expect(perform(s, { type: 'openDoor' }).outcome).toMatchObject({ kind: 'angry', causes: [{ id: 'key_lost' }] });
+    expect(perform(s, { type: 'intercom' }).ok).toBe(true);
+    const u = day(['key_lost', 'ring_off']);
+    const before = u.time;
+    const locked = perform(u, { type: 'openDoor' });
+    expect(locked.ok).toBe(false);
+    expect(locked.messages.join('')).toContain('鍵がない');
+    expect(locked.outcome.kind).toBe('continue');
+    expect(u.time).toBe(before);
+    expect(u.flags.has('door_locked')).toBe(true);
+    // インターホンで開けてもらうと、ほかの火種より先に鍵のことで怒られる
+    expect(perform(u, { type: 'intercom' }).outcome).toMatchObject({ kind: 'angry', causes: [{ id: 'key_lost' }, { id: 'ring_off' }] });
     const t = day(['key_lost']);
     t.location = 'konbini';
     expect(perform(t, { type: 'buy', item: 'house_key' }).messages[0]).toContain('受け取った');
     t.location = 'door';
+    expect(perform(t, { type: 'intercom' }).ok).toBe(false); // 鍵があればインターホンは要らない
     expect(perform(t, { type: 'openDoor' }).outcome.kind).toBe('home');
   });
 });

@@ -611,44 +611,65 @@ const act = (state: DayState, action: Action): ActionResult => {
       return result(true, [], cost);
     }
 
+    case 'intercom':
+      if (state.location !== 'door') return result(false, ['ドアの前にいない。']);
+      if (!keyless(state)) return result(false, ['鍵があるのに、わざわざ鳴らす必要はない。']);
+      state.flags.add('rang');
+      return doorOutcome(state);
+
     case 'openDoor': {
       if (state.location !== 'door') return result(false, ['ドアの前にいない。']);
-      if (state.finale) return result(true, [], 0, { kind: 'finale', finale: state.finale });
-      if (state.flags.has('insulted')) return result(true, [], 0, demonOutcome(state));
-      // 遅すぎる帰宅: 1:00〜2:00 は怒られて終わり、2:00 を過ぎるとチェーンロック、朝 6:00 にようやく入れる
-      if (state.time >= DAWN_TIME) return result(true, [], 0, { kind: 'dawn' });
-      if (state.time > LOCKOUT_TIME) {
-        return result(false, ['ガチャ……ガツン！', 'チェーンロックがかかっていて、中に入れない！', '……朝まで、どこかで時間をつぶすしかない。']);
+      // 鍵をなくした日は、鍵を受け取るまで開かない（インターホンを押すしかない）
+      if (keyless(state)) {
+        state.flags.add('door_locked');
+        return result(false, ['ガチャガチャ……開かない。', '……鍵がない！']);
       }
-      if (state.time > TIME_LIMIT) return result(true, [], 0, { kind: 'late' });
-      // 悪ふざけを送っていたら、火種に関係なく最初に送ったものの結末
-      const prank = flagsWith(state, 'prank:')[0];
-      if (prank) return result(true, [], 0, { kind: 'prank', template: prank.slice('prank:'.length) });
-      // 帰宅した瞬間に目に入る・耳に入るもの（格好・余計なひと言・持ち物）から先に怒られる
-      const angry = [...(state.flags.has('pantsless') ? [PANTSLESS] : state.flags.has('undressed') ? [UNDRESSED] : []), ...provokeCauses(state), ...carriedCauses(state), ...unresolvedCauses(state)];
-      // 鬼のお面を持って帰ると、必ず鬼になる。ほかに火種が無ければ、いったん「おかえり」と迎えられてから
-      if (state.inventory.includes('oni_mask')) {
-        return result(true, [], 0, { kind: 'angry', causes: [ONI_MASK, ...angry], fakeHome: angry.length ? undefined : state.successLines });
-      }
-      // 夫婦そろって酔っ払い: 火種はうやむやになって宴会
-      if (state.wifeDrunk && drunkLevel(state) >= 2) return result(true, [], 0, { kind: 'home', lines: [], special: 'party' });
-      if (state.wifeDrunk === 'reset') {
-        // 寝落ちした妻は話を何も覚えていない。ただし物的証拠（捨て忘れ・着替え忘れ・消し忘れ）は翌朝バレる
-        const caught = state.causes.filter((c) => !evaluate(c.resolution, withHearsayForgotten(state, c)));
-        if (caught.length > 0) return result(true, [], 0, { kind: 'angry', causes: caught, morning: true });
-        return result(true, [], 0, { kind: 'home', lines: [], special: 'reset' });
-      }
-      const special = state.wifeDrunk ? ('drunk' as const) : undefined;
-      // 甘え上戸の妻は、おねだりを聞いてもらえたら火種を1つだけ見逃してくれる
-      const amae = state.causes.find((c) => c.id === 'wife_drunk_amae');
-      if (amae && evaluate(amae.resolution, state.flags) && angry.length === 1) {
-        const lines = state.causes.filter((c) => evaluate(c.resolution, state.flags)).map((c) => c.successLine).filter(Boolean);
-        return result(true, [], 0, { kind: 'home', lines: [...lines, '……ん〜？ なんかあった気がするけど……まぁいっか〜♡ ゆるす〜♡'], special });
-      }
-      if (angry.length > 0) return result(true, [], 0, { kind: 'angry', causes: angry });
-      return result(true, [], 0, { kind: 'home', lines: state.successLines, special });
+      return doorOutcome(state);
     }
   }
+};
+
+/** 鍵をなくした日で、まだ鍵を受け取っていない */
+export const keyless = (state: DayState): boolean => onDay(state, 'key_lost') && !state.inventory.includes('house_key');
+
+/** 玄関に入ったときの結末（ドアを開けた・インターホンで開けてもらった） */
+const doorOutcome = (state: DayState): ActionResult => {
+  if (state.finale) return result(true, [], 0, { kind: 'finale', finale: state.finale });
+  if (state.flags.has('insulted')) return result(true, [], 0, demonOutcome(state));
+  // 遅すぎる帰宅: 1:00〜2:00 は怒られて終わり、2:00 を過ぎるとチェーンロック、朝 6:00 にようやく入れる
+  if (state.time >= DAWN_TIME) return result(true, [], 0, { kind: 'dawn' });
+  if (state.time > LOCKOUT_TIME) {
+    return result(false, ['ガチャ……ガツン！', 'チェーンロックがかかっていて、中に入れない！', '……朝まで、どこかで時間をつぶすしかない。']);
+  }
+  if (state.time > TIME_LIMIT) return result(true, [], 0, { kind: 'late' });
+  // 悪ふざけを送っていたら、火種に関係なく最初に送ったものの結末
+  const prank = flagsWith(state, 'prank:')[0];
+  if (prank) return result(true, [], 0, { kind: 'prank', template: prank.slice('prank:'.length) });
+  // 帰宅した瞬間に目に入る・耳に入るもの（格好・余計なひと言・持ち物）から先に怒られる
+  const angry = [...(state.flags.has('pantsless') ? [PANTSLESS] : state.flags.has('undressed') ? [UNDRESSED] : []), ...provokeCauses(state), ...carriedCauses(state), ...unresolvedCauses(state)];
+  // 鬼のお面を持って帰ると、必ず鬼になる。ほかに火種が無ければ、いったん「おかえり」と迎えられてから
+  if (state.inventory.includes('oni_mask')) {
+    return result(true, [], 0, { kind: 'angry', causes: [ONI_MASK, ...angry], fakeHome: angry.length ? undefined : state.successLines });
+  }
+  // 夫婦そろって酔っ払い: 火種はうやむやになって宴会
+  if (state.wifeDrunk && drunkLevel(state) >= 2) return result(true, [], 0, { kind: 'home', lines: [], special: 'party' });
+  if (state.wifeDrunk === 'reset') {
+    // 寝落ちした妻は話を何も覚えていない。ただし物的証拠（捨て忘れ・着替え忘れ・消し忘れ）は翌朝バレる
+    const caught = state.causes.filter((c) => !evaluate(c.resolution, withHearsayForgotten(state, c)));
+    if (caught.length > 0) return result(true, [], 0, { kind: 'angry', causes: caught, morning: true });
+    return result(true, [], 0, { kind: 'home', lines: [], special: 'reset' });
+  }
+  const special = state.wifeDrunk ? ('drunk' as const) : undefined;
+  // 甘え上戸の妻は、おねだりを聞いてもらえたら火種を1つだけ見逃してくれる
+  const amae = state.causes.find((c) => c.id === 'wife_drunk_amae');
+  if (amae && evaluate(amae.resolution, state.flags) && angry.length === 1) {
+    const lines = state.causes.filter((c) => evaluate(c.resolution, state.flags)).map((c) => c.successLine).filter(Boolean);
+    return result(true, [], 0, { kind: 'home', lines: [...lines, '……ん〜？ なんかあった気がするけど……まぁいっか〜♡ ゆるす〜♡'], special });
+  }
+  // インターホンで開けてもらったなら、まず鍵のことから
+  if (state.flags.has('rang')) angry.sort((a, b) => Number(b.id === 'key_lost') - Number(a.id === 'key_lost'));
+  if (angry.length > 0) return result(true, [], 0, { kind: 'angry', causes: angry });
+  return result(true, [], 0, { kind: 'home', lines: state.successLines, special });
 };
 
 /**

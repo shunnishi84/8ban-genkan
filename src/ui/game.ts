@@ -28,6 +28,7 @@ import {
   finaleSeed,
   sentText,
   hasUnreadChat,
+  keyless,
   onDay,
   newRun,
   perform,
@@ -125,6 +126,7 @@ type Modal =
   | { kind: 'items'; slot: SlotId }
   | { kind: 'phone'; app: AppId | null }
   | { kind: 'confirmDoor' }
+  | { kind: 'confirmIntercom' }
   /** 拾ったものを大きく見せる（写真集の付箋のページなど） */
   | { kind: 'reveal'; title: string; image: string; text: string }
   | { kind: 'confirmQuit' };
@@ -351,7 +353,7 @@ export class Game {
               ? say('narr', ['玄関で、妻が寝落ちしていた。……今夜は、何も聞かれなかった。', '──翌朝。', '妻は、玄関に残っていた「証拠」を見つけてしまった。'])
               : inside
                 ? []
-                : [{ who: 'narr' as const, text: 'ガチャ……' }]),
+                : [{ who: 'narr' as const, text: this.day!.flags.has('rang') ? 'ピンポーン……' : 'ガチャ……' }]),
             ...say('wife', causes[0].angerLines),
             ...(causes.length > 1
               ? [{ who: 'narr' as const, text: `さらに${causes.length - 1}件の火種が燃え上がった……！` }]
@@ -372,7 +374,7 @@ export class Game {
     const alone = this.day!.homeAlone;
     const lines: Line[] = [
       ...(alone ? [{ who: 'narr' as const, text: '実家にいるはずの妻の靴が、玄関にある。' }] : []),
-      { who: 'narr', text: 'ガチャ……' },
+      ...(this.day!.flags.has('rang') ? say('narr', ['ピンポーン……', 'ガチャ……と、内側からドアが開いた。']) : say('narr', ['ガチャ……'])),
       { who: 'narr', text: '玄関の空気が、凍りついた。' },
       ...say('wife', demonLines),
       { who: 'narr', text: '妻は、人であることをやめた。' },
@@ -1033,7 +1035,10 @@ export class Game {
         day.finale && FINALES[day.finale].trap
           ? btn('引き返す', '結界', () => this.travel('town'), 'badge')
           : btn('引き返す', cost('town'), () => this.travel('town')),
-        btn('ドアを開ける', null, () => this.openModal({ kind: 'confirmDoor' }), 'danger'),
+        // 鍵をなくして開かなかったら、インターホンを押すしかない
+        keyless(day) && day.flags.has('door_locked')
+          ? btn('インターホンを押す', null, () => this.openModal({ kind: 'confirmIntercom' }), 'danger')
+          : btn('ドアを開ける', null, () => this.openModal({ kind: 'confirmDoor' }), 'danger'),
       );
     }
     if (day.location === 'town') {
@@ -1137,6 +1142,8 @@ export class Game {
         return this.viewPhone(m.app);
       case 'confirmDoor':
         return this.dialog('ドアを開ける？', '火種が残っていたら……', 'やめる', '開ける', () => this.act({ type: 'openDoor' }));
+      case 'confirmIntercom':
+        return this.dialog('インターホンを押す？', '鍵をなくしたことは、確実にバレる……', 'やめる', '押す', () => this.act({ type: 'intercom' }));
       case 'confirmQuit':
         return this.dialog(
           'タイトルに戻る？',

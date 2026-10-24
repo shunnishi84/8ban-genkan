@@ -133,7 +133,10 @@ describe('解消可能性', () => {
 
   it.each(causeScenarios.map((s) => [s.id, s] as const))('%s: 何もせずドアを開けると怒られる', (_, s) => {
     const state = buildDay(1, [s], WORST_START);
-    expect(perform(state, { type: 'openDoor' }).outcome.kind).toBe('angry');
+    let outcome = perform(state, { type: 'openDoor' }).outcome;
+    // 鍵をなくした日はドアが開かないので、インターホンを押して開けてもらう
+    if (outcome.kind === 'continue') outcome = perform(state, { type: 'intercom' }).outcome;
+    expect(outcome.kind).toBe('angry');
   });
 
   it.each(normalScenarios.map((s) => [s.id, s] as const))('%s: 異変なしはそのまま開けて帰宅できる', (_, s) => {

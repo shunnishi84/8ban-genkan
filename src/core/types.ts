@@ -296,7 +296,9 @@ export type Action =
   | { type: 'deletePost'; clue: string }
   | { type: 'post'; post: string }
   | { type: 'travel'; to: Location }
-  | { type: 'openDoor' };
+  | { type: 'openDoor' }
+  /** 鍵をなくして開けられないとき、インターホンを押して妻に開けてもらう */
+  | { type: 'intercom' };
 
 export type Outcome =
   | { kind: 'continue' }
