@@ -56,6 +56,8 @@ export const IMAGES = {
   // 3:4 の一枚絵。隅の正座する夫まで見せるため、cover ではなく横幅いっぱいで描く（renderer.ts の drawDemon）
   wife_demon: { file: 'wife_demon.jpg', label: '魔王化した妻', color: '#2a0640' },
   wife_demon_final: { file: 'wife_demon_final.jpg', label: '魔王（最終形態）', color: '#40060a' },
+  wife_kishin: { file: 'wife_kishin.jpg', label: '鬼神（鬼のお面をかぶった魔王）', color: '#a0300a', fit: 'cover' },
+  wife_kishin_final: { file: 'wife_kishin_final.jpg', label: '鬼神・最終形態', color: '#600a05', fit: 'cover' },
   wife_suspicious: { file: 'wife_suspicious.png', label: '腕組みの妻', color: '#5a4a4a', fit: 'cover' },
   /** wife_angry に炎が描き込まれていれば不要 */
   fire: { file: 'fire.png', label: '炎', color: '#ff5a1f' },

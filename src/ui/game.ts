@@ -66,6 +66,8 @@ type Line = {
   testimony?: boolean;
   /** 家庭裁判の信頼度ゲージ（この行を出している間の値。lost は今削れた分） */
   gauge?: Gauge;
+  /** この行で場面を切り替える（魔王が鬼神に変身するなど） */
+  scene?: Scene;
 };
 
 type Gauge = { label: string; now: number; max: number; lost?: number };
@@ -181,6 +183,8 @@ export class Game {
   private court = false;
   /** 魔王が最終形態 */
   private finalForm = false;
+  /** 魔王城で鬼のお面を使われて、魔王が鬼神になった */
+  private kishin = false;
   /** 酔いの霧（画面全体に重ねる） */
   private fog: HTMLElement;
   private best = loadBest();
@@ -412,7 +416,7 @@ export class Game {
   // ---------------------------------------------------------------- フィナーレ（暴言4種コンプリート）
 
   private finaleScene(f: Finale): Scene {
-    if (f.scene === 'demon' || f.scene === 'loop') return { kind: 'demon', final: this.finalForm };
+    if (f.scene === 'demon' || f.scene === 'loop') return { kind: 'demon', final: this.finalForm, kishin: this.kishin };
     return { kind: 'bg', image: f.scene, fallback: f.scene === 'bg_battle' ? 'bg_town' : 'bg_door_dark' };
   }
 
@@ -438,7 +442,17 @@ export class Game {
     return lines.flatMap((l): Line[] =>
       l.evidence
         ? insults.map((t, i) => ({ who: 'other', name: l.name, text: `証拠第${i + 1}号。`, card: sentText(this.day!, t.id) }))
-        : [{ who: l.who, name: l.name, text: l.text, fx: l.fx, testimony: l.testimony }],
+        : [
+            {
+              who: l.who,
+              name: l.name,
+              text: l.text,
+              fx: l.fx,
+              testimony: l.testimony,
+              // 鬼神に変身する行で、背景の魔王を切り替える
+              scene: l.transform ? { kind: 'demon' as const, final: this.finalForm, kishin: true } : undefined,
+            },
+          ],
     );
   }
 
@@ -450,6 +464,7 @@ export class Game {
     const intro = ff && this.day!.flags.has('finale_by_tweet') ? (ff.tweetIntro ?? ff.intro) : ff?.intro;
     const f: Finale = ff && intro && base.choice ? { ...base, intro, choice: { ...base.choice, ...ff } } : base;
     this.finalForm = !!ff;
+    this.kishin = false;
     this.recordEnding(endingId('finale', ff ? `${id}_final` : id));
     this.court = f.choice?.style === 'court';
     this.audio.playSe('se_door');
@@ -486,11 +501,17 @@ export class Game {
           if (o === back) return choice();
           if (o.tools && held.length) return choice(true);
           const before = hp;
-          let lines = this.expand(pick(Math.random, o.replies)).map((l) => ({ ...l, gauge: gauge(before) }));
+          if (o.kishin) {
+            this.kishin = true;
+            this.recordEnding(endingId('finale', this.finalForm ? `${id}_final_kishin` : `${id}_kishin`));
+          }
+          const replies = this.finalForm && o.finalReplies ? o.finalReplies : o.replies;
+          let lines = this.expand(pick(Math.random, replies)).map((l) => ({ ...l, gauge: gauge(before) }));
           let next = () => (o.end ? outro() : choice());
           if (o.item) inventory.splice(inventory.indexOf(o.item), 1);
           if (o.enrage) drunkDemon = true;
-          const counters = drunkDemon && c.drunkCounters?.length ? c.drunkCounters : c.counters;
+          // 鬼神 ＞ 酔った魔王 ＞ いつもの魔王 の順に強い反撃
+          const counters = this.kishin && c.kishinCounters?.length ? c.kishinCounters : drunkDemon && c.drunkCounters?.length ? c.drunkCounters : c.counters;
           if (o.selfDamage) {
             // 反撃の代わりに、一発で大ダメージ
             hp -= o.selfDamage;
@@ -750,6 +771,7 @@ export class Game {
         else if (s.index === 0 && s.scene) this.renderer.setScene(s.scene);
       } else if (s.mood === 'finale') {
         if (this.court) this.renderer.setScene(this.courtCamera(s.lines[s.index]));
+        else if (s.lines[s.index].scene) this.renderer.setScene(s.lines[s.index].scene!);
         else if (s.index === 0 && s.scene) this.renderer.setScene(s.scene);
       } else if (s.index === 0) {
         this.renderer.setScene(

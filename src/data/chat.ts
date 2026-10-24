@@ -199,7 +199,7 @@ export const CHAT_TEMPLATES: ChatTemplate[] = [
     disguised: true,
     replyRelevant: '……書いてあったわよ。',
     replyIrrelevant: '……書いてあったわよ。',
-    provokeLines: ['……書いてあったわよ。', 'ふたに、マジックで、大きく「ママ」って。', '……次は、あなたのおでこに書いておくわね。'],
+    provokeLines: ['……書いてあったわよ。', 'ふたに、マジックで、大きく「妻」って。', '……次は、あなたのおでこに書いておくわね。'],
   },
   // 「妻の頭から鬼の角」がバズった
   {
@@ -224,7 +224,7 @@ export const CHAT_TEMPLATES: ChatTemplate[] = [
     disguised: true,
     replyRelevant: '……あなたのよ。',
     replyIrrelevant: '……あなたのよ。',
-    provokeLines: ['……あなたのよ。', 'ふたの裏に、私が書いた「パパ」の文字があるの。', 'カビと一緒に、あなたの言い訳も捨てておくわね。'],
+    provokeLines: ['……あなたのよ。', 'ふたの裏に、私が書いたあなたの名前があるの。', 'カビと一緒に、あなたの言い訳も捨てておくわね。'],
   },
   // ゴミ出し忘れの日だけ出る、最悪の逆ギレ。送った瞬間に魔王城へ直行
   {

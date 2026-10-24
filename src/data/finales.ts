@@ -53,6 +53,8 @@ export interface FinaleLine {
   fx?: FinaleFx;
   /** 証言（緑の文字で出す） */
   testimony?: boolean;
+  /** この行で魔王が鬼神に変身する（背景の魔王の絵が切り替わる） */
+  transform?: boolean;
 }
 
 /**
@@ -87,6 +89,10 @@ export interface FinaleChoice {
   selfDamage?: number;
   /** 相手が酔っぱらって凶暴化する。以後の反撃は drunkCounters になる */
   enrage?: boolean;
+  /** 魔王が鬼神に変身する（鬼のお面）。以後の反撃は kishinCounters になる */
+  kishin?: boolean;
+  /** 最終形態のときはこちらの返し */
+  finalReplies?: FinaleLine[][];
 }
 
 /** 毎ターンの相手の反撃。damage だけ「こころのHP」が減る */
@@ -128,6 +134,8 @@ export interface Finale {
     /** つぶやきーで酔い3の投稿を3つともバズらせて最終形態になったときの intro */
     tweetIntro?: FinaleLine[];
     counters: FinaleCounter[];
+    /** 最終形態から鬼神になったあとの反撃 */
+    kishinCounters?: FinaleCounter[];
     hp: number;
     knockout: FinaleLine[];
   };
@@ -138,6 +146,8 @@ export interface Finale {
     counters?: FinaleCounter[];
     /** 相手が酔っぱらって凶暴化したあと（enrage）の反撃 */
     drunkCounters?: FinaleCounter[];
+    /** 鬼神に変身したあと（kishin）の反撃。酔っぱらいより優先 */
+    kishinCounters?: FinaleCounter[];
     /** こころのHP。反撃で 0 になったら knockout を見せて先へ進む */
     hp?: number;
     knockout?: FinaleLine[];
@@ -290,6 +300,29 @@ export const FINALES: Record<FinaleId, Finale> = {
           ],
         },
         {
+          label: 'おにのおめん',
+          item: 'oni_mask',
+          kishin: true,
+          replies: [
+            [
+              { who: 'narr', text: 'あなたは　おにのおめんを　とりだした！' },
+              { who: 'wife', text: 'あら、いいもの持ってるじゃない。' },
+              { who: 'narr', text: 'まおうは　おめんを　うばいとり、すっと　かおに　あてた……。' },
+              { who: 'narr', text: 'まおうは　「きしん」に　しんかした！！', transform: true },
+              { who: 'wife', text: '……鬼と魔王、どっちが怖いか知りたかったんでしょ？ 両方、見せてあげる。' },
+            ],
+          ],
+          finalReplies: [
+            [
+              { who: 'narr', text: 'あなたは　おにのおめんを　とりだした！' },
+              { who: 'wife', text: '……あら。いいもの、持ってるじゃない。' },
+              { who: 'narr', text: 'さいしゅうけいたいの　まおうが、おめんを　かぶった……！' },
+              { who: 'narr', text: 'まおうは　「きしん・さいしゅうけいたい」に　しんかした！！！', transform: true },
+              { who: 'wife', text: 'もう、誰にも止められないわよ。……私にもね。' },
+            ],
+          ],
+        },
+        {
           label: 'どげざ',
           end: true,
           replies: [
@@ -313,6 +346,18 @@ export const FINALES: Record<FinaleId, Finale> = {
         { damage: 35, lines: [{ who: 'narr', text: 'まおうは　ぼうげんの　スクショを　4まい　ならべた！　35の　ダメージ！' }] },
         { damage: 40, lines: [{ who: 'narr', text: 'まおうは　だまって　ほほえんだ。……いちばん　こわい！　40の　ダメージ！' }] },
         { damage: 20, lines: [{ who: 'wife', text: 'お義母さんに電話しようかしら。' }, { who: 'narr', text: 'まおうは　スマホを　ちらつかせた！　20の　ダメージ！' }] },
+      ],
+      kishinCounters: [
+        { damage: 55, lines: [{ who: 'narr', text: 'きしんの　「にらみ」！　くうきが　こおりついた！　55の　ダメージ！' }] },
+        {
+          damage: 60,
+          lines: [
+            { who: 'wife', text: '鬼は外？ ……出ていくのは、あなたの方よ。' },
+            { who: 'narr', text: 'きしんは　まめを　ひとつかみ　なげつけた！　60の　ダメージ！' },
+          ],
+        },
+        { damage: 65, lines: [{ who: 'narr', text: 'きしんの　ツノが　ひかった！　かけいぼが　ひとりでに　ひらいた！　65の　ダメージ！' }] },
+        { damage: 50, lines: [{ who: 'narr', text: 'きしんは　かなぼうで　ゆかを　たたいた。いえじゅうが　ゆれた！　50の　ダメージ！' }] },
       ],
       drunkCounters: [
         {
@@ -362,6 +407,17 @@ export const FINALES: Record<FinaleId, Finale> = {
         { damage: 35, lines: [{ who: 'narr', text: 'まおうは　あしたの　あさの　「ふつかよい」を　よげんした！　35の　ダメージ！' }] },
         { damage: 50, lines: [{ who: 'narr', text: 'まおうの　さいしゅうおうぎ　「むごんの　せいざ　ようせい」！　50の　ダメージ！' }] },
         { damage: 30, lines: [{ who: 'wife', text: '休肝日、向こう1年ね。' }, { who: 'narr', text: 'れいぞうこの　ビールが　すべて　ふういんされた！　30の　ダメージ！' }] },
+      ],
+      kishinCounters: [
+        { damage: 80, lines: [{ who: 'narr', text: 'きしん・さいしゅうけいたいの　「むごんの　にらみ」！　じかんが　とまった！　80の　ダメージ！' }] },
+        {
+          damage: 90,
+          lines: [
+            { who: 'wife', text: '鬼は外、福は内。……あなたは、どっち？' },
+            { who: 'narr', text: 'きしんは　まめを　ふくろごと　なげつけた！　90の　ダメージ！' },
+          ],
+        },
+        { damage: 75, lines: [{ who: 'narr', text: 'あかぐろい　いかずちが　げんかんに　おちた！　75の　ダメージ！' }] },
       ],
       knockout: [
         { who: 'narr', text: 'あなたの　こころは　こなごなに　くだけた……。' },

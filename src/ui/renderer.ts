@@ -58,7 +58,8 @@ export type Scene =
   /** image が無いときは鬼の形相の妻（wife_dark は時間切れの静かな怒り） */
   | { kind: 'angry'; image: ImageKey }
   /** final: 魔王の最終形態（缶ビール3本＋暴言コンプリートの魔王城） */
-  | { kind: 'demon'; final?: boolean }
+  /** kishin: 鬼のお面をかぶって鬼神になった魔王 */
+  | { kind: 'demon'; final?: boolean; kishin?: boolean }
   /** 無限玄関ループ: level が上がるほど玄関がおかしくなる */
   | { kind: 'loop'; level: number }
   /** grudging: 渋々許す日は無表情の妻（画像が無ければ笑顔で代用） */
@@ -153,7 +154,7 @@ export class Renderer {
         this.drawAngry(t, s.image === 'wife_dark' || this.images.get(s.image) ? s.image : 'wife_angry');
         break;
       case 'demon':
-        this.drawDemon(t, s.final);
+        this.drawDemon(t, s.final, s.kishin);
         break;
     }
     if (s.kind === 'angry' || s.kind === 'demon' || s.kind === 'loop') this.raf = requestAnimationFrame(() => this.draw());
@@ -228,10 +229,12 @@ export class Renderer {
    * 暴言を送った日の結末: 邪悪なオーラを放つ魔王化した妻。
    * wife_demon 画像が無いあいだは wife_angry を紫に染めて代用する。
    */
-  private drawDemon(t: number, final = false) {
+  private drawDemon(t: number, final = false, kishin = false) {
     const { ctx } = this;
-    // 最終形態は紫ではなく血のような赤と黒。光線は倍の速さで、稲妻も多い
-    const pal = final
+    // 最終形態は紫ではなく血のような赤と黒。光線は倍の速さで、稲妻も多い。鬼神は燃えるような朱と金
+    const pal = kishin
+      ? { bg: '#120400', ray: ['rgba(255,110,0,0.3)', 'rgba(60,5,0,0.5)'], aura: [255, 120, 20], mid: 'rgba(170,30,0,0.45)', ember: 'rgba(255,200,60,0.9)', flash: '255,230,170', vig: 'rgba(20,3,0,0.9)', tint: 'rgba(200,60,10,0.85)' }
+      : final
       ? { bg: '#0d0203', ray: ['rgba(200,10,30,0.28)', 'rgba(20,0,0,0.5)'], aura: [220, 20, 40], mid: 'rgba(120,0,10,0.4)', ember: 'rgba(255,60,40,0.85)', flash: '255,200,190', vig: 'rgba(15,0,0,0.9)', tint: 'rgba(170,20,30,0.85)' }
       : { bg: '#07020d', ray: ['rgba(120,20,190,0.22)', 'rgba(40,0,70,0.35)'], aura: [190, 60, 255], mid: 'rgba(90,0,150,0.35)', ember: 'rgba(200,90,255,0.8)', flash: '235,220,255', vig: 'rgba(10,0,20,0.85)', tint: 'rgba(110,40,180,0.85)' };
     this.fillAll(pal.bg);
@@ -265,8 +268,9 @@ export class Renderer {
     const shake = Math.min(1, t) * Math.sin(t * 55) * (final ? 9 : 5);
     const dy = Math.cos(t * 47) * 2;
     const zoom = 1.02 + Math.min(t, 2) * 0.05;
-    // 最終形態の絵が無ければ、いつもの魔王を赤黒く染めて代用する
-    const key = final && this.images.get('wife_demon_final') ? 'wife_demon_final' : 'wife_demon';
+    // 最終形態の絵が無ければ、いつもの魔王を赤黒く染めて代用する。鬼神の絵が無ければ、元の魔王を朱色に染めて代用
+    const kishinKey: ImageKey = final ? 'wife_kishin_final' : 'wife_kishin';
+    const key: ImageKey = kishin && this.images.get(kishinKey) ? kishinKey : final && this.images.get('wife_demon_final') ? 'wife_demon_final' : 'wife_demon';
     const demon = this.images.get(key);
     if (demon) {
       // 横幅いっぱい・縦は中央。上下の余白は回る光線とオーラが埋める
@@ -275,7 +279,8 @@ export class Renderer {
       const rect = { x: (W - w) / 2 + shake, y: (H - h) / 2 + dy, w, h };
       this.drawImage(key, rect);
       // 最終形態の絵が無いときは赤黒く染める
-      if (final && key === 'wife_demon') this.tint('rgba(255,70,70,1)', rect, `rgba(160,0,20,${0.18 + Math.sin(t * 9) * 0.08})`);
+      if (kishin && key !== kishinKey) this.tint('rgba(255,140,60,1)', rect, `rgba(255,90,0,${0.2 + Math.sin(t * 7) * 0.08})`);
+      else if (final && key === 'wife_demon') this.tint('rgba(255,70,70,1)', rect, `rgba(160,0,20,${0.18 + Math.sin(t * 9) * 0.08})`);
     } else {
       this.drawImage('wife_angry', { x: (W - W * zoom) / 2 + shake, y: (H - H * zoom) / 2 + dy, w: W * zoom, h: H * zoom });
       // 代用: 紫に染めて闇落ちさせる
@@ -295,7 +300,7 @@ export class Renderer {
     }
 
     // ときどき稲妻で画面が白く光る
-    const phase = t % (final ? 1.1 : 2.3);
+    const phase = t % (final || kishin ? 1.1 : 2.3);
     if (phase < 0.12) {
       this.fillAll(`rgba(${pal.flash},${0.75 - phase * 6})`);
     }

@@ -1172,6 +1172,47 @@ No text, no letters, no numbers, no watermark.
 ```
 → 順番に `item_pudding_3pack / item_blouse_same / item_headspa_ticket / item_bento_box / item_house_key` として切り出す。
 
+## 23. 鬼神（鬼のお面をかぶった魔王）＋ 鬼神・最終形態 — Gemini 用
+
+魔王城の戦いで「どうぐ → おにのおめん」を使うと、魔王が「いいもの持ってるじゃない」とお面をかぶって変身する姿。
+置くまでは、いつもの魔王（最終形態）の絵を朱色に染めて代用する。どちらも縦長（約 3:4、今の魔王の絵と同じ比率）。
+
+| ファイル | 添付する見本 |
+|---|---|
+| `wife_kishin.jpg` | `wife_demon.jpg` と `item_oni_mask.png` |
+| `wife_kishin_final.jpg` | `wife_demon_final.jpg` と `item_oni_mask.png` |
+
+### 23-1. wife_kishin.jpg（添付: wife_demon.jpg, item_oni_mask.png）
+```
+Use the first attached image as the character, pose and composition reference (the demon-
+queen wife in her floral apron, in the same demonic castle hall), and the second attached
+image as the red oni mask she now wears. Same 3:4 vertical framing. She has put the cheap
+red plastic setsubun oni mask on her face, but it has fused with her and come alive: the
+mask's yellow horns have grown into huge curved golden horns, its grin is now a terrifying
+fanged smile, and its eyes blaze with orange fire. Her purple demonic aura has turned into
+roaring crimson and gold flames, and she now holds a huge spiked iron club (kanabo) resting
+on her shoulder. A scattering of roasted soybeans floats around her like embers. The tiny
+husband cowers in the corner, even smaller than before. Epic, over-the-top, comedic boss
+transformation. Japanese manga-style digital illustration, clean bold black outlines,
+dramatic cel shading, crimson, orange and gold palette. No text, no letters, no watermark.
+```
+
+### 23-2. wife_kishin_final.jpg（添付: wife_demon_final.jpg, item_oni_mask.png）
+```
+Use the first attached image as the character, pose and composition reference (the final
+form of the demon-queen wife, blood-red and black, crown of thorns, lightning), and the
+second attached image as the red oni mask she now wears. Same 3:4 vertical framing. Her
+final form has put on the oni mask and become the ultimate "oni god": the mask has merged
+with her face into a gigantic glowing crimson oni face with four massive golden horns and
+blazing white eyes; six arms made of black flame emerge from her back, each holding a
+different weapon (a spiked iron club, a household account book, a rolling pin, a frying
+pan, a bag of soybeans, a smartphone showing a glowing screen). Crimson and black lightning
+splits the castle hall, the floor cracks open with lava light, and the tiny husband is
+blown backwards in the corner. Maximum boss energy, absurd and comedic. Japanese manga-style
+digital illustration, clean bold black outlines, dramatic cel shading, crimson, black and
+gold palette. No text, no letters, no watermark.
+```
+
 ---
 
 ## 置いたあとの確認

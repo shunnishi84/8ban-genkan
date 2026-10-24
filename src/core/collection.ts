@@ -46,6 +46,13 @@ export const SPECIAL_ENDINGS: { id: string; title: string }[] = [
   ...FINALE_IDS.flatMap((id) => [
     { id: endingId('finale', id), title: FINALES[id].title },
     ...(FINALES[id].finalForm ? [{ id: endingId('finale', `${id}_final`), title: `${FINALES[id].title}（最終形態）` }] : []),
+    // 魔王城で鬼のお面を使うと鬼神（どうぐに「お面」がある魔王だけ）
+    ...(FINALES[id].choice?.options.some((o) => o.kishin)
+      ? [
+          { id: endingId('finale', `${id}_kishin`), title: `${FINALES[id].title}（鬼神）` },
+          { id: endingId('finale', `${id}_final_kishin`), title: `${FINALES[id].title}（鬼神・最終形態）` },
+        ]
+      : []),
   ]),
   ...CHAT_TEMPLATES.filter((t) => t.prankEnding).map((t) => ({ id: endingId('prank', t.id), title: t.prankEnding!.title })),
   ...ITEMS.filter((i) => i.collapse).map((i) => ({ id: endingId('collapse', i.id), title: i.collapse!.title })),

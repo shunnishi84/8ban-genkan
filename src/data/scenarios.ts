@@ -966,7 +966,7 @@ export const SCENARIOS: Scenario[] = [
         id: 'pudding_eaten',
         title: 'プリンを食べた',
         resolution: { all: ['bought:pudding_3pack', 'chat:pudding_ate_sorry'] },
-        angerLines: ['……私のプリン、どこ？', 'ふたに「ママ」って書いてあったよね。', '空の容器、ゴミ箱の一番下に隠してあったわよ。'],
+        angerLines: ['……私のプリン、どこ？', 'ふたに「妻」って書いてあったよね。', '空の容器、ゴミ箱の一番下に隠してあったわよ。'],
         successLine: '3個パック……！ ……2個は私のだからね。',
       },
     ],

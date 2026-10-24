@@ -27,7 +27,7 @@ describe('異変コレクション', () => {
   it('エンディングはふつうの怒られエンド4種＋フィナーレ7種＋最終形態・悪ふざけ・病院送り・交番・留置場・宴会で、ID が重複しない', () => {
     const ids = SPECIAL_ENDINGS.map((e) => e.id);
     expect(new Set(ids).size).toBe(ids.length);
-    for (const id of ['normal:angry', 'normal:demon', 'normal:late', 'normal:dawn', 'finale:court', 'finale:robot', 'finale:castle_final', 'prank:prank_jiko', 'collapse:spirytus', 'arrest:jail', 'party']) expect(ids).toContain(id);
+    for (const id of ['normal:angry', 'normal:demon', 'normal:late', 'normal:dawn', 'finale:court', 'finale:robot', 'finale:castle_final', 'finale:castle_kishin', 'finale:castle_final_kishin', 'prank:prank_jiko', 'collapse:spirytus', 'arrest:jail', 'party']) expect(ids).toContain(id);
     expect(SPECIAL_ENDINGS.every((e) => e.title.length > 0)).toBe(true);
     // 異変の回収率には数えない
     expect(collectionRate(new Set(ids))).toBe('0.0');

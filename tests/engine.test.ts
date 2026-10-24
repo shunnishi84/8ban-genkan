@@ -1118,6 +1118,20 @@ describe('魔王城でお酒を使う', () => {
     expect(sake.selfDamage!).toBeGreaterThanOrEqual(FINALES.castle.choice!.hp!);
     expect(sake.selfDamage!).toBeGreaterThanOrEqual(FINALES.castle.finalForm!.hp);
   });
+  it('鬼のお面は「いいもの持ってるじゃない」で魔王がかぶって鬼神になり、反撃がいちばん強くなる（最終形態にも鬼神がある）', () => {
+    const mask = opt('おにのおめん');
+    expect(mask.item).toBe('oni_mask');
+    expect(mask.kishin).toBe(true);
+    expect(mask.replies[0].some((l) => l.text.includes('いいもの持ってる'))).toBe(true);
+    expect(mask.replies[0].some((l) => l.transform)).toBe(true);
+    expect(mask.finalReplies![0].some((l) => l.transform && l.text.includes('さいしゅうけいたい'))).toBe(true);
+    const min = (cs: { damage: number }[]) => Math.min(...cs.map((c) => c.damage));
+    const max = (cs: { damage: number }[]) => Math.max(...cs.map((c) => c.damage));
+    const c = FINALES.castle.choice!;
+    expect(min(c.kishinCounters!)).toBeGreaterThanOrEqual(max(c.counters!));
+    expect(min(FINALES.castle.finalForm!.kishinCounters!)).toBeGreaterThan(max(c.kishinCounters!));
+  });
+
   it('スピリタスは魔王を酔わせて、反撃が強くなる', () => {
     expect(opt('スピリタス').enrage).toBe(true);
     const max = (cs: { damage: number }[]) => Math.max(...cs.map((c) => c.damage));
