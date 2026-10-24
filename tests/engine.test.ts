@@ -1047,6 +1047,27 @@ describe('洗濯・プリン・角・弁当箱・鍵', () => {
     expect(perform(s, { type: 'openDoor' }).outcome).toMatchObject({ kind: 'angry', causes: [{ id: `provoke:${trap}` }] });
   });
 
+  it('プリンの日に安いなめらかプリンでごまかすと怒られる（高級な窯焼きプリンでないとダメ）', () => {
+    const s = day(['pudding_eaten'], hm(23, 0));
+    s.location = 'konbini';
+    perform(s, { type: 'buy', item: 'konbini_pudding' });
+    expect(perform(s, { type: 'sendChat', template: 'pudding_ate_sorry' }).ok).toBe(false);
+    expect(perform(s, { type: 'sendChat', template: 'pudding_ate_cheap' }).ok).toBe(true);
+    s.location = 'door';
+    const o = perform(s, { type: 'openDoor' }).outcome;
+    expect(o.kind).toBe('angry');
+    if (o.kind === 'angry') {
+      expect(o.causes[0].id).toBe('provoke:pudding_ate_cheap');
+      expect(o.causes[0].angerLines).toContain('安いほうでごまかさないで。');
+    }
+    const t = day(['pudding_eaten'], hm(23, 0));
+    t.location = 'konbini';
+    perform(t, { type: 'buy', item: 'pudding_premium' });
+    perform(t, { type: 'sendChat', template: 'pudding_ate_sorry' });
+    t.location = 'door';
+    expect(perform(t, { type: 'openDoor' }).outcome.kind).toBe('home');
+  });
+
   it('なくした鍵はその日だけコンビニで受け取れる（0円）。受け取らずに帰るとインターホン越しに怒られる', () => {
     const other = day(['ring_off']);
     other.location = 'konbini';

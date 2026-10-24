@@ -1104,7 +1104,7 @@ No text, no letters, no numbers, no watermark.
 | `clue_pudding_lid.jpg` | プリン: 鞄の底のスプーンと、ゴミ箱の底に隠したプリンの空き容器（鞄を調べたとき） | 横 4:3 | `bg_door.jpg` |
 | `clue_tsuno_post.jpg` | 角のバズ: 投稿に添付された「角の生えた妻」の落書きイラスト（つぶやきー） | 横 4:3 | `wife_suspicious.png` |
 | `clue_moldy_bento.jpg` | 弁当箱: ドアの前のゴミ袋に入った、カビだらけの弁当箱（ドアを調べたとき） | 横 4:3 | `bg_door.jpg` |
-| 持ち物アイコン5種 | 3個パックのプリン／白いブラウス／ヘッドスパ券／曲げわっぱ弁当箱／クマのキーホルダー付きの鍵 | 1枚に 3×2 | `item_beer.png` |
+| 持ち物アイコン5種 | コンビニの高級プリン／白いブラウス／ヘッドスパ券／曲げわっぱ弁当箱／クマのキーホルダー付きの鍵 | 1枚に 3×2 | `item_beer.png` |
 
 ### 22-1. clue_pink_blouse.jpg（添付: bg_door.jpg）
 ```
@@ -1156,8 +1156,8 @@ arranged in a neat 3 columns x 2 rows grid (the last cell empty) on a plain pure
 background. Each icon is a single object, centered in its own cell, with plenty of white
 space between icons, nothing touching or overlapping, no labels, no numbers, no frames.
 Row 1, left to right:
-1. a pack of three rich custard puddings in clear plastic cups joined together, with
-   caramel on top and a plain yellow paper sleeve
+1. a single luxurious convenience-store custard pudding in a small brown baked ceramic-
+   style cup with a golden caramelized top, a gold lid and a tiny gold ribbon
 2. a neatly folded elegant pure white women's blouse in a clear plastic shop bag with a
    small ribbon
 3. a head spa and massage gift voucher: a soft green envelope with a lotus and water drop
@@ -1170,7 +1170,7 @@ Japanese manga-style digital illustration, clean bold black outlines, flat cel s
 simple and readable at small size, consistent style across all icons.
 No text, no letters, no numbers, no watermark.
 ```
-→ 順番に `item_pudding_3pack / item_blouse_same / item_headspa_ticket / item_bento_box / item_house_key` として切り出す。
+→ 順番に `item_pudding_premium / item_blouse_same / item_headspa_ticket / item_bento_box / item_house_key` として切り出す。
 
 ## 23. 鬼神（鬼のお面をかぶった魔王）＋ 鬼神・最終形態 — Gemini 用
 

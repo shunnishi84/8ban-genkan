@@ -89,7 +89,8 @@ export const ITEMS: ItemDef[] = [
       'プシュッ。……ぷはぁ〜〜。世界がぐるぐる回っている。怖いものなんて、何もない。',
     ],
   },
-  { id: 'pudding_3pack', name: '濃厚たまごプリン 3個パック', desc: '妻がいつも買っているやつ。', source: 'konbini', price: 398, slot: 'bag' },
+  // コンビニのプリンでは一番高いやつ（お取り寄せの窯出しプリンには及ばない）。なめらかプリンとは別物
+  { id: 'pudding_premium', name: '贅沢窯焼きプリン', desc: 'コンビニのプリンでは一番高いやつ。妻のお気に入り。', source: 'konbini', price: 480, slot: 'bag' },
   // 鍵をなくした日だけ。店員が預かっていた落とし物を受け取る
   { id: 'house_key', name: '家の鍵（落とし物）', desc: 'レジ横で店員が預かっていた。キーホルダーは妻とおそろいのクマ。', source: 'konbini', price: 0, slot: 'wallet', onlyWith: 'key_lost', buyLabel: '受け取る' },
   // 持って帰ると、必ず妻が鬼になる

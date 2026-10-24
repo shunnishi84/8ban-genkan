@@ -965,14 +965,14 @@ export const SCENARIOS: Scenario[] = [
       {
         id: 'pudding_eaten',
         title: 'プリンを食べた',
-        resolution: { all: ['bought:pudding_3pack', 'chat:pudding_ate_sorry'] },
+        resolution: { all: ['bought:pudding_premium', 'chat:pudding_ate_sorry'] },
         angerLines: ['……私のプリン、どこ？', 'ふたに「妻」って書いてあったよね。', '空の容器、ゴミ箱の一番下に隠してあったわよ。'],
-        successLine: '3個パック……！ ……2個は私のだからね。',
+        successLine: '贅沢窯焼きプリン……！ ……次に食べたら、2個買ってきてもらうからね。',
       },
     ],
     clues: [
       { at: 'slot:bag', cause: 'pudding_eaten', text: '鞄の底から、プラスチックのスプーンが出てきた。……そういえば昨夜、冷蔵庫のプリンを食べた。ふたに何か書いてあった気がする。' },
-      { at: 'app:chat', cause: 'pudding_eaten', unread: true, text: 'ねえ、冷蔵庫の私のプリン知らない？ ふたに名前書いといたんだけど（22:30）' },
+      { at: 'app:chat', cause: 'pudding_eaten', unread: true, text: 'ねえ、冷蔵庫の私の「贅沢窯焼きプリン」知らない？ ふたに名前書いといたんだけど（22:30）' },
     ],
   },
   // つぶやきーで「妻の頭から鬼の角」がバズった

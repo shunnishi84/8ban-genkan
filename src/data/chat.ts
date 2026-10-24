@@ -187,10 +187,21 @@ export const CHAT_TEMPLATES: ChatTemplate[] = [
   // 妻のプリンを食べた
   {
     id: 'pudding_ate_sorry',
-    text: 'ごめん、冷蔵庫のプリン食べたの俺。同じのを3個パックで買ったから許して',
-    requires: 'bought:pudding_3pack',
-    replyRelevant: '……3個パックなら、許す',
+    text: 'ごめん、冷蔵庫のプリン食べたの俺。同じ贅沢窯焼きプリンを買ったから許して',
+    requires: 'bought:pudding_premium',
+    replyRelevant: '……ちゃんと同じの買ってきたのね。許す',
     replyIrrelevant: 'プリン？ 何の話？ 電話するね',
+  },
+  // 安いなめらかプリンでごまかそうとする。普通の定型文の顔をした地雷
+  {
+    id: 'pudding_ate_cheap',
+    text: 'ごめん、冷蔵庫のプリン食べたの俺。代わりのプリン買ったから許して',
+    onlyWith: 'pudding_eaten',
+    requires: 'bought:konbini_pudding',
+    disguised: true,
+    replyRelevant: '……代わりのプリン？',
+    replyIrrelevant: '……代わりのプリン？',
+    provokeLines: ['……これ、いつものと違う。', '198円のなめらかプリン。私が食べたかったのは、480円の窯焼きのほう。', '安いほうでごまかさないで。'],
   },
   {
     id: 'pudding_namae',
