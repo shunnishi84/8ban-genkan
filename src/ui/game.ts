@@ -273,7 +273,8 @@ export class Game {
       case 'late':
       case 'dawn':
       case 'angry':
-        this.gameOver(r.outcome.kind, r.outcome.kind === 'angry' ? r.outcome.causes : [], r.outcome.kind === 'angry' && r.outcome.morning);
+        if (r.outcome.kind === 'angry' && r.outcome.fakeHome) this.fakeHome(r.outcome.fakeHome, r.outcome.causes);
+        else this.gameOver(r.outcome.kind, r.outcome.kind === 'angry' ? r.outcome.causes : [], r.outcome.kind === 'angry' && r.outcome.morning);
         return false;
       case 'demon':
         this.demonEnding(r.outcome.lines, r.outcome.reason);
@@ -298,8 +299,23 @@ export class Game {
     return r.ok;
   }
 
-  private gameOver(kind: 'late' | 'dawn' | 'angry', causes: Cause[], morning = false) {
-    this.audio.playSe(kind === 'angry' ? 'se_door' : 'se_late');
+  /** いったん普通に迎えられて、帰宅成功かと思ったところで鬼になる（鬼のお面を持って帰った日） */
+  private fakeHome(successLines: string[], causes: Cause[]) {
+    this.audio.playSe('se_door');
+    this.playSeAt('se_success', 300);
+    const lines: Line[] = [
+      { who: 'me', text: 'ただいま……' },
+      { who: 'wife', text: 'おかえり。' },
+      ...say('wife', successLines),
+      { who: 'wife', text: '……あら？ 何買ってきたの？' },
+      { who: 'narr', text: '鞄から、赤鬼のお面がはみ出していた。' },
+    ];
+    this.talk('home', lines, () => this.gameOver('angry', causes, false, true));
+  }
+
+  /** inside: もう玄関の中で迎えられたあと（ドアの音と「ガチャ……」を出さない） */
+  private gameOver(kind: 'late' | 'dawn' | 'angry', causes: Cause[], morning = false, inside = false) {
+    if (!inside) this.audio.playSe(kind === 'angry' ? 'se_door' : 'se_late');
     this.playSeAt('se_angry', 250);
     const lines: Line[] =
       kind === 'dawn'
@@ -322,7 +338,9 @@ export class Game {
             // 酔って寝落ちした妻は何も聞かなかったが、翌朝、残っていた証拠を見つけた
             ...(morning
               ? say('narr', ['玄関で、妻が寝落ちしていた。……今夜は、何も聞かれなかった。', '──翌朝。', '妻は、玄関に残っていた「証拠」を見つけてしまった。'])
-              : [{ who: 'narr' as const, text: 'ガチャ……' }]),
+              : inside
+                ? []
+                : [{ who: 'narr' as const, text: 'ガチャ……' }]),
             ...say('wife', causes[0].angerLines),
             ...(causes.length > 1
               ? [{ who: 'narr' as const, text: `さらに${causes.length - 1}件の火種が燃え上がった……！` }]

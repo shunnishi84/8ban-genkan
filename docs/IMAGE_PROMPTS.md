@@ -1063,6 +1063,39 @@ cel shading, simple and readable at small size.
 No text, no letters, no numbers, no logos, no watermark.
 ```
 
+## 21. 甘え上戸の妻のぷんぷん顔 ＋ 鬼のお面 — Gemini 用
+
+| ファイル | 場面 | 添付する見本 |
+|---|---|---|
+| `wife_drunk_pout.jpg` | 甘え上戸の妻に、おねだりのアイスを買い忘れて怒られる（縦 9:16） | `wife_drunk_amae.jpg` |
+| `item_oni_mask.png` | コンビニの「鬼のお面」の持ち物アイコン（白背景で作れば切り抜く） | `item_spa_ticket.png` |
+
+### 21-1. wife_drunk_pout.jpg（添付: wife_drunk_amae.jpg）
+```
+Use the attached image as the character and style reference: the same wife (same face,
+short dark bob hair, same going-out blouse and cardigan) in the same Japanese apartment
+entrance at night with warm light. Vertical 9:16. She is still very tipsy with bright red
+cheeks, but now she is cutely angry: puffed-out cheeks in an exaggerated pout, eyebrows
+drawn together, teary sparkling eyes glaring up at the viewer, both small fists raised up
+near her chin and one foot stamping the floor like a sulking child. A small cartoon anger
+vein mark and a little puff of steam above her head, plus a few floating hearts that have
+turned into broken hearts. Cute and comedic, not scary at all.
+Japanese manga-style digital illustration, clean bold black outlines, flat cel shading.
+No text, no letters, no watermark.
+```
+
+### 21-2. item_oni_mask.png（添付: item_spa_ticket.png）
+```
+A single game item icon in the same art style as the attached icon: a cheap plastic
+Japanese setsubun red oni (demon) mask sold at convenience stores, with two small yellow
+horns, bushy black eyebrows, big round angry eyes, a wide grinning mouth with two little
+fangs, and a thin white elastic string looped around it. A small plain price sticker on the
+corner, blank with no numbers. Plain pure white background, nothing else in the frame.
+Japanese manga-style digital illustration, clean bold black outlines, flat cel shading,
+simple and readable at small size, comedic.
+No text, no letters, no numbers, no watermark.
+```
+
 ---
 
 ## 置いたあとの確認

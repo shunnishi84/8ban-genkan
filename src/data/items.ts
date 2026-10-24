@@ -89,6 +89,8 @@ export const ITEMS: ItemDef[] = [
       'プシュッ。……ぷはぁ〜〜。世界がぐるぐる回っている。怖いものなんて、何もない。',
     ],
   },
+  // 持って帰ると、必ず妻が鬼になる
+  { id: 'oni_mask', name: '鬼のお面', desc: '節分の売れ残り。赤鬼。……なぜ買う？', source: 'konbini', price: 330, slot: 'bag', discardable: true },
   {
     id: 'cup_sake',
     name: 'カップ清酒「千鳥足」',

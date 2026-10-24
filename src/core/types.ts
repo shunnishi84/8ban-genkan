@@ -300,7 +300,8 @@ export type Outcome =
   /** 2:00 を過ぎて締め出され、朝 6:00 にようやく家に入れた */
   | { kind: 'dawn' }
   /** morning: 酔って寝落ちした妻に、翌朝バレた */
-  | { kind: 'angry'; causes: Cause[]; morning?: boolean }
+  /** fakeHome: いったん普通に「おかえり」と迎えられてから怒られる（鬼のお面を持って帰った日など）。そのときの妻の一言 */
+  | { kind: 'angry'; causes: Cause[]; morning?: boolean; fakeHome?: string[] }
   /** 暴言を送っていた: 火種の有無に関係なく、魔王化した妻が待っている */
   | { kind: 'demon'; lines: string[]; reason?: string }
   /** 酔った勢いの悪ふざけを送っていた: 送った文面ごとの結末 */

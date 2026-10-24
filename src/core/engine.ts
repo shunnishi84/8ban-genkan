@@ -614,19 +614,23 @@ const act = (state: DayState, action: Action): ActionResult => {
         return result(false, ['ガチャ……ガツン！', 'チェーンロックがかかっていて、中に入れない！', '……朝まで、どこかで時間をつぶすしかない。']);
       }
       if (state.time > TIME_LIMIT) return result(true, [], 0, { kind: 'late' });
-      // 夫婦そろって酔っ払い: 火種はうやむやになって宴会
-      if (state.wifeDrunk && drunkLevel(state) >= 2) return result(true, [], 0, { kind: 'home', lines: [], special: 'party' });
       // 悪ふざけを送っていたら、火種に関係なく最初に送ったものの結末
       const prank = flagsWith(state, 'prank:')[0];
       if (prank) return result(true, [], 0, { kind: 'prank', template: prank.slice('prank:'.length) });
+      // 帰宅した瞬間に目に入る・耳に入るもの（格好・余計なひと言・持ち物）から先に怒られる
+      const angry = [...(state.flags.has('pantsless') ? [PANTSLESS] : state.flags.has('undressed') ? [UNDRESSED] : []), ...provokeCauses(state), ...carriedCauses(state), ...unresolvedCauses(state)];
+      // 鬼のお面を持って帰ると、必ず鬼になる。ほかに火種が無ければ、いったん「おかえり」と迎えられてから
+      if (state.inventory.includes('oni_mask')) {
+        return result(true, [], 0, { kind: 'angry', causes: [ONI_MASK, ...angry], fakeHome: angry.length ? undefined : state.successLines });
+      }
+      // 夫婦そろって酔っ払い: 火種はうやむやになって宴会
+      if (state.wifeDrunk && drunkLevel(state) >= 2) return result(true, [], 0, { kind: 'home', lines: [], special: 'party' });
       if (state.wifeDrunk === 'reset') {
         // 寝落ちした妻は話を何も覚えていない。ただし物的証拠（捨て忘れ・着替え忘れ・消し忘れ）は翌朝バレる
         const caught = state.causes.filter((c) => !evaluate(c.resolution, withHearsayForgotten(state, c)));
         if (caught.length > 0) return result(true, [], 0, { kind: 'angry', causes: caught, morning: true });
         return result(true, [], 0, { kind: 'home', lines: [], special: 'reset' });
       }
-      // 帰宅した瞬間に目に入る・耳に入るもの（格好・余計なひと言・持ち物）から先に怒られる
-      const angry = [...(state.flags.has('pantsless') ? [PANTSLESS] : state.flags.has('undressed') ? [UNDRESSED] : []), ...provokeCauses(state), ...carriedCauses(state), ...unresolvedCauses(state)];
       const special = state.wifeDrunk ? ('drunk' as const) : undefined;
       // 甘え上戸の妻は、おねだりを聞いてもらえたら火種を1つだけ見逃してくれる
       const amae = state.causes.find((c) => c.id === 'wife_drunk_amae');
@@ -722,6 +726,14 @@ const UNDRESSED = angerCause('undressed', '肌着で帰宅', [
   '……ちょっと。',
   'なんて格好で帰ってきてるの！',
   'ご近所に見られたらどうするのよ！ シャツはどこ！？',
+]);
+
+/** 鬼のお面を持って帰ると、それだけで鬼になる */
+const ONI_MASK = angerCause('oni_mask', '鬼のお面', [
+  '……これ、鬼のお面？',
+  '節分でもないのに？',
+  '……私にかぶれってこと？',
+  'いいわよ。お面なんか、いらないから。',
 ]);
 
 /** パンツ一丁で帰ると、もっと怒られる */

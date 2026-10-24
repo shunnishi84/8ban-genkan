@@ -982,6 +982,45 @@ describe('日をまたぐ異変: ノートパソコン', () => {
   });
 });
 
+describe('鬼のお面', () => {
+  const withMask = (ids: string[]) => {
+    const s = day(ids, hm(23, 0));
+    for (const a of solve(s)!) if (a.type !== 'openDoor') perform(s, a);
+    s.location = 'konbini';
+    expect(perform(s, { type: 'buy', item: 'oni_mask' }).ok).toBe(true);
+    s.location = 'door';
+    return s;
+  };
+
+  it('異変なしの日に持って帰ると、いったん迎えられてから鬼', () => {
+    const o = perform(withMask(['neighbor_curry']), { type: 'openDoor' }).outcome;
+    expect(o).toMatchObject({ kind: 'angry', causes: [{ id: 'oni_mask' }] });
+    if (o.kind === 'angry') expect(o.fakeHome?.length).toBeGreaterThan(0);
+  });
+
+  it('火種を全部消していても持って帰ると鬼。火種が残っていれば、いきなり鬼', () => {
+    expect(perform(withMask(['ring_off']), { type: 'openDoor' }).outcome).toMatchObject({ kind: 'angry', causes: [{ id: 'oni_mask' }] });
+    const s = day(['ring_off'], hm(23, 0));
+    s.location = 'konbini';
+    perform(s, { type: 'buy', item: 'oni_mask' });
+    s.location = 'door';
+    const o = perform(s, { type: 'openDoor' }).outcome;
+    expect(o).toMatchObject({ kind: 'angry', causes: [{ id: 'oni_mask' }, { id: 'ring_off' }] });
+    if (o.kind === 'angry') expect(o.fakeHome).toBeUndefined();
+  });
+
+  it('魔王が優先。捨ててから帰れば大丈夫', () => {
+    const s = withMask(['neighbor_curry']);
+    perform(s, { type: 'sendChat', template: 'insult_oni' });
+    expect(perform(s, { type: 'openDoor' }).outcome.kind).toBe('demon');
+    const t = withMask(['neighbor_curry']);
+    t.location = 'trash';
+    perform(t, { type: 'discard', item: 'oni_mask' });
+    t.location = 'door';
+    expect(perform(t, { type: 'openDoor' }).outcome.kind).toBe('home');
+  });
+});
+
 describe('暴言のランダム選択', () => {
   it('暴言は全部で10種あり、毎日そのうち4つが日ごとに変わる', () => {
     const all = CHAT_TEMPLATES.filter((t) => t.insult);
