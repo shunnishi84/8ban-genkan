@@ -93,7 +93,22 @@ export const ITEMS: ItemDef[] = [
   // 鍵をなくした日だけ。店員が預かっていた落とし物を受け取る
   { id: 'house_key', name: '家の鍵（落とし物）', desc: 'レジ横で店員が預かっていた。キーホルダーは妻とおそろいのクマ。', source: 'konbini', price: 0, slot: 'wallet', onlyWith: 'key_lost', buyLabel: '受け取る' },
   // 持って帰ると、必ず妻が鬼になる
-  { id: 'oni_mask', name: '鬼のお面', desc: '節分の売れ残り。赤鬼。……なぜ買う？', source: 'konbini', price: 330, slot: 'bag', discardable: true },
+  {
+    id: 'oni_mask',
+    name: '鬼のお面',
+    desc: '節分の売れ残り。赤鬼。……なぜ買う？',
+    source: 'konbini',
+    price: 330,
+    slot: 'bag',
+    discardable: true,
+    // 一度買ったら最後、捨てられない
+    cursed: [
+      ['お面をゴミ袋に押し込んだ。……と思ったら、手の中に戻っていた。', '……不思議な力が働いている。'],
+      ['思いきりゴミ箱に投げ込んだ。', 'お面はくるりと宙返りして、鞄の中に飛び込んだ。'],
+      ['お面と目が合った。', '……ニヤリと笑った気がする。手が、動かない。'],
+      ['ゴミ捨て場の看板に「鬼のお面は回収できません」と書き足されている。', '……さっきまで、こんな文字あったか？'],
+    ],
+  },
   {
     id: 'cup_sake',
     name: 'カップ清酒「千鳥足」',

@@ -418,6 +418,12 @@ const act = (state: DayState, action: Action): ActionResult => {
       const idx = state.inventory.indexOf(action.item);
       if (state.location !== 'trash') return result(false, ['ゴミ捨て場にいない。']);
       if (idx < 0 || !item?.discardable) return result(false, ['それは捨てられない。']);
+      if (item.cursed) {
+        // 呪われた持ち物: 捨てようとするたびに不思議な力で弾かれる（時間だけ過ぎる）
+        const n = flagsWith(state, `cursed:${item.id}:`).length;
+        state.flags.add(`cursed:${item.id}:${n}`);
+        return result(false, item.cursed[n % item.cursed.length], COST.discard);
+      }
       state.inventory.splice(idx, 1);
       state.flags.add(`discarded:${item.id}`);
       return result(true, [`「${item.name}」を捨てた。`], COST.discard);

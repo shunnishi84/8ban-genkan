@@ -139,6 +139,8 @@ export interface ItemDef {
   deliveryDays?: number;
   /** コンビニの「買う」ボタンの代わりの文言（落とし物を受け取るなど） */
   buyLabel?: string;
+  /** 呪われていて捨てられない（ゴミ捨て場の一覧には出るが、捨てようとするとこのメッセージで弾かれる。試すたびに次の文） */
+  cursed?: string[][];
   price?: number;
   /** 所持品画面でどの入れ物に入っているか */
   slot: SlotId;

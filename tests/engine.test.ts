@@ -1009,15 +1009,27 @@ describe('鬼のお面', () => {
     if (o.kind === 'angry') expect(o.fakeHome).toBeUndefined();
   });
 
-  it('魔王が優先。捨ててから帰れば大丈夫', () => {
+  it('魔王が優先', () => {
     const s = withMask(['neighbor_curry']);
     perform(s, { type: 'sendChat', template: 'insult_oni' });
     expect(perform(s, { type: 'openDoor' }).outcome.kind).toBe('demon');
+  });
+
+  it('捨てようとしても不思議な力で捨てられない（試すたびに違うメッセージ、時間だけ過ぎる）', () => {
     const t = withMask(['neighbor_curry']);
     t.location = 'trash';
-    perform(t, { type: 'discard', item: 'oni_mask' });
+    const msgs = new Set<string>();
+    for (let i = 0; i < 3; i++) {
+      const before = t.time;
+      const r = perform(t, { type: 'discard', item: 'oni_mask' });
+      expect(r.ok).toBe(false);
+      expect(t.time).toBe(before + 1);
+      msgs.add(r.messages[0]);
+    }
+    expect(msgs.size).toBe(3);
+    expect(t.inventory).toContain('oni_mask');
     t.location = 'door';
-    expect(perform(t, { type: 'openDoor' }).outcome.kind).toBe('home');
+    expect(perform(t, { type: 'openDoor' }).outcome.kind).toBe('angry');
   });
 });
 
