@@ -1096,6 +1096,82 @@ simple and readable at small size, comedic.
 No text, no letters, no numbers, no watermark.
 ```
 
+## 22. 新しい異変の手がかりの絵（4枚）＋ 持ち物アイコン5種 — Gemini 用
+
+| ファイル | 場面 | 形 | 添付する見本 |
+|---|---|---|---|
+| `clue_pink_blouse.jpg` | 色移り: ベランダに干された、ピンクになった白いブラウス（廊下を調べたとき） | 横 4:3 | `bg_door.jpg` |
+| `clue_pudding_lid.jpg` | プリン: 鞄の底のスプーンと、ゴミ箱の底に隠したプリンの空き容器（鞄を調べたとき） | 横 4:3 | `bg_door.jpg` |
+| `clue_tsuno_post.jpg` | 角のバズ: 投稿に添付された「角の生えた妻」の落書きイラスト（つぶやきー） | 横 4:3 | `wife_suspicious.png` |
+| `clue_moldy_bento.jpg` | 弁当箱: ドアの前のゴミ袋に入った、カビだらけの弁当箱（ドアを調べたとき） | 横 4:3 | `bg_door.jpg` |
+| 持ち物アイコン5種 | 3個パックのプリン／白いブラウス／ヘッドスパ券／曲げわっぱ弁当箱／クマのキーホルダー付きの鍵 | 1枚に 3×2 | `item_beer.png` |
+
+### 22-1. clue_pink_blouse.jpg（添付: bg_door.jpg）
+```
+Use the attached image as the style reference. Horizontal 4:3. A small Japanese apartment
+balcony at night, lit by the light from the room. On a plastic hanger on the laundry pole,
+a woman's elegant blouse that was clearly meant to be pure white hangs alone, now unevenly
+tinted pastel pink with blotchy streaks, especially around the hem. Next to it hang a pair
+of dark navy men's socks, the obvious culprit. A laundry basket on the floor. Slightly
+comedic "uh-oh" mood. Japanese manga-style digital illustration, clean bold black outlines,
+flat cel shading. No text, no letters, no watermark.
+```
+
+### 22-2. clue_pudding_lid.jpg（添付: bg_door.jpg）
+```
+Use the attached image as the style reference. Horizontal 4:3. A close-up of the bottom of a
+kitchen trash bin, as if someone pushed the trash aside to look: hidden under crumpled
+paper is an empty plastic custard pudding cup with a small used plastic spoon still inside.
+Its peeled-off paper lid lies next to it, with a big cute heart and a smiling face doodled
+on it in thick black marker (no letters). Guilty, comedic mood.
+Japanese manga-style digital illustration, clean bold black outlines, flat cel shading.
+No text, no letters, no watermark.
+```
+
+### 22-3. clue_tsuno_post.jpg（添付: wife_suspicious.png）
+```
+Use the attached image as the character reference for the wife (same face and short dark
+bob hair). Horizontal 4:3. A crude, funny doodle drawn by an amateur on a smartphone drawing
+app, as if attached to a social media post: a simplified cartoon of the wife with crossed
+arms and a stern face, and two big red demon horns growing out of her head, with little
+motion lines showing the horns "sprouting". A tiny cartoon husband in a suit cowers in the
+corner. Plain white background, rough marker-like lines, a few colors only.
+No text, no letters, no watermark.
+```
+
+### 22-4. clue_moldy_bento.jpg（添付: bg_door.jpg）
+```
+Use the attached image as the style reference. Horizontal 4:3. In front of a Japanese
+apartment door at night, a clear plastic garbage bag sits on the floor, and inside it is a
+men's plastic lunch box with its lid slightly ajar. Fuzzy green and white mold is bursting
+out of the gap, with a few cartoon stink lines and a single sad fly circling above. Gross
+but comedic, not realistic. Japanese manga-style digital illustration, clean bold black
+outlines, flat cel shading. No text, no letters, no watermark.
+```
+
+### 22-5. 持ち物アイコン5種（添付: item_beer.png）
+```
+A sprite sheet of 5 separate game item icons in the same art style as the attached icon,
+arranged in a neat 3 columns x 2 rows grid (the last cell empty) on a plain pure white
+background. Each icon is a single object, centered in its own cell, with plenty of white
+space between icons, nothing touching or overlapping, no labels, no numbers, no frames.
+Row 1, left to right:
+1. a pack of three rich custard puddings in clear plastic cups joined together, with
+   caramel on top and a plain yellow paper sleeve
+2. a neatly folded elegant pure white women's blouse in a clear plastic shop bag with a
+   small ribbon
+3. a head spa and massage gift voucher: a soft green envelope with a lotus and water drop
+   motif and a small card peeking out
+Row 2, left to right:
+4. a traditional Japanese bentwood lunch box (magewappa) made of light cedar wood with a
+   round lid, tied with a cloth wrapping
+5. a single house key on a ring with a cute small brown teddy bear keychain
+Japanese manga-style digital illustration, clean bold black outlines, flat cel shading,
+simple and readable at small size, consistent style across all icons.
+No text, no letters, no numbers, no watermark.
+```
+→ 順番に `item_pudding_3pack / item_blouse_same / item_headspa_ticket / item_bento_box / item_house_key` として切り出す。
+
 ---
 
 ## 置いたあとの確認
