@@ -260,6 +260,11 @@ button:disabled {
   margin: 0.8em 0 0.3em;
   color: var(--accent);
 }
+.collection h3.special {
+  margin-top: 1.4em;
+  padding-top: 0.8em;
+  border-top: 1px dashed rgba(255, 255, 255, 0.25);
+}
 .collection ol {
   list-style: none;
   padding: 0;

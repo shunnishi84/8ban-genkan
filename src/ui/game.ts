@@ -35,8 +35,8 @@ import {
   unresolvedCauses,
   visibleClues,
 } from '../core/engine';
-import { loadBest, loadSeen, saveBest, saveSeen } from '../core/save';
-import { COLLECTION, collectible, collectionCount, collectionRate } from '../core/collection';
+import { loadBest, loadEndings, loadSeen, saveBest, saveEnding, saveSeen } from '../core/save';
+import { COLLECTION, SPECIAL_ENDINGS, collectible, collectionCount, collectionRate, endingId } from '../core/collection';
 import { solve } from '../core/solver';
 import type { Action, AppId, Cause, ChatTemplate, Speaker, ItemDef, ClueLocation, DayState, Location, PrankEnding, RunState, SlotId, SpotId } from '../core/types';
 import { APP_BASE, APP_LABEL, CHAT_HISTORY, SLOT_BASE, SLOT_LABEL, SPOT_BASE, SPOT_LABEL } from '../data/base';
@@ -184,6 +184,8 @@ export class Game {
   private best = loadBest();
   /** 遭遇した異変（異変コレクション） */
   private seen = loadSeen();
+  /** 見た特殊エンディング（異変コレクションの下の欄） */
+  private endings = loadEndings();
   /** ?debug のときだけ URL のパラメータ（シナリオ・フィナーレ・時刻の固定）を読む */
   private debug = new URLSearchParams(location.search).has('debug') ? new URLSearchParams(location.search) : null;
 
@@ -286,17 +288,25 @@ export class Game {
         this.goHome(r.outcome.lines, r.outcome.special);
         return false;
       case 'prank':
+        this.recordEnding(endingId('prank', r.outcome.template));
         this.prankEnding(r.outcome.template);
         return false;
       case 'collapse':
+        this.recordEnding(endingId('collapse', r.outcome.item));
         this.collapseEnding(r.outcome.item);
         return false;
       case 'arrest':
+        this.recordEnding(endingId('arrest', r.outcome.ending));
         this.playEnding(ARRESTS[r.outcome.ending]);
         return false;
     }
     this.render();
     return r.ok;
+  }
+
+  /** 特殊エンディングを見たことを記録する（デバッグ中は数えない） */
+  private recordEnding(id: string) {
+    if (!this.debug) saveEnding(this.endings, id);
   }
 
   /** いったん普通に迎えられて、帰宅成功かと思ったところで鬼になる（鬼のお面を持って帰った日） */
@@ -436,6 +446,7 @@ export class Game {
     const intro = ff && this.day!.flags.has('finale_by_tweet') ? (ff.tweetIntro ?? ff.intro) : ff?.intro;
     const f: Finale = ff && intro && base.choice ? { ...base, intro, choice: { ...base.choice, ...ff } } : base;
     this.finalForm = !!ff;
+    this.recordEnding(endingId('finale', ff ? `${id}_final` : id));
     this.court = f.choice?.style === 'court';
     this.audio.playSe('se_door');
     this.playSeAt('se_demon', 300);
@@ -527,6 +538,7 @@ export class Game {
   }
 
   private goHome(successLines: string[], special?: 'drunk' | 'reset' | 'party') {
+    if (special === 'party') this.recordEnding(endingId('party'));
     this.audio.playSe('se_door');
     this.playSeAt('se_success', 300);
     const alone = this.day!.homeAlone;
@@ -879,6 +891,16 @@ export class Game {
               }),
             ),
           ]),
+          // 異変ではないので回収率とは別に数える
+          h('h3', { class: 'special' }, `特殊エンディング（${SPECIAL_ENDINGS.filter((e) => this.endings.has(e.id)).length} / ${SPECIAL_ENDINGS.length}）`),
+          h(
+            'ol',
+            {},
+            SPECIAL_ENDINGS.map((e, i) => {
+              const seen = this.endings.has(e.id);
+              return h('li', { class: seen ? 'seen' : 'unseen' }, h('span', { class: 'no' }, `EX.${String(i + 1).padStart(2, '0')}`), seen ? e.title : '???????');
+            }),
+          ),
         ),
         h('button', { class: 'btn primary', onclick: () => this.go({ name: 'title' }) }, '戻る'),
       ),

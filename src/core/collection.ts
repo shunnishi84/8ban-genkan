@@ -1,6 +1,10 @@
 import { DRUNK_WIFE_SCENARIOS } from '../data/drunkWife';
 import { SCENARIOS } from '../data/scenarios';
 import { PC_DELIVERY, PC_SURPRISE } from '../data/pc';
+import { CHAT_TEMPLATES } from '../data/chat';
+import { FINALES, FINALE_IDS } from '../data/finales';
+import { ITEMS } from '../data/items';
+import { ARRESTS, type ArrestId } from '../data/arrests';
 import type { Scenario } from './types';
 
 /**
@@ -28,3 +32,23 @@ export const collectionCount = (seen: Set<string>): { got: number; total: number
   got: [...ALL_IDS].filter((id) => seen.has(id)).length,
   total: ALL_IDS.size,
 });
+
+/**
+ * 特殊エンディング（異変ではないので、回収率とは別に数える）。
+ * id はゲーム側で記録するときのキー（endingId で作る）
+ */
+export const SPECIAL_ENDINGS: { id: string; title: string }[] = [
+  ...FINALE_IDS.flatMap((id) => [
+    { id: endingId('finale', id), title: FINALES[id].title },
+    ...(FINALES[id].finalForm ? [{ id: endingId('finale', `${id}_final`), title: `${FINALES[id].title}（最終形態）` }] : []),
+  ]),
+  ...CHAT_TEMPLATES.filter((t) => t.prankEnding).map((t) => ({ id: endingId('prank', t.id), title: t.prankEnding!.title })),
+  ...ITEMS.filter((i) => i.collapse).map((i) => ({ id: endingId('collapse', i.id), title: i.collapse!.title })),
+  ...(Object.keys(ARRESTS) as ArrestId[]).map((id) => ({ id: endingId('arrest', id), title: ARRESTS[id].title })),
+  { id: endingId('party'), title: '夫婦で宴会' },
+];
+
+/** 特殊エンディングの記録キー */
+export function endingId(kind: 'finale' | 'prank' | 'collapse' | 'arrest' | 'party', id = ''): string {
+  return id ? `${kind}:${id}` : kind;
+}
