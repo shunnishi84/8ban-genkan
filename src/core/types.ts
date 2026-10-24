@@ -102,6 +102,10 @@ export interface Scenario {
   conflictsWith?: string[];
   /** 妻が不在の日（実家に帰省中など）。帰宅シーンが「ただいま…（返事なし）」になる */
   homeAlone?: boolean;
+  /** ほかの異変に添えるだけの仕掛け（日をまたぐ異変の前振りなど）。帰宅のセリフや異変なし判定には数えない */
+  extra?: boolean;
+  /** その日の始まりの画面に出す一言 */
+  introLine?: string;
   /** 異変なしの日の帰宅セリフ */
   successLine?: string;
   /**
@@ -129,6 +133,8 @@ export interface ItemDef {
   desc: string;
   /** どこで手に入るか（none = シナリオでのみ入手） */
   source: ShopKind | 'none';
+  /** その日（火種かシナリオの id）だけ店に並ぶ */
+  onlyWith?: string;
   price?: number;
   /** 所持品画面でどの入れ物に入っているか */
   slot: SlotId;
@@ -191,6 +197,8 @@ export interface ChatTemplate {
   sorryMore?: boolean;
   /** 謝りすぎてブチギレた夫の怒りのメッセージ。ブチギレたあとはこれしか送れず、送ると暴言と同じく魔王化 */
   snap?: boolean;
+  /** 普通の定型文の顔をしているが、送ると暴言と同じく魔王化する（demonLines を使う） */
+  demonTrap?: boolean;
   /** 条件を満たしているときは provokeLines の代わりにこちらで怒られる（温泉を予約済みなら温泉の話で返す等） */
   provokeLinesIf?: { when: Requirement; lines: string[] };
   /** この余計なひと言（by）を送ったあとに送ると、妻の返事がこれになる（もう手遅れ） */
@@ -228,6 +236,8 @@ export interface DayState {
   homeAlone: boolean;
   /** 妻が酔っている日なら、その酔い方 */
   wifeDrunk: WifeDrunk | null;
+  /** その日の始まりの画面に出す一言（日をまたぐ異変の前振りなど） */
+  introLines: string[];
   /** その日に送れる暴言（全種からランダムに4つ）。4つ全部送るとフィナーレ */
   insultIds: string[];
   /** 渋々許す火種がある日（帰宅時の妻が無表情） */
@@ -247,6 +257,10 @@ export interface RunState {
   /** この周回で既に使ったシナリオ */
   used: string[];
   streak: number;
+  /** 「そろそろパソコンほしいな」の日をもう出したか（1周に1回） */
+  pcHinted?: boolean;
+  /** ノートパソコンを注文した: 届く日と、妻に相談して許してもらってから注文したか */
+  pc?: { arriveDay: number; approved: boolean };
 }
 
 export type Action =

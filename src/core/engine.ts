@@ -4,6 +4,7 @@ import { FINALES, FINALE_IDS, type Finale, type FinaleId } from '../data/finales
 import { ITEM_MAP } from '../data/items';
 import { POSTS, POST_MAP } from '../data/posts';
 import { DRUNK_WIFE_SCENARIOS } from '../data/drunkWife';
+import { PC_APPROVED, PC_DELIVERY, PC_HINT, PC_SURPRISE } from '../data/pc';
 import { SCENARIOS, SCENARIO_MAP } from '../data/scenarios';
 import {
   CANCEL_DEADLINE,
@@ -16,6 +17,8 @@ import {
   LOCKOUT_TIME,
   DAWN_TIME,
   MAX_DRUNK,
+  PC_DELIVERY_DAYS,
+  PC_HINT_RATE,
   TRAVEL,
   causeCountFor,
   formatTime,
@@ -77,7 +80,9 @@ export const chooseScenarios = (
 export const buildDay = (day: number, scenarios: Scenario[], startTime: number, seed = 0): DayState => {
   const orders: DayState['orders'] = {};
   for (const s of scenarios) for (const o of s.startOrders ?? []) orders[o] = 'existing';
-  const normal = scenarios.every(isNormal);
+  // 日をまたぐ異変の前振りなど、ほかの異変に添えるだけのものは帰宅のセリフや異変なし判定に数えない
+  const core = scenarios.filter((s) => !s.extra);
+  const normal = core.every(isNormal);
   return {
     day,
     scenarioIds: scenarios.map((s) => s.id),
@@ -94,10 +99,11 @@ export const buildDay = (day: number, scenarios: Scenario[], startTime: number, 
     chatLog: [],
     // 妻が先に寝ているシナリオの一言は、寝ている妻からは聞けないのでナレーションに回す
     successLines: normal
-      ? scenarios.filter((s) => !s.asleep).map((s) => s.successLine ?? 'おかえり。今日もお疲れさま')
-      : scenarios.filter((s) => !s.asleep).flatMap((s) => s.causes.map((c) => c.successLine)),
-    asleepLines: scenarios.flatMap((s) => (s.asleep ? [s.asleep] : [])),
-    homeAlone: scenarios.length > 0 && scenarios.every((s) => s.homeAlone),
+      ? core.filter((s) => !s.asleep).map((s) => s.successLine ?? 'おかえり。今日もお疲れさま')
+      : core.filter((s) => !s.asleep).flatMap((s) => s.causes.map((c) => c.successLine)),
+    asleepLines: core.flatMap((s) => (s.asleep ? [s.asleep] : [])),
+    homeAlone: core.length > 0 && core.every((s) => s.homeAlone),
+    introLines: scenarios.flatMap((s) => (s.introLine ? [s.introLine] : [])),
     grudging: scenarios.some((s) => s.causes.some((c) => c.grudging)),
     wifeDrunk: scenarios.find((s) => s.wifeDrunk)?.wifeDrunk ?? null,
     insultIds: pickInsults(seed),
@@ -107,15 +113,33 @@ export const buildDay = (day: number, scenarios: Scenario[], startTime: number, 
 };
 
 export const startDay = (run: RunState, rng: Rng, pool: readonly Scenario[] = SCENARIOS): DayState => {
-  const scenarios = chooseScenarios(run, rng, pool);
+  // ノートパソコンが届く日は、妻が家にいて起きている日にする
+  const arriving = run.pc?.arriveDay === run.day;
+  const awake = (s: Scenario) => !s.homeAlone && !s.asleep;
+  const scenarios = chooseScenarios(run, rng, arriving ? pool.filter(awake) : pool);
   run.used.push(...scenarios.map((s) => s.id));
-  // 1/10 で妻が酔っている（妻が家にいて起きている日だけ）
-  if (rng() < WIFE_DRUNK_RATE && !scenarios.some((s) => s.homeAlone || s.asleep)) scenarios.push(pick(rng, DRUNK_WIFE_SCENARIOS));
-  return buildDay(run.day, scenarios, startTimeFor(run.day, rng()), rng());
+  const pcDay = arriving || (!run.pcHinted && !run.pc && run.day <= GOAL_DAYS - 2 && scenarios.every(awake) && rng() < PC_HINT_RATE);
+  if (arriving) scenarios.push(run.pc!.approved ? PC_DELIVERY : PC_SURPRISE);
+  else if (pcDay) {
+    run.pcHinted = true;
+    scenarios.push(PC_HINT);
+  }
+  // 1/10 で妻が酔っている（妻が家にいて起きている日だけ。パソコンの日は除く）
+  if (!pcDay && rng() < WIFE_DRUNK_RATE && scenarios.every(awake)) scenarios.push(pick(rng, DRUNK_WIFE_SCENARIOS));
+  const state = buildDay(run.day, scenarios, startTimeFor(run.day, rng()), rng());
+  if (arriving && run.pc!.approved) state.flags.add(PC_APPROVED);
+  return state;
 };
 
-/** 帰宅成功時に周回を進める。クリアしたら true */
-export const advanceRun = (run: RunState): boolean => {
+/**
+ * 帰宅成功時に周回を進める。クリアしたら true。
+ * その日にノートパソコンを注文していたら、2日後に届くように覚えておく（相談して許してもらってからの注文か）
+ */
+export const advanceRun = (run: RunState, state?: DayState): boolean => {
+  const order = state?.orders.laptop;
+  if (state && order && order !== 'canceled' && !run.pc) {
+    run.pc = { arriveDay: state.day + PC_DELIVERY_DAYS, approved: state.flags.has('chat:pc_settoku_2') };
+  }
   run.streak += 1;
   run.day += 1;
   return run.streak >= GOAL_DAYS;
@@ -273,7 +297,7 @@ const act = (state: DayState, action: Action): ActionResult => {
       // 一度でも暴言を送ったら、以後は何を送っても取りつく島もない返事だけ（電話も来ない）
       const coldReply = () => COLD_REPLIES[state.chatLog.filter((m) => m.from === 'wife').length % COLD_REPLIES.length];
       const alreadyInsulted = state.flags.has('insulted');
-      if (t.insult || t.finale || t.snap) {
+      if (t.insult || t.finale || t.snap || t.demonTrap) {
         state.flags.add('insulted');
         state.flags.add(`insult:${t.id}`);
         state.chatLog.push({ from: 'wife', text: alreadyInsulted ? coldReply() : t.replyIrrelevant || '既読' });
@@ -310,8 +334,10 @@ const act = (state: DayState, action: Action): ActionResult => {
       if (t.afterProvoked && state.flags.has(`provoked:${t.afterProvoked.by}`)) return replied(t.afterProvoked.reply, '……もう、手遅れらしい。');
       const relevant = isChatRelevant(state, t.id);
       // 関係ない定型文には、その日の状況に合わせた返事（無ければ定型文の既定の返事）
-      const situational = relevant ? undefined : situationalReply(state, t.id);
-      const reply = relevant ? t.replyRelevant : (situational?.text ?? t.replyIrrelevant);
+      const situational = relevant || (t.neutral && t.onlyWith) ? undefined : situationalReply(state, t.id);
+      // その日専用の、何も起きない定型文（帰省中の「淋しい」、パソコンの相談など）は決まった返事
+      const own = !relevant && t.neutral && !!t.onlyWith;
+      const reply = relevant || own ? t.replyRelevant : (situational?.text ?? t.replyIrrelevant);
       if (reply) state.chatLog.push({ from: 'wife', text: reply });
       if (relevant || t.neutral || situational?.after) return result(true, send(), COST.sendChat);
       return result(
@@ -331,6 +357,7 @@ const act = (state: DayState, action: Action): ActionResult => {
     case 'order': {
       const item = ITEM_MAP[action.item];
       if (!item || item.source !== 'mail') return result(false, ['その商品は通販にない。']);
+      if (item.onlyWith && !onDay(state, item.onlyWith)) return result(false, ['その商品は、今日は売っていない。']);
       if (state.orders[item.id] && state.orders[item.id] !== 'canceled') return result(false, ['もう注文してある。']);
       if (state.time <= EXPRESS_DEADLINE) {
         state.orders[item.id] = 'express';

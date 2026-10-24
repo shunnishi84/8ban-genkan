@@ -284,6 +284,10 @@ button:disabled {
 .intro {
   cursor: pointer;
 }
+.intro-hint {
+  color: var(--accent);
+  font-style: italic;
+}
 .gameover h2 {
   color: var(--danger);
   font-size: 1.8em;

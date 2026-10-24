@@ -7,6 +7,8 @@ import type { Action, DayState } from './types';
 /** そのフラグを立てる手段が存在するか（時間は考えない静的チェック） */
 export const isObtainable = (state: DayState, flag: string, depth = 0): boolean => {
   if (depth > 8) return false;
+  // 日をまたいで持ち越したフラグ（相談してから買ったパソコンなど）はもう持っている
+  if (state.flags.has(flag)) return true;
   const [kind, id] = flag.split(':');
   const item = ITEM_MAP[id];
   const inHand = state.inventory.includes(id) || state.pickups.some((p) => p.item === id);

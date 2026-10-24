@@ -1,14 +1,16 @@
 import { DRUNK_WIFE_SCENARIOS } from '../data/drunkWife';
 import { SCENARIOS } from '../data/scenarios';
+import { PC_DELIVERY, PC_SURPRISE } from '../data/pc';
 import type { Scenario } from './types';
 
 /**
- * 異変コレクション。火種のある日（異変なしの日は除く）と、妻が酔っている日。
+ * 異変コレクション。火種のある日（異変なしの日は除く）と、妻が酔っている日、日をまたぐ異変。
  * 遭遇したものだけ名前が見え、まだのものは「???????」。
  */
 export const COLLECTION: { label: string; scenarios: Scenario[] }[] = [
   { label: '異変', scenarios: SCENARIOS.filter((s) => s.causes.length > 0) },
   { label: '妻が酔っている日', scenarios: DRUNK_WIFE_SCENARIOS },
+  { label: '日をまたぐ異変', scenarios: [PC_DELIVERY, PC_SURPRISE] },
 ];
 
 const ALL_IDS = new Set(COLLECTION.flatMap((g) => g.scenarios.map((s) => s.id)));

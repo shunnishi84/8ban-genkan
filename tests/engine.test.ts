@@ -857,6 +857,80 @@ describe('妻が実家に帰っている日', () => {
   });
 });
 
+describe('結婚記念日の最悪の返し', () => {
+  it.each(['anniv_oboetenai', 'anniv_shiranai', 'anniv_manga'])('%s は普通の定型文の顔をして、送ると魔王', (id) => {
+    expect(CHAT_MAP[id].insult).toBeFalsy();
+    expect(perform(day(['ring_off']), { type: 'sendChat', template: id }).ok).toBe(false);
+    const s = day(['anniversary_forgot']);
+    expect(perform(s, { type: 'sendChat', template: id }).ok).toBe(true);
+    expect(perform(s, { type: 'openDoor' }).outcome).toEqual({ kind: 'demon', lines: CHAT_MAP[id].demonLines });
+  });
+});
+
+describe('日をまたぐ異変: ノートパソコン', () => {
+  /** パソコンの前振りの日を作り、相談（consult 回）してから注文して帰宅する */
+  const hintDay = (consult: number) => {
+    const run = newRun();
+    const s = buildDay(1, [SCENARIO_MAP.ring_off, SCENARIO_MAP.pc_hint], hm(23, 0));
+    s.insultIds = [];
+    expect(s.introLines[0]).toContain('パソコン');
+    for (const id of ['pc_soudan', 'pc_settoku_1', 'pc_settoku_2'].slice(0, consult)) expect(perform(s, { type: 'sendChat', template: id }).cost).toBe(2);
+    expect(perform(s, { type: 'order', item: 'laptop' }).ok).toBe(true);
+    for (const a of solve(s)!) perform(s, a);
+    expect(s.successLines).toHaveLength(1); // 前振りは帰宅のセリフに数えない
+    advanceRun(run, s);
+    run.day = 3;
+    return { run, arrival: startDay(run, seeded(7)) };
+  };
+
+  it('ノートパソコンは前振りの日だけポチッとマートで買える', () => {
+    expect(perform(day(['ring_off']), { type: 'order', item: 'laptop' }).ok).toBe(false);
+  });
+
+  it('相談して許してもらってから注文すれば、2日後に届いた日にお礼を言えば済む', () => {
+    const { run, arrival } = hintDay(3);
+    expect(run.pc).toEqual({ arriveDay: 3, approved: true });
+    expect(arrival.scenarioIds).toContain('pc_delivery');
+    expect(arrival.homeAlone).toBe(false);
+    const plan = solve(arrival)!;
+    expect(plan.some((a) => a.type === 'sendChat' && a.template === 'pc_arrived')).toBe(true);
+    let kind = 'continue';
+    for (const a of plan) kind = perform(arrival, a).outcome.kind;
+    expect(kind).toBe('home');
+  });
+
+  it.each([0, 2])('相談が足りないまま注文すると（相談 %i 回）、届いた日はどうやっても炎上', (consult) => {
+    const { run, arrival } = hintDay(consult);
+    expect(run.pc?.approved).toBe(false);
+    expect(arrival.scenarioIds).toContain('pc_surprise');
+    expect(solve(arrival)).toBeNull();
+    expect(perform(arrival, { type: 'sendChat', template: 'pc_arrived' }).ok).toBe(false);
+    arrival.location = 'door';
+    expect(perform(arrival, { type: 'openDoor' }).outcome).toMatchObject({ kind: 'angry', causes: expect.arrayContaining([expect.objectContaining({ id: 'pc_surprise' })]) });
+  });
+
+  it('前振りは1周に1回、6日目までに出る', () => {
+    let hinted = 0;
+    for (let seed = 1; seed <= 60; seed++) {
+      const rng = seeded(seed);
+      const run = newRun();
+      let count = 0;
+      for (let d = 1; d <= GOAL_DAYS; d++) {
+        const s = startDay(run, rng);
+        if (s.scenarioIds.includes('pc_hint')) {
+          count++;
+          expect(d).toBeLessThanOrEqual(GOAL_DAYS - 2);
+          expect(s.homeAlone).toBe(false);
+        }
+        advanceRun(run, s);
+      }
+      expect(count).toBeLessThanOrEqual(1);
+      hinted += count;
+    }
+    expect(hinted).toBeGreaterThan(10);
+  });
+});
+
 describe('暴言のランダム選択', () => {
   it('暴言は全部で10種あり、毎日そのうち4つが日ごとに変わる', () => {
     const all = CHAT_TEMPLATES.filter((t) => t.insult);

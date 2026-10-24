@@ -1,5 +1,6 @@
 // シナリオ整合性テスト: 解消不可能な原因が無いか、データの参照切れが無いか。
 import { describe, expect, it } from 'vitest';
+import { PC_APPROVED } from '../src/data/pc';
 import { IMAGES, ITEM_ICONS } from '../src/assets/manifest';
 import { CHAT_MAP, CHAT_TEMPLATES } from '../src/data/chat';
 import { ITEMS, ITEM_MAP } from '../src/data/items';
@@ -63,6 +64,8 @@ describe('データの参照整合性', () => {
   it('チャット定型文の前提フラグが実在するアイテム・定型文・投稿を指している', () => {
     for (const t of CHAT_TEMPLATES) {
       for (const f of t.requires ? flagsIn(t.requires) : []) {
+        // 日をまたいで持ち越すフラグ（相談してから買ったパソコン）
+        if (f === PC_APPROVED) continue;
         const [kind, id] = f.split(':');
         // drunk:<n> は酔いの段階（缶ビールの本数。1〜3）
         if (kind === 'drunk') {

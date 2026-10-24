@@ -44,6 +44,7 @@ import { CHAT_MAP, CHAT_TEMPLATES } from '../data/chat';
 import { FINALES, FINALE_IDS, type Finale, type FinaleChoice, type FinaleCounter, type FinaleFx, type FinaleId, type FinaleLine } from '../data/finales';
 import { ITEM_MAP, itemsAt } from '../data/items';
 import { POSTS } from '../data/posts';
+import { PC_APPROVED } from '../data/pc';
 import { ARRESTS } from '../data/arrests';
 import { SCENARIO_MAP } from '../data/scenarios';
 import { h, type Child } from './dom';
@@ -234,6 +235,8 @@ export class Game {
     this.day = scenarios?.length
       ? buildDay(this.run.day, scenarios, startTimeFor(this.run.day, Math.random()), Math.random())
       : startDay(this.run, Math.random);
+    // ?debug&scenario=pc_delivery は「相談してから買ったパソコンが届いた日」として始める
+    if (scenarios?.some((sc) => sc.id === 'pc_delivery')) this.day.flags.add(PC_APPROVED);
     // デバッグで固定した日は数えない
     if (!scenarios?.length) saveSeen(this.seen, collectible(this.day.scenarioIds));
     // ?debug&finale=court で、暴言4種コンプリート時のフィナーレを固定できる
@@ -550,7 +553,7 @@ export class Game {
           { who: 'wife', text: special === 'drunk' ? 'おかえり〜〜♡ ひっく' : grudging ? '……おかえり。' : 'おかえり。' },
           ...say('wife', successLines),
         ];
-    const cleared = advanceRun(this.run);
+    const cleared = advanceRun(this.run, this.day!);
     // 連続帰宅が伸びるのは帰宅できたときだけなので、最高記録の更新もここだけ
     if (saveBest(this.run.streak)) this.best = this.run.streak;
     this.talk('home', lines, () => (cleared ? this.go({ name: 'clear' }) : this.beginDay()), {
@@ -913,6 +916,7 @@ export class Game {
         h('div', { class: 'sign' }, h('span', { class: 'sign-no' }, String(day.day)), h('span', {}, '日目')),
         this.illust('hero', 'hero'),
         h('p', {}, INTRO_FLAVOR[(day.day - 1) % INTRO_FLAVOR.length]),
+        day.introLines.map((l) => h('p', { class: 'intro-hint' }, l)),
         h('p', {}, `${formatTime(day.time)}、自宅の玄関前に着いた。`),
         h('p', { class: 'dim' }, 'タップで開始'),
       ),
@@ -1340,7 +1344,7 @@ export class Game {
           : '本日の特急便の受付は終了しました。今からのご注文は明後日のお届けです。',
       ),
       this.clueTexts('app:shop', ''),
-      itemsAt('mail').map((item) => {
+      itemsAt('mail').filter((item) => !item.onlyWith || onDay(day, item.onlyWith)).map((item) => {
         const st = status(item.id);
         return this.itemRow(
           item,

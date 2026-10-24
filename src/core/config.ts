@@ -28,6 +28,11 @@ export const causeCountFor = (day: number): number => (day >= 8 ? 3 : day >= 6 ?
 /** 酔いの段階の上限（缶ビール3本 / カップ清酒1杯） */
 export const MAX_DRUNK = 3;
 
+/** 「そろそろパソコンほしいな」の前振りが出る確率（1〜6日目、1周に1回まで） */
+export const PC_HINT_RATE = 0.15;
+/** ノートパソコンを注文してから届くまでの日数 */
+export const PC_DELIVERY_DAYS = 2;
+
 /** 妻が酔っている日になる確率 */
 export const WIFE_DRUNK_RATE = 0.1;
 
