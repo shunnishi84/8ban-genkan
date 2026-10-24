@@ -396,6 +396,36 @@ export const CHAT_TEMPLATES: ChatTemplate[] = [
     replyRelevant: '……3.4万人に「こわい嫁」って思われたままだけどね',
     replyIrrelevant: 'SNS？ 何か投稿したの？ ……電話するね',
   },
+  // メシマズでバズった日の、言わなくていい「説明」。普通の定型文の顔をして、送るたびに次の説明が出てくる
+  {
+    id: 'meshi_setsumei_1',
+    text: 'だって昨日のご飯だって、肉じゃがの味がしなかったし……',
+    onlyWith: 'sns_meshi',
+    disguised: true,
+    replyRelevant: '……続けて？',
+    replyIrrelevant: '……続けて？',
+    provokeLines: ['「昨日の肉じゃが」。', '……あれ、あなたが「薄味がいい」って言ったから、塩を控えたのよ。', '健康診断の数値、覚えてる？'],
+  },
+  {
+    id: 'meshi_setsumei_2',
+    text: '一昨日のカレーは水っぽかったし、先週の焼き魚は焦げてたし、その前の日のハンバーグは中が赤かったし……',
+    onlyWith: 'sns_meshi',
+    requires: 'chat:meshi_setsumei_1',
+    disguised: true,
+    replyRelevant: '……全部、覚えてるんだ。',
+    replyIrrelevant: '……全部、覚えてるんだ。',
+    provokeLines: ['一昨日のカレー、先週の焼き魚、その前のハンバーグ。', '……よく覚えてるわね。私の誕生日は忘れたのに。', '全部ノートに書いておいたから。今夜、答え合わせしましょ。'],
+  },
+  {
+    id: 'meshi_setsumei_3',
+    text: 'あと味噌汁が毎回ぬるい。それに卵焼きが甘すぎるし、サラダのドレッシングもいつも同じだし、それと……',
+    onlyWith: 'sns_meshi',
+    requires: 'chat:meshi_setsumei_2',
+    disguised: true,
+    replyRelevant: '既読',
+    replyIrrelevant: '既読',
+    provokeLines: ['……それと？', '続きは、明日からあなたが作る料理で聞かせてもらうわね。', '一生分。'],
+  },
   {
     id: 'sns_meshi_sorry',
     text: '投稿消しました。飯がマズいなんて大嘘。明日の朝ごはんは俺が作ります（卵焼き）',
@@ -602,9 +632,11 @@ export const CHAT_TEMPLATES: ChatTemplate[] = [
     replyIrrelevant: '既読',
     demonLines: ['……漫画の、新刊。', '結婚記念日より、漫画の新刊。', 'その漫画、最終巻にしてあげる。', '……あなたの人生のね。'],
   },
-  // ノートパソコンを買う前の相談。「そろそろパソコンほしいな」の日だけ。3段階で許してもらえる
+  // ノートパソコンを買う前の相談。「そろそろパソコンほしいな」の日だけ。3段階で許してもらえる（注文する前に）
   {
     id: 'pc_soudan',
+    // 勝手に注文したあとの事後相談はできない
+    blockedBy: ['ordered:laptop'],
     text: '新しいノートパソコンを買いたいと思ってるんだけど、相談していい？',
     onlyWith: 'pc_hint',
     neutral: true,
@@ -613,6 +645,8 @@ export const CHAT_TEMPLATES: ChatTemplate[] = [
   },
   {
     id: 'pc_settoku_1',
+    // 勝手に注文したあとの事後相談はできない
+    blockedBy: ['ordered:laptop'],
     text: '今のはもう7年目で、起動に5分かかるんだ。持ち帰りの仕事にも困ってて',
     onlyWith: 'pc_hint',
     requires: 'chat:pc_soudan',
@@ -622,6 +656,8 @@ export const CHAT_TEMPLATES: ChatTemplate[] = [
   },
   {
     id: 'pc_settoku_2',
+    // 勝手に注文したあとの事後相談はできない
+    blockedBy: ['ordered:laptop'],
     text: 'ボーナスの範囲で買うし、その分はお小遣いから毎月返す。家計簿にもつけるよ',
     onlyWith: 'pc_hint',
     requires: 'chat:pc_settoku_1',

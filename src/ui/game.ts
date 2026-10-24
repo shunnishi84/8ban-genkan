@@ -1350,7 +1350,7 @@ export class Game {
           item,
           priceLine(item, item.desc),
           st === 'express'
-            ? h('span', { class: 'tag ok' }, '翌朝着')
+            ? h('span', { class: 'tag ok' }, item.deliveryDays === 2 ? '明後日着' : '翌朝着')
             : st === 'late'
               ? h('span', { class: 'tag ng' }, '明後日着')
               : h('button', { class: 'btn small', onclick: () => this.act({ type: 'order', item: item.id }, 'se_order') }, `注文（${COST.order}分）`),

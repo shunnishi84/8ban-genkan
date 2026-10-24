@@ -142,7 +142,7 @@ export const ITEMS: ItemDef[] = [
   { id: 'limited_pudding', name: '駅ナカ限定 窯出しとろけるプリン（お取り寄せ）', desc: '妻が楽しみにしていたやつ。', source: 'mail', price: 1620, slot: 'bag' },
   { id: 'dinner_reservation', name: 'ペアディナー予約（駅前のイタリアン）', desc: '土曜の夜、2名で予約。明朝、確定メールが届く。', source: 'mail', price: 12000, slot: 'bag' },
   // 「そろそろパソコンほしいな」の日だけ並ぶ。2日後に届く（妻に相談してから買うこと）
-  { id: 'laptop', name: 'ノートパソコン「ポチPC Air 14」（2日後お届け）', desc: '本日限定セール。……19万8千円。', source: 'mail', price: 198000, slot: 'bag', onlyWith: 'pc_hint' },
+  { id: 'laptop', name: 'ノートパソコン「ポチPC Air 14」（2日後お届け）', desc: '本日限定セール。……19万8千円。', source: 'mail', price: 198000, slot: 'bag', onlyWith: 'pc_hint', deliveryDays: 2 },
   { id: 'onsen_ticket', name: '温泉ペア宿泊ギフト（eギフト）', desc: '箱根の老舗旅館。明朝メールで届く。', source: 'mail', price: 39800, slot: 'bag' },
   { id: 'spa_ticket', name: 'スパ＆マッサージ ペアチケット（eチケット）', desc: '都内ホテルのスパ。明朝メールで届く。', source: 'mail', price: 24000, slot: 'bag' },
   { id: 'kashiori', name: '老舗の菓子折り「千年最中」', desc: '義母が好きなやつ。', source: 'mail', price: 3240, slot: 'bag' },

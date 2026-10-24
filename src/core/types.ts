@@ -135,6 +135,8 @@ export interface ItemDef {
   source: ShopKind | 'none';
   /** その日（火種かシナリオの id）だけ店に並ぶ */
   onlyWith?: string;
+  /** 特急便ではなく、注文から何日後に届くか（ノートパソコンは2日後） */
+  deliveryDays?: number;
   price?: number;
   /** 所持品画面でどの入れ物に入っているか */
   slot: SlotId;
@@ -199,6 +201,8 @@ export interface ChatTemplate {
   snap?: boolean;
   /** 普通の定型文の顔をしているが、送ると暴言と同じく魔王化する（demonLines を使う） */
   demonTrap?: boolean;
+  /** このフラグのどれかが立っていたら、もう送れない（勝手に注文したあとの事後相談など） */
+  blockedBy?: string[];
   /** 条件を満たしているときは provokeLines の代わりにこちらで怒られる（温泉を予約済みなら温泉の話で返す等） */
   provokeLinesIf?: { when: Requirement; lines: string[] };
   /** この余計なひと言（by）を送ったあとに送ると、妻の返事がこれになる（もう手遅れ） */

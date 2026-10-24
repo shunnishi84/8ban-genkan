@@ -184,6 +184,7 @@ const chatBlockReason = (state: DayState, t: ChatTemplate): string | null => {
   if (state.flags.has('snapped') !== !!t.snap) return t.snap ? 'まだ、そこまで怒ってはいない。' : '……もう、謝る気になれない。';
   if (t.sorryMore && t.id !== nextSorry(state)) return 'まだそれを言える状況じゃない。';
   if (t.requires && !evaluate(t.requires, state.flags)) return 'まだそれを言える状況じゃない。';
+  if (t.blockedBy?.some((f) => state.flags.has(f))) return '……今さら、それは言えない。';
   if (t.onlyWith && !onDay(state, t.onlyWith)) return '今それを言う意味がない。';
   if (t.insult && !state.insultIds.includes(t.id)) return '……今日は、その言葉は出てこない。';
   return null;
@@ -359,6 +360,12 @@ const act = (state: DayState, action: Action): ActionResult => {
       if (!item || item.source !== 'mail') return result(false, ['その商品は通販にない。']);
       if (item.onlyWith && !onDay(state, item.onlyWith)) return result(false, ['その商品は、今日は売っていない。']);
       if (state.orders[item.id] && state.orders[item.id] !== 'canceled') return result(false, ['もう注文してある。']);
+      // 日数の決まった配送（ノートパソコンは2日後）は、特急便の締切に関係なく届く
+      if (item.deliveryDays) {
+        state.orders[item.id] = 'express';
+        state.flags.add(`ordered:${item.id}`);
+        return result(true, [`「${item.name}」を注文した。${item.deliveryDays === 2 ? '明後日' : `${item.deliveryDays}日後に`}届く。`], COST.order);
+      }
       if (state.time <= EXPRESS_DEADLINE) {
         state.orders[item.id] = 'express';
         state.flags.add(`ordered:${item.id}`);

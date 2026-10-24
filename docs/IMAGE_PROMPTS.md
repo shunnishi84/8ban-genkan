@@ -1047,6 +1047,22 @@ outlines, flat cel shading, simple and readable at small size.
 No text, no letters, no numbers, no watermark.
 ```
 
+## 20. ノートパソコン（item_laptop.png）— Gemini 用
+
+「そろそろパソコンほしいな」の日にポチッとマートで買える「ポチPC Air 14」の持ち物アイコン。白背景で作れば、こちらで切り抜く。
+添付する見本: `item_spa_ticket.png`（絵柄合わせ）
+
+```
+A single game item icon in the same art style as the attached icon: a sleek, thin, modern
+silver laptop computer, opened at about 110 degrees and seen from a slight three-quarter
+front angle. The screen glows with a simple bright blue abstract wallpaper. A small plain
+price tag on a string hangs from the corner of the screen, blank with no numbers. A few
+sparkles around it make it look brand new and tempting. Plain pure white background, nothing
+else in the frame. Japanese manga-style digital illustration, clean bold black outlines, flat
+cel shading, simple and readable at small size.
+No text, no letters, no numbers, no logos, no watermark.
+```
+
 ---
 
 ## 置いたあとの確認

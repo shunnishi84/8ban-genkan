@@ -258,6 +258,20 @@ describe('新しい仕掛け', () => {
     expect(perform(day(['ring_off']), { type: 'sendChat', template: 'tv_sonomama' }).ok).toBe(false);
   });
 
+  it('メシマズの日に「だって昨日のご飯だって」と説明を始めると、送るたびに次の説明が出て、どれも火に油', () => {
+    const s = day(['sns_meshi'], hm(23, 0));
+    expect(perform(s, { type: 'sendChat', template: 'meshi_setsumei_2' }).ok).toBe(false);
+    for (const id of ['meshi_setsumei_1', 'meshi_setsumei_2', 'meshi_setsumei_3']) {
+      expect(CHAT_MAP[id].disguised).toBe(true);
+      expect(perform(s, { type: 'sendChat', template: id }).ok).toBe(true);
+    }
+    for (const a of solve(s)!) if (a.type !== 'openDoor') perform(s, a);
+    s.location = 'door';
+    const o = perform(s, { type: 'openDoor' }).outcome;
+    expect(o.kind).toBe('angry');
+    if (o.kind === 'angry') expect(o.causes.filter((c) => c.title === '火に油')).toHaveLength(3);
+  });
+
   it('料理本のメッセージは、余計なひと言なのに普通の定型文の顔をしている', () => {
     expect(CHAT_MAP.meshi_recipe.provokeLines?.length).toBeGreaterThan(0);
     expect(CHAT_MAP.meshi_recipe.disguised).toBe(true);
@@ -885,6 +899,25 @@ describe('日をまたぐ異変: ノートパソコン', () => {
 
   it('ノートパソコンは前振りの日だけポチッとマートで買える', () => {
     expect(perform(day(['ring_off']), { type: 'order', item: 'laptop' }).ok).toBe(false);
+  });
+
+  it('注文すると「明後日届く」（23:59 を過ぎても同じ）', () => {
+    for (const t of [hm(23, 0), hm(24, 30)]) {
+      const s = buildDay(1, [SCENARIO_MAP.ring_off, SCENARIO_MAP.pc_hint], t);
+      const r = perform(s, { type: 'order', item: 'laptop' });
+      expect(r.messages[0]).toContain('明後日届く');
+      expect(s.orders.laptop).toBe('express');
+    }
+  });
+
+  it('勝手に注文したあとの事後相談はできない（途中まで相談していても続きは出ない）', () => {
+    const s = buildDay(1, [SCENARIO_MAP.ring_off, SCENARIO_MAP.pc_hint], hm(23, 0));
+    perform(s, { type: 'sendChat', template: 'pc_soudan' });
+    perform(s, { type: 'order', item: 'laptop' });
+    expect(perform(s, { type: 'sendChat', template: 'pc_settoku_1' }).ok).toBe(false);
+    const t = buildDay(1, [SCENARIO_MAP.ring_off, SCENARIO_MAP.pc_hint], hm(23, 0));
+    perform(t, { type: 'order', item: 'laptop' });
+    expect(perform(t, { type: 'sendChat', template: 'pc_soudan' }).ok).toBe(false);
   });
 
   it('相談して許してもらってから注文すれば、2日後に届いた日にお礼を言えば済む', () => {
