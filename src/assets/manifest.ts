@@ -51,6 +51,7 @@ export const IMAGES = {
   wife_drunk_amae: { file: 'wife_drunk_amae.jpg', label: '甘え上戸の妻', color: '#f2a7c3', fit: 'cover' },
   wife_drunk_sleep: { file: 'wife_drunk_sleep.jpg', label: '玄関で寝落ちした妻', color: '#2b2b38', fit: 'cover' },
   drunk_party: { file: 'drunk_party.jpg', label: '夫婦で宴会', color: '#c98a4a', fit: 'cover' },
+  wife_drunk_pout: { file: 'wife_drunk_pout.jpg', label: 'おねだりを忘れられて泣きべその妻', color: '#c98a8a', fit: 'cover' },
   /** 暴言を送った日の結末: 邪悪なオーラを放つ魔王化した妻（無ければ wife_angry を紫に染めて代用） */
   // 3:4 の一枚絵。隅の正座する夫まで見せるため、cover ではなく横幅いっぱいで描く（renderer.ts の drawDemon）
   wife_demon: { file: 'wife_demon.jpg', label: '魔王化した妻', color: '#2a0640' },
@@ -101,6 +102,7 @@ export const IMAGES = {
   item_eggs: { file: 'item_eggs.png', label: '卵', color: '#f2f2ee' },
   item_dinner_reservation: { file: 'item_dinner_reservation.png', label: 'ペアディナー予約', color: '#8b3a3e' },
   item_laptop: { file: 'item_laptop.png', label: 'ノートパソコン', color: '#9fb3c8' },
+  item_oni_mask: { file: 'item_oni_mask.png', label: '鬼のお面', color: '#d9463b' },
   item_detergent_refill: { file: 'item_detergent_refill.png', label: '洗剤（指定）', color: '#7ec8a0' },
   item_pair_glass: { file: 'item_pair_glass.png', label: 'ペアグラス', color: '#cfe3f0' },
   item_umbrella_same: { file: 'item_umbrella_same.png', label: '花柄傘', color: '#f2a7c3' },
@@ -177,6 +179,7 @@ export const ITEM_ICONS: Partial<Record<string, ImageKey>> = {
   spa_ticket: 'item_spa_ticket',
   dinner_reservation: 'item_dinner_reservation',
   laptop: 'item_laptop',
+  oni_mask: 'item_oni_mask',
   av_subscription: 'item_av_subscription',
   gravure_book: 'item_gravure_book',
   saru_recipe: 'item_saru_recipe',

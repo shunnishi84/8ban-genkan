@@ -53,7 +53,7 @@ export const DRUNK_WIFE_SCENARIOS: Scenario[] = [
         id: 'wife_drunk_amae',
         title: '甘えた妻のおねだり',
         resolution: { any: ['bought:ice_cream', 'bought:konbini_pudding'] },
-        angerImage: 'wife_drunk_amae',
+        angerImage: 'wife_drunk_pout',
         angerLines: ['おかえり〜……あれ？', 'アイスはぁ！？', 'アイス買ってきてって言ったのにぃ〜〜……（号泣）'],
         successLine: 'アイスだ〜〜♡ だいすき〜♡ だっこ〜♡',
       },
