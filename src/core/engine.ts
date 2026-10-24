@@ -13,6 +13,7 @@ import {
   GOAL_DAYS,
   NO_ANOMALY_RATE,
   TIME_LIMIT,
+  WIFE_DRUNK_LAST_DAY,
   WIFE_DRUNK_RATE,
   LOCKOUT_TIME,
   DAWN_TIME,
@@ -115,6 +116,10 @@ export const buildDay = (day: number, scenarios: Scenario[], startTime: number, 
 export const startDay = (run: RunState, rng: Rng, pool: readonly Scenario[] = SCENARIOS): DayState => {
   // ノートパソコンが届く日は、妻が家にいて起きている日にする
   const arriving = run.pc?.arriveDay === run.day;
+  // 1/10 で妻が酔っている日（5日目まで）。チャットの話が噛み合わなくなるので、ほかの異変は起きない
+  if (!arriving && run.day <= WIFE_DRUNK_LAST_DAY && rng() < WIFE_DRUNK_RATE) {
+    return buildDay(run.day, [pick(rng, DRUNK_WIFE_SCENARIOS)], startTimeFor(run.day, rng()), rng());
+  }
   const awake = (s: Scenario) => !s.homeAlone && !s.asleep;
   const scenarios = chooseScenarios(run, rng, arriving ? pool.filter(awake) : pool);
   run.used.push(...scenarios.map((s) => s.id));
@@ -124,8 +129,6 @@ export const startDay = (run: RunState, rng: Rng, pool: readonly Scenario[] = SC
     run.pcHinted = true;
     scenarios.push(PC_HINT);
   }
-  // 1/10 で妻が酔っている（妻が家にいて起きている日だけ。パソコンの日は除く）
-  if (!pcDay && rng() < WIFE_DRUNK_RATE && scenarios.every(awake)) scenarios.push(pick(rng, DRUNK_WIFE_SCENARIOS));
   const state = buildDay(run.day, scenarios, startTimeFor(run.day, rng()), rng());
   if (arriving && run.pc!.approved) state.flags.add(PC_APPROVED);
   return state;

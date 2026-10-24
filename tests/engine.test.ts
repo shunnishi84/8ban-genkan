@@ -590,6 +590,24 @@ describe('妻が酔っている日', () => {
     expect(drunk / N).toBeLessThan(0.13);
   });
 
+  it('妻が酔っている日はほかの異変が起きず、5日目までしか出ない', () => {
+    let drunk = 0;
+    for (let seed = 1; seed <= 300; seed++) {
+      const rng = seeded(seed);
+      const run = newRun();
+      for (let d = 1; d <= GOAL_DAYS; d++) {
+        const s = startDay(run, rng);
+        if (s.wifeDrunk) {
+          drunk++;
+          expect(d).toBeLessThanOrEqual(5);
+          expect(s.scenarioIds).toHaveLength(1);
+        }
+        advanceRun(run, s);
+      }
+    }
+    expect(drunk).toBeGreaterThan(50);
+  });
+
   it('からみ酒: いつもは罠の「愛してるよ」が正解。送らないと理不尽に怒られる', () => {
     const a = day(['neighbor_curry', 'wife_drunk_karami']);
     expect(perform(a, { type: 'openDoor' }).outcome.kind).toBe('angry');
