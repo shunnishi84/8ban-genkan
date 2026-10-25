@@ -855,7 +855,7 @@ export const SCENARIOS: Scenario[] = [
         image: 'costume_dress',
         text: '廊下の物干しに、見覚えのないピンクのフリフリのワンピースが干してある。……タグには「LL」。',
       },
-      { at: 'app:chat', cause: 'costume_dress', unread: true, text: '鞄を洗濯に出そうとしたら、女物のワンピースが出てきたんだけど。説明して（22:18）' },
+      { at: 'app:chat', cause: 'costume_dress', unread: true, image: 'costume_dress', text: '鞄を洗濯に出そうとしたら、女物のワンピースが出てきたんだけど。説明して（22:18）' },
       { at: 'app:calendar', cause: 'costume_dress', text: '12/20（金）営業部 忘年会 ※余興：2課（あなた・課長・鈴木）' },
       { at: 'app:memo', cause: 'costume_dress', text: '余興「アイドル」の振り付け練習 毎週水曜 カラオケで。衣装は各自持ち帰り' },
     ],
