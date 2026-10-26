@@ -160,6 +160,25 @@ export const CHAT_TEMPLATES: ChatTemplate[] = [
     replyIrrelevant: '……当ててみ？',
     provokeLines: ['当ててみ？', '……今、私がどんな顔でこのメッセージを読んでたと思う？', '当ててみて。'],
   },
+  // ツーショットへの最悪の返し。普通の定型文の顔をして、送ると魔王
+  {
+    id: 'twoshot_uwaki',
+    text: '俺の浮気相手だよ',
+    onlyWith: 'twoshot_photo',
+    demonTrap: true,
+    replyRelevant: '',
+    replyIrrelevant: '既読',
+    demonLines: ['……浮気相手。', '冗談のつもり？ それとも、本気？', 'どっちでもいいわ。', '今夜、その子の分まで、あなたに償ってもらうから。'],
+  },
+  {
+    id: 'twoshot_akogare',
+    text: 'うちの部署に最近入った子。俺に憧れてるんだってさ。まだまだ俺も捨てたもんじゃないよな',
+    onlyWith: 'twoshot_photo',
+    demonTrap: true,
+    replyRelevant: '',
+    replyIrrelevant: '既読',
+    demonLines: ['……憧れてる。', '「まだまだ俺も捨てたもんじゃない」。', 'そうね。捨てるのは、もったいないわね。', '……粗大ゴミの日まで、取っておいてあげる。'],
+  },
   {
     id: 'weekend_cancel',
     text: '土曜のゴルフ、断った！ 買い物行こう。夜は駅前のイタリアンも予約したよ',
