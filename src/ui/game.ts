@@ -334,6 +334,8 @@ export class Game {
     this.recordEnding(endingId('normal', kind));
     if (!inside) this.audio.playSe(kind === 'angry' ? 'se_door' : 'se_late');
     this.playSeAt('se_angry', 250);
+    const spoken = causes.slice(1).filter((c) => c.alwaysSay);
+    const unspoken = causes.length - 1 - spoken.length;
     const lines: Line[] =
       kind === 'dawn'
         ? [
@@ -359,9 +361,9 @@ export class Game {
                 ? []
                 : [{ who: 'narr' as const, text: this.day!.flags.has('rang') ? 'ピンポーン……' : 'ガチャ……' }]),
             ...say('wife', causes[0].angerLines),
-            ...(causes.length > 1
-              ? [{ who: 'narr' as const, text: `さらに${causes.length - 1}件の火種が燃え上がった……！` }]
-              : []),
+            // 続けて言わずにいられない火種（空気の読めない相談など）は、セリフごと足す
+            ...spoken.flatMap((c) => say('wife', c.angerLines)),
+            ...(unspoken > 0 ? [{ who: 'narr' as const, text: `さらに${unspoken}件の火種が燃え上がった……！` }] : []),
           ];
     const reason = { dawn: '朝帰り', late: '遅すぎる帰宅', angry: '妻の怒り' }[kind];
     this.talk('angry', lines, this.toGameOver(reason, { causes }), {

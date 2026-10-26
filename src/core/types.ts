@@ -72,6 +72,8 @@ export interface Cause {
   grudging?: boolean;
   /** 怒られるときの妻の絵（無ければ鬼の形相の妻） */
   angerImage?: string;
+  /** ほかの火種で怒られているときも、このセリフを続けて言う（空気の読めないパソコンの相談など） */
+  alwaysSay?: boolean;
 }
 
 /** 玄関前で拾えるアイテム（ゴミ袋など） */

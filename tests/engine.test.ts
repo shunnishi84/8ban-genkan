@@ -906,14 +906,37 @@ describe('日をまたぐ異変: ノートパソコン', () => {
     const s = buildDay(1, [SCENARIO_MAP.ring_off, SCENARIO_MAP.pc_hint], hm(23, 0));
     s.insultIds = [];
     expect(s.introLines[0]).toContain('パソコン');
+    // 火種を片付けてから相談する
+    for (const a of solve(s)!) if (a.type !== 'openDoor') perform(s, a);
     for (const id of ['pc_soudan', 'pc_settoku_1', 'pc_settoku_2'].slice(0, consult)) expect(perform(s, { type: 'sendChat', template: id }).cost).toBe(2);
     expect(perform(s, { type: 'order', item: 'laptop' }).ok).toBe(true);
-    for (const a of solve(s)!) perform(s, a);
+    perform(s, { type: 'openDoor' });
     expect(s.successLines).toHaveLength(1); // 前振りは帰宅のセリフに数えない
     advanceRun(run, s);
     run.day = 3;
     return { run, arrival: startDay(run, seeded(7)) };
   };
+
+  it('火種が残っているうちに相談すると相談は進まず、そのまま帰ると火種がひとつ増える', () => {
+    const s = buildDay(1, [SCENARIO_MAP.ring_off, SCENARIO_MAP.pc_hint], hm(23, 0));
+    s.insultIds = [];
+    perform(s, { type: 'sendChat', template: 'pc_soudan' });
+    expect(s.chatLog.at(-1)?.text).toContain('こんな時にパソコン');
+    expect(perform(s, { type: 'sendChat', template: 'pc_settoku_1' }).ok).toBe(false);
+    const o = perform(s, { type: 'openDoor' }).outcome;
+    expect(o).toMatchObject({ kind: 'angry', causes: [{ id: 'ring_off' }, { id: 'pc_timing' }] });
+  });
+
+  it('火種を片付けてから相談し直して許してもらえば、さっきの相談は水に流してもらえる', () => {
+    const s = buildDay(1, [SCENARIO_MAP.ring_off, SCENARIO_MAP.pc_hint], hm(23, 0));
+    s.insultIds = [];
+    perform(s, { type: 'sendChat', template: 'pc_soudan' });
+    for (const a of solve(s)!) if (a.type !== 'openDoor') perform(s, a);
+    // 片付けただけでは、空気の読めない相談のことは忘れてもらえない
+    expect(perform({ ...s, flags: new Set(s.flags), location: 'door' }, { type: 'openDoor' }).outcome).toMatchObject({ kind: 'angry', causes: [{ id: 'pc_timing' }] });
+    for (const id of ['pc_soudan', 'pc_settoku_1', 'pc_settoku_2']) expect(perform(s, { type: 'sendChat', template: id }).ok).toBe(true);
+    expect(perform(s, { type: 'openDoor' }).outcome.kind).toBe('home');
+  });
 
   it('ノートパソコンは前振りの日だけポチッとマートで買える', () => {
     expect(perform(day(['ring_off']), { type: 'order', item: 'laptop' }).ok).toBe(false);

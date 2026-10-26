@@ -334,6 +334,12 @@ const act = (state: DayState, action: Action): ActionResult => {
         state.flags.add(`provoked:${t.id}`);
         return replied(t.replyRelevant, '……妙に静かだ。', '言わなくていいことを言った気がする。');
       }
+      // 火種が残っているうちにパソコンの相談を始めると、相談は進まずに睨まれる（片付けてから出直す）
+      if (t.onlyWith === PC_HINT.id && unresolvedCauses(state).length > 0) {
+        state.flags.delete(`chat:${t.id}`);
+        state.flags.add(PC_BAD_TIMING);
+        return replied('……こんな時にパソコン？ その前に、私に言うことあるよね？', '……空気が読めていなかったらしい。');
+      }
       // 余計なひと言のあとでは、正しい定型文を送っても手遅れ
       if (t.afterProvoked && state.flags.has(`provoked:${t.afterProvoked.by}`)) return replied(t.afterProvoked.reply, '……もう、手遅れらしい。');
       const relevant = isChatRelevant(state, t.id);
@@ -646,7 +652,7 @@ const doorOutcome = (state: DayState): ActionResult => {
   const prank = flagsWith(state, 'prank:')[0];
   if (prank) return result(true, [], 0, { kind: 'prank', template: prank.slice('prank:'.length) });
   // 帰宅した瞬間に目に入る・耳に入るもの（格好・余計なひと言・持ち物）から先に怒られる
-  const angry = [...(state.flags.has('pantsless') ? [PANTSLESS] : state.flags.has('undressed') ? [UNDRESSED] : []), ...provokeCauses(state), ...carriedCauses(state), ...unresolvedCauses(state)];
+  const angry = [...(state.flags.has('pantsless') ? [PANTSLESS] : state.flags.has('undressed') ? [UNDRESSED] : []), ...provokeCauses(state), ...carriedCauses(state), ...unresolvedCauses(state), ...pcTimingCauses(state)];
   // 鬼のお面を持って帰ると、必ず鬼になる。ほかに火種が無ければ、いったん「おかえり」と迎えられてから
   if (state.inventory.includes('oni_mask')) {
     return result(true, [], 0, { kind: 'angry', causes: [ONI_MASK, ...angry], fakeHome: angry.length ? undefined : state.successLines });
@@ -786,6 +792,14 @@ const provokeCauses = (state: DayState): Cause[] =>
   CHAT_TEMPLATES.filter((t) => t.provokeLines && state.flags.has(`provoked:${t.id}`)).map((t) =>
     angerCause(`provoke:${t.id}`, '火に油', t.provokeLinesIf && evaluate(t.provokeLinesIf.when, state.flags) ? t.provokeLinesIf.lines : t.provokeLines!),
   );
+
+/** 火種を放ったままパソコンの相談をしていたら、それも火種になる（片付けてから相談し直して許してもらえば消える） */
+const PC_BAD_TIMING = 'pc_bad_timing';
+const PC_TIMING: Cause = {
+  ...angerCause('pc_timing', '空気の読めない相談', ['……それと、さっきのパソコンの話。', '怒らせたまま、よく「相談していい？」なんて送れたわね。', 'パソコンの前に、まず私の機嫌をアップデートしてくれる？']),
+  alwaysSay: true,
+};
+const pcTimingCauses = (state: DayState): Cause[] => (state.flags.has(PC_BAD_TIMING) && !state.flags.has('chat:pc_settoku_2') ? [PC_TIMING] : []);
 
 /** 持って帰ると怒られる物（メシマズの日の料理本など）を持ったまま帰った */
 const carriedCauses = (state: DayState): Cause[] =>
