@@ -1063,6 +1063,97 @@ export const SCENARIOS: Scenario[] = [
     ],
   },
 
+  // ワイシャツのポケットにティッシュを入れたまま洗濯に出した
+  {
+    id: 'tissue_laundry',
+    title: 'ポケットのティッシュで洗濯物が全滅した',
+    conflictsWith: ['laundry_dye'],
+    chatReplies: {
+      '*': ['それより、洗濯機の中の惨状の話。'],
+      coming_home: ['帰ってきたら、洗濯機の前に来て。', '白い紙吹雪が、お待ちしてます。'],
+      sorry_generic: ['何に謝ってるの？ ポケットのこと？', '謝るなら、全部取ってから謝って。'],
+    },
+    causes: [
+      {
+        id: 'tissue_laundry',
+        title: 'ポケットのティッシュ',
+        resolution: { all: ['bought:lint_roller', 'chat:tissue_sorry'] },
+        angerLines: ['……洗濯機、開けてみて。', '黒いセーターも、私のスカートも、全部ティッシュまみれ。', 'ポケットは空にしてからカゴへ。……これ、言うの何回目？'],
+        successLine: 'コロコロ、買ってきたんだ。……じゃあ、全部取り終わるまで寝かせないからね。',
+      },
+    ],
+    clues: [
+      { at: 'slot:shirt', cause: 'tissue_laundry', text: '胸ポケットに、ポケットティッシュを入れる癖がある。……昨日のワイシャツにも、入れっぱなしだった気がする。' },
+      { at: 'app:chat', cause: 'tissue_laundry', unread: true, text: '洗濯機開けたら、全部白い紙くずまみれなんだけど。ワイシャツのポケット、見た？（22:12）' },
+      { at: 'app:memo', cause: 'tissue_laundry', text: '洗濯物はポケットを空にしてからカゴへ！（妻・3回目）' },
+    ],
+  },
+  // 隠していた健康診断の結果が見つかった
+  {
+    id: 'health_check',
+    title: '隠していた健康診断の結果が見つかった',
+    startItems: ['strong_can'],
+    chatReplies: {
+      '*': ['それより、引き出しの封筒の話。'],
+      coming_home: ['帰ってきたら、まず血圧測ろうか。', '再検査の話、ゆっくりしようね。'],
+      sorry_generic: ['何に謝ってるの？ 隠してたこと？ それとも数値？', '謝るより先に、病院の予約。'],
+      love: ['愛してるなら、長生きして。'],
+    },
+    causes: [
+      {
+        id: 'health_check',
+        title: '隠した健診結果',
+        resolution: { all: ['discarded:strong_can', 'deleted:cal_nomikai_tomorrow', 'chat:health_sorry'] },
+        angerLines: ['……引き出しの奥。電気代の明細の下。', '「要精密検査」。γ-GTP、189。', '隠したら数値が下がるとでも思った？ ……心配するでしょ、ばか。'],
+        successLine: '……明日の飲み会、ちゃんと断ったんだ。再検査、私も一緒に行くからね。',
+      },
+    ],
+    clues: [
+      { at: 'app:chat', cause: 'health_check', unread: true, text: '引き出しの奥から、健康診断の結果が出てきたんだけど。「要精密検査」って何？ なんで隠してたの？（22:25）' },
+      { at: 'app:memo', cause: 'health_check', text: '健診結果: γ-GTP 189／尿酸値 8.9／腹囲+6cm → 要精密検査。……妻には見せないこと。引き出しの奥に封印' },
+      {
+        at: 'slot:bag',
+        cause: 'health_check',
+        text: '鞄の中に、帰り道に買ったストロング缶（9%）が1本。……健診の紙に「節酒してください」と赤字で書いてあった気がする。',
+        hiddenWhen: 'discarded:strong_can',
+      },
+      {
+        at: 'app:calendar',
+        cause: 'health_check',
+        id: 'cal_nomikai_tomorrow',
+        deletable: true,
+        deleteLabel: '鈴木に断りの連絡を入れる',
+        deleteMessages: ['鈴木「え、どうした？ ……まさか健診？ 俺もだわ」', 'カレンダーから、明日の飲み会を消した。'],
+        deletedText: '明日 19:00 飲み会 → キャンセル済み（鈴木に連絡した）',
+        text: '明日 19:00 飲み会（鈴木と・新橋の焼き鳥）',
+      },
+    ],
+  },
+  // 妻に頼まれた通販の払込を忘れていた（期限は今日、お金も預かっている）
+  {
+    id: 'payment_slip',
+    title: '頼まれていた払込を忘れていた',
+    chatReplies: {
+      '*': ['それより、払込は？'],
+      coming_home: ['コンビニ、寄ってきてね。払込。', 'おかえり〜。受領証、忘れずにね'],
+      sorry_generic: ['何に謝ってるの？ ……まさか、払込？'],
+    },
+    causes: [
+      {
+        id: 'payment_slip',
+        title: '払込の期限切れ',
+        resolution: 'bought:bill_payment',
+        angerLines: ['……払込、してきた？', '期限、今日だったの。朝、言ったよね？ お金も渡したよね？', '……で、あの2万円は、どこ？'],
+        successLine: '受領証、ちょうだい。……はい、確かに。お釣りもね。',
+      },
+    ],
+    clues: [
+      { at: 'slot:bag', cause: 'payment_slip', text: '鞄の内ポケットに封筒が入っている。中身は通販の払込用紙と1万円札が2枚。「お支払い期限: 本日」……あっ。' },
+      { at: 'app:chat', cause: 'payment_slip', text: '今日、帰りにコンビニで払込お願いね！ 期限今日だから。お金は鞄の封筒に入れといた（7:45）' },
+      { at: 'app:calendar', cause: 'payment_slip', text: '今日: 通販の払込期限（妻に頼まれた）' },
+    ],
+  },
+
   // ================================================================ 異変なし（ニセ異変入り）
   {
     id: 'ramen_receipt',

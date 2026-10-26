@@ -92,6 +92,10 @@ export const ITEMS: ItemDef[] = [
   // コンビニのプリンでは一番高いやつ（お取り寄せの窯出しプリンには及ばない）。なめらかプリンとは別物
   { id: 'pudding_premium', name: '贅沢窯焼きプリン', desc: 'コンビニのプリンでは一番高いやつ。妻のお気に入り。', source: 'konbini', price: 480, slot: 'bag' },
   // 鍵をなくした日だけ。店員が預かっていた落とし物を受け取る
+  // 洗濯物についたティッシュ片を取る
+  { id: 'lint_roller', name: 'コロコロ（粘着クリーナー）', desc: '替えテープ3巻つき。今夜は長くなりそうだ。', source: 'konbini', price: 398, slot: 'bag' },
+  // 妻に頼まれた通販の払込。払込用紙のある日だけ
+  { id: 'bill_payment', name: '通販の払込（受領証）', desc: '預かっていた2万円で払った。受領証とお釣りは財布に。', source: 'konbini', price: 18600, slot: 'wallet', onlyWith: 'payment_slip', buyLabel: '支払う' },
   { id: 'house_key', name: '家の鍵（落とし物）', desc: 'レジ横で店員が預かっていた。キーホルダーは妻とおそろいのクマ。', source: 'konbini', price: 0, slot: 'wallet', onlyWith: 'key_lost', buyLabel: '受け取る' },
   // 持って帰ると、必ず妻が鬼になる
   {
@@ -175,6 +179,7 @@ export const ITEMS: ItemDef[] = [
   { id: 'golf_club', name: '高級ドライバー「ギャラクシー460」', desc: '酔った勢いでポチったらしい。', source: 'none', price: 128000, slot: 'bag' },
   { id: 'cabaret_card', name: '店の名刺', desc: '『Club 銀河の妖精　あやね♡』ハートの手書き付き。', source: 'none', slot: 'cardcase', discardable: true },
   { id: 'cabaret_receipt', name: '店のレシート', desc: '『Club 銀河の妖精　セット ¥24,000／あやねドリンク ¥8,000』', source: 'none', slot: 'wallet', discardable: true },
+  { id: 'strong_can', name: 'ストロング缶（9%・未開封）', desc: '帰り道のコンビニで、つい。……健診の紙には「節酒」の赤字。', source: 'none', slot: 'bag', discardable: true },
   { id: 'empty_can', name: '空き缶（ハイボール）', desc: '帰り道で飲んだらしい。カラカラ鳴る。', source: 'none', slot: 'bag', discardable: true },
   { id: 'garbage_bag', name: '燃えるゴミの袋', desc: 'パンパン。ずっしり重い。', source: 'none', slot: 'bag', discardable: true },
   {

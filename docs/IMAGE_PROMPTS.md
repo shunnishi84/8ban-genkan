@@ -1215,6 +1215,68 @@ gold palette. No text, no letters, no watermark.
 
 ---
 
+## 24. 異変3つ（ティッシュ・健康診断・払込用紙）の手がかり ＋ 持ち物アイコン3種 — Gemini 用
+
+| ファイル | 場面 | 形 | 添付する見本 |
+|---|---|---|---|
+| `clue_tissue_laundry.jpg` | ティッシュ: 妻がチャットで送ってくる、ティッシュ片まみれの洗濯物の写真 | 横 4:3 | `bg_door.jpg` |
+| `clue_health_check.jpg` | 健康診断: 妻がチャットで送ってくる、引き出しから出てきた健診結果の写真 | 横 4:3 | `bg_door.jpg` |
+| `clue_payment_slip.jpg` | 払込: 鞄の内ポケットの封筒（払込用紙と1万円札2枚） | 横 4:3 | `bg_door.jpg` |
+| 持ち物アイコン3種 | コロコロ／ストロング缶／払込の受領証 | 1枚に 3×1 | `item_beer.png` |
+
+### 24-1. clue_tissue_laundry.jpg（添付: bg_door.jpg）
+```
+Use the attached image as the style reference. Horizontal 4:3. A smartphone-photo-like view
+looking down into an open front-loading washing machine and a laundry basket in a Japanese
+apartment, at night under a ceiling light. A black knit sweater, a dark navy skirt and a
+few dark T-shirts are completely covered in countless tiny white shreds of wet tissue paper,
+like snow or confetti. A men's white dress shirt lies on top with its chest pocket turned
+inside out, a soggy lump of tissue hanging from it — the obvious culprit. Despairing but
+comedic mood. Japanese manga-style digital illustration, clean bold black outlines, flat
+cel shading. No text, no letters, no watermark.
+```
+
+### 24-2. clue_health_check.jpg（添付: bg_door.jpg）
+```
+Use the attached image as the style reference. Horizontal 4:3. A smartphone-photo-like view
+of a half-open wooden desk drawer at night. Pulled out from under a pile of utility bills
+is an opened envelope and a medical checkup result sheet: a table of numbers with several
+values circled in bright red ink, a big red stamp-like mark, and a small cartoon liver icon
+with a worried face printed in the corner. Tiny details only, nothing readable. Worried but
+comedic mood. Japanese manga-style digital illustration, clean bold black outlines, flat
+cel shading. No text, no letters, no numbers, no watermark.
+```
+
+### 24-3. clue_payment_slip.jpg（添付: bg_door.jpg）
+```
+Use the attached image as the style reference. Horizontal 4:3. A close-up of the inside
+pocket of a black men's business bag, held open by a hand. Tucked in it is a plain white
+envelope, slightly open, showing a pale blue mail-order payment slip (a convenience-store
+bill with a barcode) and two Japanese 10,000-yen-style banknotes (generic, no real design,
+no faces). A small yellow sticky note with a heart doodle is stuck on the envelope.
+A sudden "oh no!" mood with a few cartoon shock lines. Japanese manga-style digital
+illustration, clean bold black outlines, flat cel shading. No text, no letters, no numbers,
+no watermark.
+```
+
+### 24-4. 持ち物アイコン3種（添付: item_beer.png）
+```
+A sprite sheet of 3 separate game item icons in the same art style as the attached icon,
+arranged in a neat row of 3 on a plain pure white background. Each icon is a single object,
+centered in its own cell, with plenty of white space between icons, nothing touching or
+overlapping, no labels, no numbers, no frames. Left to right:
+1. a lint roller (sticky tape clothes cleaner) with a light blue handle and a white roll,
+   with two spare refill rolls next to it
+2. a single tall 500ml aluminum can of strong lemon chuhai, silver with a bright yellow
+   lemon graphic and a bold red stripe, unopened, with water droplets
+3. a convenience-store payment receipt: a small white slip with a round red stamp, folded
+   with a few coins on top
+Japanese manga-style digital illustration, clean bold black outlines, flat cel shading,
+simple and readable at small size, consistent style across all icons.
+No text, no letters, no numbers, no watermark.
+```
+→ 順番に `item_lint_roller / item_strong_can / item_bill_payment` として切り出す。
+
 ## 置いたあとの確認
 
 1. `npm run dev` で起動

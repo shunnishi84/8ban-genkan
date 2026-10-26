@@ -220,6 +220,50 @@ export const CHAT_TEMPLATES: ChatTemplate[] = [
     replyRelevant: '……頭、ほぐしてもらってくる',
     replyIrrelevant: 'ヘッドスパ？ 急にどうしたの？ 電話するね',
   },
+  // ポケットのティッシュ
+  {
+    id: 'tissue_sorry',
+    text: 'ポケットのティッシュ、俺だ。ごめん。コロコロ買ったから、帰ったら全部取る',
+    requires: 'bought:lint_roller',
+    replyRelevant: '……全部よ？ 私のスカートも',
+    replyIrrelevant: 'コロコロ？ 何の話？ 電話するね',
+  },
+  {
+    id: 'tissue_harau',
+    text: 'ティッシュくらい、乾いたら払えば取れるって',
+    onlyWith: 'tissue_laundry',
+    disguised: true,
+    replyRelevant: '……払えば？',
+    replyIrrelevant: '……払えば？',
+    provokeLines: ['……払えば取れる？', 'じゃあ、全部払ってみて。セーター8枚分。', '明日から、あなたの洗濯物は自分で洗ってね。'],
+  },
+  // 隠していた健康診断の結果
+  {
+    id: 'health_sorry',
+    text: '健診の結果、隠しててごめん。明日の飲み会も断った。今日買った酒も捨てたし、再検査の予約もする',
+    requires: { all: ['discarded:strong_can', 'deleted:cal_nomikai_tomorrow'] },
+    replyRelevant: '……うん。ちゃんと長生きしてね',
+    replyIrrelevant: '健診？ 何の話？ 電話するね',
+  },
+  {
+    id: 'health_maitoshi',
+    text: '健康診断なんて、毎年あんなもんだって',
+    onlyWith: 'health_check',
+    disguised: true,
+    replyRelevant: '……毎年？',
+    replyIrrelevant: '……毎年？',
+    provokeLines: ['……毎年、こうなの？', '毎年「要精密検査」で、毎年隠してたってこと？', '……去年の分も、引き出しから出てきたわよ。'],
+  },
+  // 頼まれていた払込
+  {
+    id: 'payment_ashita',
+    text: '払込って、明日でもいいよね？',
+    onlyWith: 'payment_slip',
+    disguised: true,
+    replyRelevant: '……明日？',
+    replyIrrelevant: '……明日？',
+    provokeLines: ['……期限、今日って言ったよね。', '明日払ったら、延滞金と督促状がついてくるの。', 'あの2万円、まだ封筒に入ってるんでしょうね？'],
+  },
   // カビだらけの弁当箱
   {
     id: 'bento_sorry',
