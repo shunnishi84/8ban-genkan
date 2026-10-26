@@ -174,6 +174,8 @@ cd android && ./gradlew assembleDebug   # → android/app/build/outputs/apk/debu
 | wife_kishin.jpg / wife_kishin_final.jpg | 鬼のお面をかぶった魔王（鬼神）・鬼神の最終形態（Gemini で生成） | ✅ |
 | clue_pink_blouse.jpg / clue_pudding_lid.jpg / clue_tsuno_post.jpg / clue_moldy_bento.jpg | 新しい異変の手がかり（色移りしたブラウス・名前入りのプリンのふた・鬼の角の落書き・カビた弁当箱）（Gemini で生成） | ✅ |
 | item_pudding_premium.png / item_blouse_same.png / item_headspa_ticket.png / item_bento_box.png / item_house_key.png | 贅沢窯焼きプリン・同じブラウス・ヘッドスパ券・曲げわっぱ弁当箱・家の鍵のアイコン（Gemini で生成） | ✅ |
+| clue_tissue_laundry.jpg / clue_health_check.jpg / clue_payment_slip.jpg | ティッシュまみれの洗濯物・健康診断の結果（妻のチャットの写真）・鞄の払込用紙の封筒（Gemini で生成） | ✅ |
+| item_lint_roller.png / item_strong_can.png / item_bill_payment.png | コロコロ・ストロング缶・払込の受領証のアイコン（Gemini で生成） | ✅ |
 | police_patrol.jpg / ol_scream.jpg / koban_wife.jpg | 巡回中のお巡りさん・悲鳴をあげる OL・交番に迎えに来た妻（Gemini で生成） | ✅ |
 | costume_dress.jpg / yokyou_photo.jpg / twoshot_edited.jpg / twoshot_original.jpg | 余興のアイドル衣装・余興の練習写真・加工ツーショット（加工後 / 加工前）（Gemini で生成） | ✅ |
 | jail_cell.jpg / jail_visit.jpg / police_konbini.jpg | 留置場・面会室の妻・コンビニに来たお巡りさん（Gemini で生成） | ✅ |

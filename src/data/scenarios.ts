@@ -1084,7 +1084,7 @@ export const SCENARIOS: Scenario[] = [
     ],
     clues: [
       { at: 'slot:shirt', cause: 'tissue_laundry', text: '胸ポケットに、ポケットティッシュを入れる癖がある。……昨日のワイシャツにも、入れっぱなしだった気がする。' },
-      { at: 'app:chat', cause: 'tissue_laundry', unread: true, text: '洗濯機開けたら、全部白い紙くずまみれなんだけど。ワイシャツのポケット、見た？（22:12）' },
+      { at: 'app:chat', cause: 'tissue_laundry', unread: true, image: 'clue_tissue_laundry', text: '洗濯機開けたら、全部白い紙くずまみれなんだけど。ワイシャツのポケット、見た？（22:12）' },
       { at: 'app:memo', cause: 'tissue_laundry', text: '洗濯物はポケットを空にしてからカゴへ！（妻・3回目）' },
     ],
   },
@@ -1109,7 +1109,7 @@ export const SCENARIOS: Scenario[] = [
       },
     ],
     clues: [
-      { at: 'app:chat', cause: 'health_check', unread: true, text: '引き出しの奥から、健康診断の結果が出てきたんだけど。「要精密検査」って何？ なんで隠してたの？（22:25）' },
+      { at: 'app:chat', cause: 'health_check', unread: true, image: 'clue_health_check', text: '引き出しの奥から、健康診断の結果が出てきたんだけど。「要精密検査」って何？ なんで隠してたの？（22:25）' },
       { at: 'app:memo', cause: 'health_check', text: '健診結果: γ-GTP 189／尿酸値 8.9／腹囲+6cm → 要精密検査。……妻には見せないこと。引き出しの奥に封印' },
       {
         at: 'slot:bag',
@@ -1148,7 +1148,7 @@ export const SCENARIOS: Scenario[] = [
       },
     ],
     clues: [
-      { at: 'slot:bag', cause: 'payment_slip', text: '鞄の内ポケットに封筒が入っている。中身は通販の払込用紙と1万円札が2枚。「お支払い期限: 本日」……あっ。' },
+      { at: 'slot:bag', cause: 'payment_slip', image: 'clue_payment_slip', text: '鞄の内ポケットに封筒が入っている。中身は通販の払込用紙と1万円札が2枚。「お支払い期限: 本日」……あっ。' },
       { at: 'app:chat', cause: 'payment_slip', text: '今日、帰りにコンビニで払込お願いね！ 期限今日だから。お金は鞄の封筒に入れといた（7:45）' },
       { at: 'app:calendar', cause: 'payment_slip', text: '今日: 通販の払込期限（妻に頼まれた）' },
     ],
