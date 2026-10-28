@@ -283,6 +283,22 @@ export const CHAT_TEMPLATES: ChatTemplate[] = [
     replyIrrelevant: '……明日？',
     provokeLines: ['……期限、今日って言ったよね。', '明日払ったら、延滞金と督促状がついてくるの。', 'あの2万円、まだ封筒に入ってるんでしょうね？'],
   },
+  // 鍵をなくした日: 妻に開けてもらえばドアは開くが、入ったとたんに問い詰められる
+  {
+    id: 'key_akete',
+    text: '鍵なくしたから、鍵開けておいて',
+    onlyWith: 'key_lost',
+    blockedBy: ['bought:house_key'],
+    disguised: true,
+    replyRelevant: '……は？ なくした？ ……開けとくけど。帰ってきたら、話があるから。',
+    replyIrrelevant: '……は？ なくした？ ……開けとくけど。帰ってきたら、話があるから。',
+    provokeTitle: '鍵をなくした',
+    provokeLines: [
+      '……で、どこでなくしたの？',
+      '家の鍵よ？ 住所のわかる物と一緒に落としてたら、どうするの。',
+      '大家さんに連絡して、鍵ごと交換してもらわなきゃいけないのよ。……いくらかかると思ってるの？',
+    ],
+  },
   // カビだらけの弁当箱
   {
     id: 'bento_sorry',

@@ -29,6 +29,7 @@ import {
   sentText,
   hasUnreadChat,
   keyless,
+  KEY_RATTLED,
   onDay,
   newRun,
   perform,
@@ -359,7 +360,7 @@ export class Game {
               ? say('narr', ['玄関で、妻が寝落ちしていた。……今夜は、何も聞かれなかった。', '──翌朝。', '妻は、玄関に残っていた「証拠」を見つけてしまった。'])
               : inside
                 ? []
-                : [{ who: 'narr' as const, text: this.day!.flags.has('rang') ? 'ピンポーン……' : 'ガチャ……' }]),
+                : [{ who: 'narr' as const, text: this.day!.flags.has(KEY_RATTLED) ? 'ガチャガチャガチャ！ ……バンッ！ 内側から、勢いよくドアが開いた。' : this.day!.flags.has('rang') ? 'ピンポーン……' : 'ガチャ……' }]),
             ...say('wife', causes[0].angerLines),
             // 続けて言わずにいられない火種（空気の読めない相談など）は、セリフごと足す
             ...spoken.flatMap((c) => say('wife', c.angerLines)),
@@ -380,7 +381,11 @@ export class Game {
     const alone = this.day!.homeAlone;
     const lines: Line[] = [
       ...(alone ? [{ who: 'narr' as const, text: '実家にいるはずの妻の靴が、玄関にある。' }] : []),
-      ...(this.day!.flags.has('rang') ? say('narr', ['ピンポーン……', 'ガチャ……と、内側からドアが開いた。']) : say('narr', ['ガチャ……'])),
+      ...(this.day!.flags.has(KEY_RATTLED)
+        ? say('narr', ['ガチャガチャガチャ！', 'バンッ！ ……内側から、勢いよくドアが開いた。'])
+        : this.day!.flags.has('rang')
+          ? say('narr', ['ピンポーン……', 'ガチャ……と、内側からドアが開いた。'])
+          : say('narr', ['ガチャ……'])),
       { who: 'narr', text: '玄関の空気が、凍りついた。' },
       ...say('wife', demonLines),
       { who: 'narr', text: '妻は、人であることをやめた。' },
@@ -1165,9 +1170,20 @@ export class Game {
       case 'phone':
         return this.viewPhone(m.app);
       case 'confirmDoor':
-        return this.dialog('ドアを開ける？', '火種が残っていたら……', 'やめる', '開ける', () => this.act({ type: 'openDoor' }));
+        // 開かなかったら閉じる（鍵をなくした日は、下のボタンがインターホンに変わる）
+        return this.dialog('ドアを開ける？', '火種が残っていたら……', 'やめる', '開ける', () => {
+          this.modal = null;
+          this.act({ type: 'openDoor' });
+        });
       case 'confirmIntercom':
-        return this.dialog('インターホンを押す？', '鍵をなくしたことは、確実にバレる……', 'やめる', '押す', () => this.act({ type: 'intercom' }));
+        // 押さずに、もう一度ガチャガチャやることもできる（3回目で妻が飛び出してくる）
+        return this.dialog('インターホンを押す？', '鍵をなくしたことは、確実にバレる……', 'やめる', '押す', () => this.act({ type: 'intercom' }), [
+          'ガチャガチャ',
+          () => {
+            this.modal = null;
+            this.act({ type: 'openDoor' }, 'se_tap');
+          },
+        ]);
       case 'confirmQuit':
         return this.dialog(
           'タイトルに戻る？',
@@ -1180,7 +1196,8 @@ export class Game {
   }
 
   /** 確認ダイアログ（やめる / 実行する） */
-  private dialog(title: string, sub: string, cancel: string, ok: string, onOk: () => void): HTMLElement {
+  /** extra: やめる と 決定 のあいだに置く、もう1つの選択肢 */
+  private dialog(title: string, sub: string, cancel: string, ok: string, onOk: () => void, extra?: [string, () => void]): HTMLElement {
     return h(
       'div',
       { class: 'dialog-backdrop' },
@@ -1193,6 +1210,7 @@ export class Game {
           'div',
           { class: 'row' },
           h('button', { class: 'btn', onclick: () => this.closeModal() }, cancel),
+          extra ? h('button', { class: 'btn', onclick: extra[1] }, extra[0]) : null,
           h('button', { class: 'btn danger', onclick: onOk }, ok),
         ),
       ),

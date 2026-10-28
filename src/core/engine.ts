@@ -625,18 +625,31 @@ const act = (state: DayState, action: Action): ActionResult => {
 
     case 'openDoor': {
       if (state.location !== 'door') return result(false, ['ドアの前にいない。']);
-      // 鍵をなくした日は、鍵を受け取るまで開かない（インターホンを押すしかない）
+      // 鍵をなくした日は、鍵を受け取るまで開かない（インターホンを押すしかない）。
+      // しつこく3回ガチャガチャやると、泥棒かと思った妻が内側から飛び出してくる
       if (keyless(state)) {
         state.flags.add('door_locked');
-        return result(false, ['ガチャガチャ……開かない。', '……鍵がない！']);
+        const tries = flagsWith(state, 'door_try:').length;
+        state.flags.add(`door_try:${tries}`);
+        if (tries >= 2) {
+          state.flags.add(KEY_RATTLED);
+          return doorOutcome(state);
+        }
+        return result(false, tries === 0 ? ['ガチャガチャ……開かない。', '……鍵がない！'] : ['ガチャガチャガチャ！', '……やっぱり開かない。', '（家の中で、誰かが起きた気配がした）']);
       }
       return doorOutcome(state);
     }
   }
 };
 
-/** 鍵をなくした日で、まだ鍵を受け取っていない */
-export const keyless = (state: DayState): boolean => onDay(state, 'key_lost') && !state.inventory.includes('house_key');
+/** 鍵をなくした日で、まだ鍵を受け取っていない（チャットで頼んで開けてもらった日は開いている） */
+export const keyless = (state: DayState): boolean =>
+  onDay(state, 'key_lost') && !state.inventory.includes('house_key') && !state.flags.has(`provoked:${KEY_ASKED}`);
+
+/** 鍵が無いのにドアを3回ガチャガチャやった */
+export const KEY_RATTLED = 'door_rattled';
+/** 「鍵なくしたから鍵開けておいて」の定型文 */
+const KEY_ASKED = 'key_akete';
 
 /** 玄関に入ったときの結末（ドアを開けた・インターホンで開けてもらった） */
 const doorOutcome = (state: DayState): ActionResult => {
@@ -652,7 +665,13 @@ const doorOutcome = (state: DayState): ActionResult => {
   const prank = flagsWith(state, 'prank:')[0];
   if (prank) return result(true, [], 0, { kind: 'prank', template: prank.slice('prank:'.length) });
   // 帰宅した瞬間に目に入る・耳に入るもの（格好・余計なひと言・持ち物）から先に怒られる
-  const angry = [...(state.flags.has('pantsless') ? [PANTSLESS] : state.flags.has('undressed') ? [UNDRESSED] : []), ...provokeCauses(state), ...carriedCauses(state), ...unresolvedCauses(state), ...pcTimingCauses(state)];
+  const seen = [...(state.flags.has('pantsless') ? [PANTSLESS] : state.flags.has('undressed') ? [UNDRESSED] : []), ...provokeCauses(state), ...carriedCauses(state), ...unresolvedCauses(state), ...pcTimingCauses(state)];
+  // 鍵をなくした件は、どうやって家に入ったかで怒られ方が変わる（ガチャガチャで飛び出してきた・チャットで開けてもらった）
+  const angry = state.flags.has(KEY_RATTLED)
+    ? [KEY_RATTLE, ...seen.filter((c) => c.id !== 'key_lost')]
+    : state.flags.has(`provoked:${KEY_ASKED}`)
+      ? seen.filter((c) => c.id !== 'key_lost')
+      : seen;
   // 鬼のお面を持って帰ると、必ず鬼になる。ほかに火種が無ければ、いったん「おかえり」と迎えられてから
   if (state.inventory.includes('oni_mask')) {
     return result(true, [], 0, { kind: 'angry', causes: [ONI_MASK, ...angry], fakeHome: angry.length ? undefined : state.successLines });
@@ -790,8 +809,15 @@ const PANTSLESS_ARREST: Partial<Record<Location, ArrestId>> = { town: 'jail', be
 /** 余計なひと言を送っていたら、それ自体が新しい火種になる */
 const provokeCauses = (state: DayState): Cause[] =>
   CHAT_TEMPLATES.filter((t) => t.provokeLines && state.flags.has(`provoked:${t.id}`)).map((t) =>
-    angerCause(`provoke:${t.id}`, '火に油', t.provokeLinesIf && evaluate(t.provokeLinesIf.when, state.flags) ? t.provokeLinesIf.lines : t.provokeLines!),
+    angerCause(`provoke:${t.id}`, t.provokeTitle ?? '火に油', t.provokeLinesIf && evaluate(t.provokeLinesIf.when, state.flags) ? t.provokeLinesIf.lines : t.provokeLines!),
   );
+
+/** 鍵が無いのにドアをガチャガチャやって、妻が飛び出してきた */
+const KEY_RATTLE = angerCause('key_rattle', '夜中のガチャガチャ', [
+  '夜中にガチャガチャやるから、びっくりするじゃない！',
+  '泥棒かと思って、警察呼ぼうかと思ったわよ！',
+  '……で、鍵は？ なんで自分の家のドアが開けられないの？',
+]);
 
 /** 火種を放ったままパソコンの相談をしていたら、それも火種になる（片付けてから相談し直して許してもらえば消える） */
 const PC_BAD_TIMING = 'pc_bad_timing';

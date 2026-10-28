@@ -199,6 +199,8 @@ export interface ChatTemplate {
    * 帰宅した瞬間に怒りシーン。妻のセリフ
    */
   provokeLines?: string[];
+  /** 余計なひと言で増えた火種の名前（省略時は「火に油」） */
+  provokeTitle?: string;
   /** 余計なひと言だが、見た目は普通の定型文（普通の枠に並べる罠） */
   disguised?: boolean;
   /** 「ほんとにごめん…」のあとに続けて送れる謝罪（何段目か）。3段目まで送ると夫がブチギレる */

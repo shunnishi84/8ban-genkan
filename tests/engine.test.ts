@@ -1117,6 +1117,38 @@ describe('洗濯・プリン・角・弁当箱・鍵', () => {
   });
 });
 
+describe('鍵をなくした日のドア', () => {
+  it('鍵が無いまま3回ガチャガチャやると、妻が飛び出してきて怒られる（ほかの火種も一緒に）', () => {
+    const s = day(['key_lost', 'ring_off']);
+    expect(perform(s, { type: 'openDoor' }).outcome.kind).toBe('continue');
+    const second = perform(s, { type: 'openDoor' });
+    expect(second.outcome.kind).toBe('continue');
+    expect(second.messages.join('')).toContain('起きた気配');
+    const o = perform(s, { type: 'openDoor' }).outcome;
+    expect(o).toMatchObject({ kind: 'angry', causes: [{ id: 'key_rattle' }, { id: 'ring_off' }] });
+    if (o.kind === 'angry') expect(o.causes[0].angerLines.join('')).toContain('警察呼ぼうか');
+  });
+
+  it('「鍵開けておいて」と頼むとドアは開くが、入ったとたんに鍵のことで怒られる', () => {
+    const s = day(['key_lost']);
+    expect(perform(s, { type: 'sendChat', template: 'key_akete' }).ok).toBe(true);
+    expect(s.chatLog.at(-1)?.text).toContain('開けとく');
+    const o = perform(s, { type: 'openDoor' }).outcome;
+    expect(o).toMatchObject({ kind: 'angry', causes: [{ id: 'provoke:key_akete', title: '鍵をなくした' }] });
+    if (o.kind === 'angry') {
+      expect(o.causes).toHaveLength(1);
+      expect(o.causes[0].angerLines.join('')).toContain('大家さん');
+    }
+  });
+
+  it('鍵を受け取ったあとは「鍵開けておいて」を送れない', () => {
+    const s = day(['key_lost']);
+    s.location = 'konbini';
+    perform(s, { type: 'buy', item: 'house_key' });
+    expect(perform(s, { type: 'sendChat', template: 'key_akete' }).ok).toBe(false);
+  });
+});
+
 describe('暴言のランダム選択', () => {
   it('暴言は全部で10種あり、毎日そのうち4つが日ごとに変わる', () => {
     const all = CHAT_TEMPLATES.filter((t) => t.insult);
