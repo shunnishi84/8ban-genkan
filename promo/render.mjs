@@ -17,7 +17,7 @@ const [outDir = 'promo/out', which = 'both', ...rest] = process.argv.slice(2);
 const stillsArg = rest[rest.indexOf('--stills') + 1];
 const stills = rest.includes('--stills') ? stillsArg.split(',').map(Number) : null;
 const SIZES = { landscape: [1920, 1080], portrait: [1080, 1920] };
-const TYPES = { '.html': 'text/html', '.json': 'application/json', '.css': 'text/css', '.woff2': 'font/woff2', '.woff': 'font/woff', '.png': 'image/png', '.jpg': 'image/jpeg' };
+const TYPES = { '.html': 'text/html', '.json': 'application/json', '.css': 'text/css', '.woff2': 'font/woff2', '.woff': 'font/woff', '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp' };
 
 // リポジトリ直下を配る小さな静的サーバー（フォントと画像を読むため）
 const server = createServer(async (req, res) => {

@@ -148,6 +148,8 @@ promo/build.sh promo/out   # → promo/out/8ban-genkan_trailer_landscape.mp4 / _
 
 未作成の画像を生成するためのプロンプトは [docs/IMAGE_PROMPTS.md](docs/IMAGE_PROMPTS.md) にまとめてある。
 
+同梱の画像はすべて WebP に変換して軽くしてある（表のファイル名は作ったときの名前で、実際のファイルは同じ名前の `.webp`）。新しく PNG・JPEG を置いたら `npm run images:webp` で WebP にして、`manifest.ts` のファイル名も書き換えられる（ImageMagick が必要）。
+
 | ファイル | 用途 | 状態 |
 |---|---|---|
 | bg_door.jpg | 玄関前の一枚絵（224x367 基準。当たり判定は `renderer.ts` の `SPOT_RECTS`） | ✅ |

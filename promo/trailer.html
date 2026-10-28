@@ -38,11 +38,11 @@ let T;
 const IMG_DIR = '/public/assets/images/';
 const SHOT_DIR = '/promo/shots/';
 const IMAGES = [
-  'bg_door.jpg', 'bg_door_dark.png', 'wife_angry.jpg', 'wife_demon.jpg', 'wife_demon_final.jpg', 'wife_kishin.jpg', 'wife_kishin_final.jpg',
-  'castle_gate.png', 'wife_smile.png', 'hero.png', 'wife_drunk_karami.jpg', 'twoshot_edited.jpg', 'wife_suspicious.png',
-  'clue_pudding_lid.jpg', 'clue_moldy_bento.jpg', 'clue_pink_blouse.jpg', 'clue_health_check.jpg', 'clue_tissue_laundry.jpg', 'clue_payment_slip.jpg',
-  'clue_tsuno_post.jpg', 'kouhai_notice.jpg', 'gravure_page.jpg', 'costume_dress.jpg', 'tv_capture.jpg', 'twoshot_original.jpg', 'yokyou_photo.jpg',
-  'bg_court.jpg', 'hospital_wife.jpg', 'jail_cell.jpg', 'prank_police.jpg', 'drunk_party.jpg', 'robot_wife.png', 'clear.jpg', 'koban_wife.jpg', 'bg_battle.jpg', 'bg_siege.jpg',
+  'bg_door.webp', 'bg_door_dark.webp', 'wife_angry.webp', 'wife_demon.webp', 'wife_demon_final.webp', 'wife_kishin.webp', 'wife_kishin_final.webp',
+  'castle_gate.webp', 'wife_smile.webp', 'hero.webp', 'wife_drunk_karami.webp', 'twoshot_edited.webp', 'wife_suspicious.webp',
+  'clue_pudding_lid.webp', 'clue_moldy_bento.webp', 'clue_pink_blouse.webp', 'clue_health_check.webp', 'clue_tissue_laundry.webp', 'clue_payment_slip.webp',
+  'clue_tsuno_post.webp', 'kouhai_notice.webp', 'gravure_page.webp', 'costume_dress.webp', 'tv_capture.webp', 'twoshot_original.webp', 'yokyou_photo.webp',
+  'bg_court.webp', 'hospital_wife.webp', 'jail_cell.webp', 'prank_police.webp', 'drunk_party.webp', 'robot_wife.webp', 'clear.webp', 'koban_wife.webp', 'bg_battle.webp', 'bg_siege.webp',
 ];
 const SHOTS = ['door', 'spot_bento', 'chat_blouse', 'konbini', 'trash', 'sns', 'chat_uwaki', 'angry', 'home', 'demon1', 'gameover', 'chat_health'];
 const img = {};
@@ -310,7 +310,7 @@ function shakeAt(f, amp) {
 }
 
 // ------------------------------------------------------------------ 場面
-// ドアの位置（bg_door.jpg 上のピクセル。renderer.ts の SPOT_RECTS.door を 1080 幅に換算）
+// ドアの位置（bg_door.webp 上のピクセル。renderer.ts の SPOT_RECTS.door を 1080 幅に換算）
 const DOOR = { x: 304, y: 458, w: 516, h: 988 };
 
 /** 玄関前（bg_door）を、ある点を中心にズームして描く。戻り値はドア矩形の画面座標 */
@@ -929,7 +929,7 @@ async function init() {
   TL = await (await fetch('/promo/timeline.json')).json();
   T = TL.t;
   await Promise.all([
-    ...IMAGES.map((f) => loadImage(f.replace(/\.(jpg|png)$/, ''), IMG_DIR + f)),
+    ...IMAGES.map((f) => loadImage(f.replace(/\.(jpg|png|webp)$/, ''), IMG_DIR + f)),
     ...SHOTS.map((s) => loadImage('shot_' + s, SHOT_DIR + s + '.png')),
   ]);
   // 使う文字のフォントを先に読み込む（unicode-range で分割されているので、文字を渡して読む）
