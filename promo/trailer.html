@@ -1,0 +1,952 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>8番玄関 予告編</title>
+<link rel="stylesheet" href="/node_modules/@fontsource/noto-serif-jp/japanese-900.css">
+<link rel="stylesheet" href="/node_modules/@fontsource/noto-serif-jp/japanese-500.css">
+<link rel="stylesheet" href="/node_modules/@fontsource/noto-sans-jp/japanese-900.css">
+<link rel="stylesheet" href="/node_modules/@fontsource/noto-sans-jp/japanese-700.css">
+<link rel="stylesheet" href="/node_modules/@fontsource/noto-serif-jp/latin-900.css">
+<link rel="stylesheet" href="/node_modules/@fontsource/noto-sans-jp/latin-900.css">
+<style>
+  html, body { margin: 0; background: #000; }
+  canvas { display: block; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>
+// 8番玄関 予告編。renderFrame(f) が「f フレーム目の絵」をキャンバスに描く（時刻だけで決まる。乱数もフレームから作る）
+// ?orient=landscape（1920x1080）/ portrait（1080x1920）
+const ORIENT = new URLSearchParams(location.search).get('orient') === 'portrait' ? 'portrait' : 'landscape';
+const LAND = ORIENT === 'landscape';
+const W = LAND ? 1920 : 1080;
+const H = LAND ? 1080 : 1920;
+const canvas = document.getElementById('c');
+canvas.width = W;
+canvas.height = H;
+const ctx = canvas.getContext('2d');
+
+const SIGN = '#f7d417';
+const SERIF = '"Noto Serif JP", serif';
+const SANS = '"Noto Sans JP", sans-serif';
+let TL;
+let T;
+
+// ------------------------------------------------------------------ 素材
+const IMG_DIR = '/public/assets/images/';
+const SHOT_DIR = '/promo/shots/';
+const IMAGES = [
+  'bg_door.jpg', 'bg_door_dark.png', 'wife_angry.jpg', 'wife_demon.jpg', 'wife_demon_final.jpg', 'wife_kishin.jpg', 'wife_kishin_final.jpg',
+  'castle_gate.png', 'wife_smile.png', 'hero.png', 'wife_drunk_karami.jpg', 'twoshot_edited.jpg', 'wife_suspicious.png',
+  'clue_pudding_lid.jpg', 'clue_moldy_bento.jpg', 'clue_pink_blouse.jpg', 'clue_health_check.jpg', 'clue_tissue_laundry.jpg', 'clue_payment_slip.jpg',
+  'clue_tsuno_post.jpg', 'kouhai_notice.jpg', 'gravure_page.jpg', 'costume_dress.jpg', 'tv_capture.jpg', 'twoshot_original.jpg', 'yokyou_photo.jpg',
+  'bg_court.jpg', 'hospital_wife.jpg', 'jail_cell.jpg', 'prank_police.jpg', 'drunk_party.jpg', 'robot_wife.png', 'clear.jpg', 'koban_wife.jpg', 'bg_battle.jpg', 'bg_siege.jpg',
+];
+const SHOTS = ['door', 'spot_bento', 'chat_blouse', 'konbini', 'trash', 'sns', 'chat_uwaki', 'angry', 'home', 'demon1', 'gameover', 'chat_health'];
+const img = {};
+const loadImage = (key, src) =>
+  new Promise((ok, ng) => {
+    const i = new Image();
+    i.onload = () => { img[key] = i; ok(); };
+    i.onerror = () => ng(new Error(src));
+    i.src = src;
+  });
+
+// ------------------------------------------------------------------ 道具
+const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+const lerp = (a, b, k) => a + (b - a) * k;
+const prog = (t, a, b) => clamp((t - a) / (b - a));
+const easeOut = (k) => 1 - Math.pow(1 - k, 3);
+const easeIn = (k) => k * k * k;
+const easeInOut = (k) => (k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2);
+const backOut = (k) => 1 + 2.7 * Math.pow(k - 1, 3) + 1.7 * Math.pow(k - 1, 2);
+/** フレームとキーから決まる 0〜1 の乱数 */
+const rnd = (f, k = 0) => {
+  let x = Math.sin(f * 127.1 + k * 311.7) * 43758.5453;
+  return x - Math.floor(x);
+};
+const U = Math.min(W, H) / 1080;
+
+/** 画像を矩形いっぱいに（はみ出しは切る）。zoom と中心のずらし（-1〜1）つき */
+function cover(im, x, y, w, h, zoom = 1, ox = 0, oy = 0) {
+  const s = Math.max(w / im.width, h / im.height) * zoom;
+  const dw = im.width * s;
+  const dh = im.height * s;
+  const dx = x + (w - dw) / 2 + ((dw - w) / 2) * ox;
+  const dy = y + (h - dh) / 2 + ((dh - h) / 2) * oy;
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(x, y, w, h);
+  ctx.clip();
+  ctx.drawImage(im, dx, dy, dw, dh);
+  ctx.restore();
+}
+/** 画像を矩形に収める（中央寄せ） */
+function contain(im, cx, cy, w, h) {
+  const s = Math.min(w / im.width, h / im.height);
+  ctx.drawImage(im, cx - (im.width * s) / 2, cy - (im.height * s) / 2, im.width * s, im.height * s);
+}
+
+/** 文字。align は left/center/right。opts: size, weight, font, color, stroke, strokeW, shadow, spacing, alpha, maxW */
+function text(str, x, y, o = {}) {
+  const size = (o.size ?? 60) * U;
+  ctx.save();
+  ctx.globalAlpha *= o.alpha ?? 1;
+  ctx.font = `${o.weight ?? 900} ${size}px ${o.font ?? SANS}`;
+  ctx.textAlign = o.align ?? 'center';
+  ctx.textBaseline = 'middle';
+  ctx.letterSpacing = `${(o.spacing ?? 0) * size}px`;
+  if (o.maxW) {
+    const m = ctx.measureText(str).width;
+    if (m > o.maxW) {
+      const k = o.maxW / m;
+      ctx.translate(x, y);
+      ctx.scale(k, k);
+      ctx.translate(-x, -y);
+    }
+  }
+  if (o.shadow) {
+    ctx.shadowColor = o.shadow;
+    ctx.shadowBlur = (o.shadowBlur ?? 30) * U;
+  }
+  if (o.stroke) {
+    ctx.lineJoin = 'round';
+    ctx.lineWidth = (o.strokeW ?? 10) * U;
+    ctx.strokeStyle = o.stroke;
+    ctx.strokeText(str, x, y);
+    ctx.shadowColor = 'transparent';
+  }
+  ctx.fillStyle = o.color ?? '#fff';
+  ctx.fillText(str, x, y);
+  ctx.restore();
+}
+/** にじむ・ずれるホラー文字（赤とシアンのずれ＋かすかな揺れ） */
+function horrorText(str, x, y, f, o = {}) {
+  const amp = (o.jitter ?? 1) * U;
+  const jx = (rnd(f, 1) - 0.5) * 4 * amp;
+  const jy = (rnd(f, 2) - 0.5) * 3 * amp;
+  const ab = (o.aberration ?? 4) * U * (rnd(f, 3) > 0.85 ? 3 : 1);
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  text(str, x + jx - ab, y + jy, { ...o, color: 'rgba(255,40,40,0.55)', font: o.font ?? SERIF });
+  text(str, x + jx + ab, y + jy, { ...o, color: 'rgba(40,220,255,0.45)', font: o.font ?? SERIF });
+  ctx.restore();
+  text(str, x + jx, y + jy, { ...o, font: o.font ?? SERIF, color: o.color ?? '#eee' });
+}
+/** 8番出口風の黄色い案内板「[8]番玄関」。cx,cy 中心、h は高さ */
+function signLogo(cx, cy, h, label = '番玄関', no = '8') {
+  const size = h * 0.62;
+  ctx.save();
+  ctx.font = `900 ${size}px ${SANS}`;
+  ctx.letterSpacing = '0px';
+  const labelW = ctx.measureText(label).width;
+  const box = h * 0.78;
+  const pad = h * 0.28;
+  const gap = h * 0.2;
+  const w = pad + box + gap + labelW + pad;
+  const x = cx - w / 2;
+  const y = cy - h / 2;
+  ctx.fillStyle = SIGN;
+  roundRect(x, y, w, h, h * 0.12);
+  ctx.fill();
+  ctx.fillStyle = '#111';
+  roundRect(x + pad, cy - box / 2, box, box, h * 0.08);
+  ctx.fill();
+  ctx.textBaseline = 'middle';
+  ctx.textAlign = 'center';
+  ctx.fillStyle = SIGN;
+  ctx.fillText(no, x + pad + box / 2, cy + h * 0.02);
+  ctx.textAlign = 'left';
+  ctx.fillStyle = '#111';
+  ctx.fillText(label, x + pad + box + gap, cy + h * 0.02);
+  ctx.restore();
+  return w;
+}
+function roundRect(x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+/** スマホの枠にゲーム画面を入れて描く。cx,cy 中心、h は本体の高さ */
+function phone(shot, cx, cy, h, o = {}) {
+  const im = img['shot_' + shot];
+  const w = h * (im.width / im.height) + h * 0.04;
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(o.rot ?? 0);
+  ctx.scale(o.scale ?? 1, o.scale ?? 1);
+  ctx.shadowColor = 'rgba(0,0,0,0.6)';
+  ctx.shadowBlur = 50 * U;
+  ctx.fillStyle = '#0d0f14';
+  roundRect(-w / 2, -h / 2, w, h, h * 0.06);
+  ctx.fill();
+  ctx.shadowColor = 'transparent';
+  ctx.strokeStyle = '#3a3f4a';
+  ctx.lineWidth = 3 * U;
+  ctx.stroke();
+  const sh = h * 0.96;
+  const sw = sh * (im.width / im.height);
+  ctx.save();
+  roundRect(-sw / 2, -sh / 2, sw, sh, h * 0.045);
+  ctx.clip();
+  const z = o.zoom ?? 1;
+  const zw = sw * z;
+  const zh = sh * z;
+  ctx.drawImage(im, -zw / 2 + (o.panX ?? 0) * (zw - sw) / 2, -zh / 2 + (o.panY ?? 0) * (zh - sh) / 2, zw, zh);
+  ctx.restore();
+  ctx.restore();
+}
+/** タップした場所に広がる輪 */
+function tapRipple(x, y, k) {
+  if (k <= 0 || k >= 1) return;
+  ctx.save();
+  ctx.strokeStyle = `rgba(255,255,255,${1 - k})`;
+  ctx.lineWidth = 6 * U;
+  ctx.beginPath();
+  ctx.arc(x, y, (20 + 70 * easeOut(k)) * U, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.fillStyle = `rgba(255,255,255,${0.5 * (1 - k)})`;
+  ctx.beginPath();
+  ctx.arc(x, y, 18 * U, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+/** 全画面の帯ずらし */
+function glitchScreen(amount, f) {
+  const n = 9;
+  for (let i = 0; i < n; i++) {
+    if (rnd(f, 80 + i) > 0.6) continue;
+    const by = H * rnd(f, 90 + i);
+    const bh = H * (0.01 + 0.06 * rnd(f, 100 + i));
+    const dx = (rnd(f, 110 + i) - 0.5) * 160 * U * amount;
+    ctx.drawImage(canvas, 0, by, W, bh, dx, by, W, bh);
+  }
+}
+
+// フィルム粒子（あらかじめ数枚作っておき、フレームごとに切り替える）
+const grains = [];
+function makeGrains() {
+  for (let g = 0; g < 6; g++) {
+    const c = document.createElement('canvas');
+    c.width = W / 2;
+    c.height = H / 2;
+    const x = c.getContext('2d');
+    const d = x.createImageData(c.width, c.height);
+    let s = g * 9973 + 1;
+    for (let i = 0; i < d.data.length; i += 4) {
+      s = (s * 16807) % 2147483647;
+      const v = s % 255;
+      d.data[i] = d.data[i + 1] = d.data[i + 2] = v;
+      d.data[i + 3] = 255;
+    }
+    x.putImageData(d, 0, 0);
+    grains.push(c);
+  }
+}
+function grain(f, alpha) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.globalCompositeOperation = 'overlay';
+  ctx.drawImage(grains[f % grains.length], 0, 0, W, H);
+  ctx.restore();
+}
+function vignette(strength) {
+  const g = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.25, W / 2, H / 2, Math.max(W, H) * 0.75);
+  g.addColorStop(0, 'rgba(0,0,0,0)');
+  g.addColorStop(1, `rgba(0,0,0,${strength})`);
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, W, H);
+}
+/** シネスコの黒帯（横向きだけ） */
+function letterbox(k = 1) {
+  if (!LAND) return;
+  const bar = ((H - W / 2.39) / 2) * k;
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, W, bar);
+  ctx.fillRect(0, H - bar, W, bar);
+}
+function fill(color, alpha = 1) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = color;
+  ctx.fillRect(0, 0, W, H);
+  ctx.restore();
+}
+/** 蛍光灯のちらつき（0〜1。たまにふっと落ちる） */
+function flicker(f, base = 1) {
+  const r = rnd(Math.floor(f / 2), 7);
+  if (r > 0.93) return base * 0.15;
+  if (r > 0.86) return base * 0.55;
+  return base * (0.92 + 0.08 * rnd(f, 8));
+}
+/** 集中線 */
+function speedLines(f, color, alpha) {
+  ctx.save();
+  ctx.translate(W / 2, H / 2);
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = color;
+  const R = Math.hypot(W, H);
+  for (let i = 0; i < 70; i++) {
+    const a = (i / 70) * Math.PI * 2 + rnd(f, 200 + i) * 0.06;
+    const r0 = R * (0.28 + 0.14 * rnd(f, 300 + i));
+    const wdt = 0.004 + 0.01 * rnd(i, 5);
+    ctx.beginPath();
+    ctx.moveTo(Math.cos(a - wdt) * R, Math.sin(a - wdt) * R);
+    ctx.lineTo(Math.cos(a) * r0, Math.sin(a) * r0);
+    ctx.lineTo(Math.cos(a + wdt) * R, Math.sin(a + wdt) * R);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+/** 画面の揺れ（描画の前に translate する量） */
+function shakeAt(f, amp) {
+  return [(rnd(f, 11) - 0.5) * 2 * amp * U, (rnd(f, 12) - 0.5) * 2 * amp * U];
+}
+
+// ------------------------------------------------------------------ 場面
+// ドアの位置（bg_door.jpg 上のピクセル。renderer.ts の SPOT_RECTS.door を 1080 幅に換算）
+const DOOR = { x: 304, y: 458, w: 516, h: 988 };
+
+/** 玄関前（bg_door）を、ある点を中心にズームして描く。戻り値はドア矩形の画面座標 */
+function hallway(zoom, focusX, focusY, bright) {
+  const im = img.bg_door;
+  // 画面いっぱいに覆う倍率 × zoom。focus（画像座標）が画面中央に来るように寄せる
+  const s = Math.max(W / im.width, H / im.height) * zoom;
+  let dx = W / 2 - focusX * s;
+  let dy = H / 2 - focusY * s;
+  dx = clamp(dx, W - im.width * s, 0);
+  dy = clamp(dy, H - im.height * s, 0);
+  ctx.save();
+  ctx.filter = `brightness(${bright}) saturate(0.55) contrast(1.15)`;
+  ctx.drawImage(im, dx, dy, im.width * s, im.height * s);
+  ctx.restore();
+  return { x: dx + DOOR.x * s, y: dy + DOOR.y * s, w: DOOR.w * s, h: DOOR.h * s, s, dx, dy };
+}
+
+// 1. 夜の廊下。蛍光灯がちらつく
+function sceneHall(t, f) {
+  const k = prog(t, T.hall, T.rules);
+  const d = hallway(1.0 + 0.12 * k, 540, 800, 0.55 * flicker(f) * clamp(t / 0.8));
+  fill('#06121a', 0.25);
+  letterbox();
+  if (t > 1.2) horrorText('午後 11時 58分', W / 2, LAND ? H * 0.8 : H * 0.78, f, { size: 40, weight: 500, alpha: prog(t, 1.2, 1.9) * (1 - prog(t, 4.2, 4.8)), spacing: 0.3 });
+  if (t > 2.4) horrorText('飲み会帰りの、いつもの玄関。', W / 2, LAND ? H * 0.8 + 60 * U : H * 0.78 + 70 * U, f + 3, { size: 34, weight: 500, alpha: prog(t, 2.4, 3.1) * (1 - prog(t, 4.2, 4.8)), spacing: 0.15 });
+  return d;
+}
+
+// 2. ご案内（8番出口の掲示のパロディ）
+const RULES = ['異変を見逃さないこと', '異変を見つけたら、すぐに引き返すこと', '火種が残っていたら、玄関を開けないこと', '8日連続で、無事に帰宅すること'];
+function sceneRules(t, f) {
+  fill('#000');
+  const k = prog(t, T.rules, T.rules + 0.6);
+  const out = 1 - prog(t, T.clues - 0.5, T.clues);
+  const cx = W / 2;
+  const top = LAND ? H * 0.22 : H * 0.3;
+  ctx.save();
+  ctx.globalAlpha = k * out * flicker(f + 5, 1);
+  // 案内板の見出し
+  const hw = 420 * U;
+  ctx.fillStyle = SIGN;
+  ctx.fillRect(cx - hw / 2, top - 50 * U, hw, 100 * U);
+  text('ご 案 内', cx, top, { size: 64, color: '#111' });
+  const times = [T.rule1, T.rule2, T.rule3, T.rule4];
+  RULES.forEach((r, i) => {
+    const a = prog(t, times[i], times[i] + 0.35);
+    if (a <= 0) return;
+    const y = top + (LAND ? 150 : 190) * U + i * (LAND ? 105 : 130) * U;
+    const glow = 1 - prog(t, times[i], times[i] + 0.6);
+    horrorText(`${i + 1}.  ${r}`, cx, y, f + i, { size: LAND ? 54 : 50, weight: 500, alpha: a, maxW: W * 0.93, aberration: 2 + 6 * glow, color: i === 2 ? '#ffdddd' : '#eee' });
+  });
+  ctx.restore();
+  vignette(0.9);
+}
+
+// 3. 手がかりが一瞬ずつ映る ＋「……何かを、やり忘れていないか？」
+const FLASH = ['clue_pudding_lid', 'clue_moldy_bento', 'kouhai_notice', 'clue_pink_blouse', 'clue_health_check', 'costume_dress', 'clue_tissue_laundry', 'clue_payment_slip', 'clue_tsuno_post'];
+function sceneClues(t, f) {
+  fill('#000');
+  const lt = t - T.clues;
+  const step = 0.5;
+  const i = Math.floor(lt / step);
+  const within = (lt % step) / step;
+  // 前半 0.28 だけ映して残りは暗転（明滅）
+  if (within < 0.42 && i < FLASH.length) {
+    const im = img[FLASH[i]];
+    ctx.save();
+    ctx.filter = 'grayscale(0.75) contrast(1.4) brightness(0.8)';
+    const z = 1.05 + within * 0.25;
+    cover(im, 0, 0, W, H, z, Math.sin(i) * 0.4, Math.cos(i) * 0.4);
+    ctx.restore();
+    fill('#200', 0.25);
+    glitchScreen(0.6, f);
+  }
+  vignette(0.95);
+  letterbox();
+  const a = prog(t, T.clues + 1.0, T.clues + 1.6);
+  if (a > 0) {
+    fill('#000', 0.35 * a);
+    horrorText('……何かを、', W / 2, H / 2 - (LAND ? 50 : 70) * U, f, { size: LAND ? 92 : 96, alpha: a, aberration: 5 });
+    horrorText('やり忘れていないか？', W / 2, H / 2 + (LAND ? 70 : 90) * U, f + 1, { size: LAND ? 92 : 96, alpha: prog(t, T.clues + 1.6, T.clues + 2.2), aberration: 5 });
+  }
+}
+
+// 4. ドアに迫る ＋「……その玄関を、開けていいのか？」
+function sceneDoor(t, f) {
+  const k = prog(t, T.door, T.gacha);
+  const z = lerp(1.15, 2.1, easeInOut(k));
+  hallway(z, 420, 960, 0.5 * flicker(f + 9));
+  fill('#0a0606', 0.25);
+  // 心臓の鼓動に合わせて画面がわずかに脈打つ
+  const beat = Math.pow(Math.max(0, Math.sin((t - T.door) * Math.PI * (2 + 2 * k))), 12);
+  fill('#400', 0.12 * beat);
+  vignette(0.85 + 0.1 * beat);
+  letterbox();
+  const a = prog(t, T.door + 0.6, T.door + 1.3) * (1 - prog(t, T.gacha - 0.3, T.gacha));
+  if (a > 0) {
+    horrorText('……その玄関を、', W / 2, H / 2 - (LAND ? 50 : 70) * U, f, { size: LAND ? 92 : 96, alpha: a });
+    horrorText('開けていいのか？', W / 2, H / 2 + (LAND ? 70 : 90) * U, f + 1, { size: LAND ? 92 : 96, alpha: a * prog(t, T.door + 1.5, T.door + 2.2), color: '#ffcccc' });
+  }
+}
+
+// 5. ガチャ……ドアが開いて、光の中に妻 → 鬼
+function sceneOpen(t, f) {
+  const im = img.bg_door;
+  // 縦はドア全体、横（シネスコ）はドアの上半分＝妻の顔の高さに寄せる
+  const d = LAND ? hallway(1.0, 560, 720, 0.45 * (t < T.open ? flicker(f) : 1)) : hallway(1.25, 560, 950, 0.45 * (t < T.open ? flicker(f) : 1));
+  const k = easeIn(prog(t, T.open, T.scare - 0.25)) * 0.9 + 0.1 * prog(t, T.gacha, T.open);
+  // ドアの向こう: 暖色の光と、逆光の妻のシルエット
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(d.x, d.y, d.w, d.h);
+  ctx.clip();
+  const glow = ctx.createLinearGradient(d.x, d.y, d.x, d.y + d.h);
+  glow.addColorStop(0, '#ffd9a0');
+  glow.addColorStop(1, '#ff8a3a');
+  ctx.fillStyle = glow;
+  ctx.fillRect(d.x, d.y, d.w, d.h);
+  const sil = prog(t, T.open + 0.6, T.scare - 0.15);
+  if (sil > 0) {
+    ctx.filter = `brightness(${lerp(0.05, 0.35, sil)})`;
+    // 戸口の高さいっぱいに（上に光の帯が残らないように）。近づいてくるように少しずつ大きく
+    const sh = d.h * lerp(1.02, 1.18, sil);
+    const sw = sh * (img.wife_angry.width / img.wife_angry.height);
+    ctx.drawImage(img.wife_angry, d.x + d.w / 2 - sw / 2, d.y + d.h - sh * 0.98, sw, sh);
+    ctx.filter = 'none';
+  }
+  ctx.restore();
+  // 扉: 右側の蝶番を軸に奥へ開く（縦の短冊に分けて遠近をつける）
+  const ang = k * 1.35; // ラジアン
+  const strips = 40;
+  const src = { x: DOOR.x, y: DOOR.y, w: DOOR.w, h: DOOR.h };
+  const hingeX = d.x + d.w;
+  const vis = Math.cos(ang); // 見かけの幅
+  for (let i = 0; i < strips; i++) {
+    const u0 = i / strips;
+    const u1 = (i + 1) / strips;
+    // 蝶番からの距離（1 = 取っ手側）。奥へ行くほど小さく見える
+    const depth0 = (1 - u0) * Math.sin(ang);
+    const depth1 = (1 - u1) * Math.sin(ang);
+    const p0 = 1 / (1 + depth0 * 0.9);
+    const p1 = 1 / (1 + depth1 * 0.9);
+    const x0 = hingeX - (1 - u0) * d.w * vis * p0;
+    const x1 = hingeX - (1 - u1) * d.w * vis * p1;
+    const hh0 = d.h * p0;
+    ctx.save();
+    ctx.filter = `brightness(${0.45 * (1 - k * 0.6)})`;
+    ctx.drawImage(im, src.x + u0 * src.w, src.y, src.w / strips + 1, src.h, x0, d.y + (d.h - hh0) / 2, Math.max(1, x1 - x0 + 1), hh0);
+    ctx.restore();
+  }
+  // 光が廊下にこぼれる
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  const spill = ctx.createRadialGradient(d.x + d.w / 2, d.y + d.h * 0.6, 10, d.x + d.w / 2, d.y + d.h * 0.6, d.w * 1.6);
+  spill.addColorStop(0, `rgba(255,170,90,${0.55 * k})`);
+  spill.addColorStop(1, 'rgba(255,120,40,0)');
+  ctx.fillStyle = spill;
+  ctx.fillRect(0, 0, W, H);
+  ctx.restore();
+  vignette(0.8);
+  letterbox();
+}
+
+// 6. ジャンプスケア: 鬼の妻が画面いっぱいに ＋「おかえり。」
+function sceneScare(t, f) {
+  const lt = t - T.scare;
+  const [sx, sy] = shakeAt(f, 26 * (1 - prog(lt, 0, 0.7)) + 4);
+  ctx.save();
+  ctx.translate(sx, sy);
+  const z = lerp(1.45, 1.08, easeOut(prog(lt, 0, 0.25)));
+  cover(img.wife_angry, -20, -20, W + 40, H + 40, z, 0, LAND ? 0.62 : 0.3);
+  ctx.restore();
+  fill('#ff0000', 0.35 * (1 - prog(lt, 0, 0.3)));
+  fill('#fff', 0.9 * (1 - prog(lt, 0, 0.08)));
+  if (lt > 0.12) {
+    text('おかえり。', W / 2, LAND ? H * 0.8 : H * 0.82, { size: LAND ? 120 : 130, font: SERIF, color: '#ff2a2a', stroke: '#000', strokeW: 14, shadow: '#f00', alpha: prog(lt, 0.12, 0.2) });
+  }
+  glitchScreen(1 - prog(lt, 0, 0.5), f);
+  letterbox(1 - prog(lt, 0.5, 0.8));
+}
+
+// 7. 早口の見出し: 黒地に黄色の帯が叩きつけられる
+function slam(label, t0, t1, t, f, o = {}) {
+  const k = prog(t, t0, t0 + 0.12);
+  if (t < t0 || t >= t1) return;
+  const [sx, sy] = shakeAt(f, 10 * (1 - prog(t, t0, t0 + 0.2)));
+  const y = (o.y ?? 0.5) * H;
+  const size = (o.size ?? (LAND ? 118 : 104));
+  ctx.save();
+  ctx.translate(sx + (1 - easeOut(k)) * W * (o.from ?? 1), sy);
+  ctx.font = `900 ${size * U}px ${SANS}`;
+  ctx.letterSpacing = '0px';
+  const tw = Math.min(ctx.measureText(label).width, W * 0.92);
+  const bh = size * 1.5 * U;
+  ctx.fillStyle = o.bg ?? SIGN;
+  ctx.beginPath();
+  const skew = 40 * U;
+  ctx.moveTo(W / 2 - tw / 2 - 60 * U + skew, y - bh / 2);
+  ctx.lineTo(W / 2 + tw / 2 + 60 * U + skew, y - bh / 2);
+  ctx.lineTo(W / 2 + tw / 2 + 60 * U - skew, y + bh / 2);
+  ctx.lineTo(W / 2 - tw / 2 - 60 * U - skew, y + bh / 2);
+  ctx.closePath();
+  ctx.fill();
+  text(label, W / 2, y + 4 * U, { size, color: o.color ?? '#111', maxW: W * 0.92 });
+  ctx.restore();
+}
+function sceneFast(t, f) {
+  fill('#0b0d12');
+  speedLines(f, '#1d2230', 1);
+  const b = 0.4; // 1拍
+  const t0 = T.fast;
+  slam('妻の怒りの火種を', t0, t0 + 4 * b, t, f, { y: 0.32 });
+  slam('すべて消してから', t0 + b, t0 + 4 * b, t, f, { y: 0.5, from: -1 });
+  slam('ドアを開けろ。', t0 + 2 * b, t0 + 4 * b, t, f, { y: 0.68, bg: '#d9412b', color: '#fff' });
+  fill('#fff', 0.8 * (1 - prog(t, t0, t0 + 0.1)));
+}
+
+// 8. ゲーム画面で操作説明（スマホの枠に入れた実際の画面）
+const PLAY = [
+  { shot: 'door', no: '1', head: '玄関前を調べろ', sub: 'ドア・廊下・窓・表札・足元。\n「いつもと違う」が火種だ。', tap: [0.5, 0.62], zoom: 1.0 },
+  { shot: 'spot_bento', no: '2', head: '異変を見逃すな', sub: 'ドアの前に、カビた弁当箱。\n……なくしたはずの。', zoom: 1.15, panY: 0.3 },
+  { shot: 'chat_blouse', no: '3', head: '妻とチャットで交渉', sub: '謝るか、ごまかすか。\n地雷の定型文に注意。', zoom: 1.1, panY: -0.2 },
+  { shot: 'konbini', no: '4', head: 'コンビニで買い戻せ', sub: 'プリン、指輪の代わり、鍵……\n深夜のコンビニは味方だ。', zoom: 1.05, panY: -0.2 },
+  { shot: 'trash', no: '5', head: '証拠はゴミ捨て場へ', sub: '空き缶、レシート、店の名刺。\n持ち帰ったら終わり。', zoom: 1.0 },
+  { shot: 'sns', no: '6', head: '炎上した投稿は消せ', sub: '「妻の頭から鬼の角が」\n……4.6万いいね。', zoom: 1.1, panY: 0.1 },
+];
+function scenePlay(t, f) {
+  const dur = 1.6;
+  const lt = t - T.play;
+  const i = Math.min(PLAY.length, Math.floor(lt / dur));
+  fill('#0b0d12');
+  if (i >= PLAY.length) return sceneClock(t, f);
+  const p = PLAY[i];
+  const k = (lt - i * dur) / dur;
+  // 背景: 同じ画面をぼかして大きく敷く
+  ctx.save();
+  ctx.filter = 'blur(24px) brightness(0.35) saturate(1.3)';
+  cover(img['shot_' + p.shot], -60, -60, W + 120, H + 120, 1.2 + 0.1 * k);
+  ctx.restore();
+  speedLines(f, 'rgba(255,255,255,0.05)', 1);
+  const enter = easeOut(prog(k, 0, 0.12));
+  const pz = (p.zoom ?? 1) + 0.08 * k;
+  if (LAND) {
+    const ph = H * 0.86;
+    phone(p.shot, lerp(-W * 0.2, W * 0.3, enter), H / 2, ph, { rot: lerp(-0.25, -0.04, enter), zoom: pz, panY: p.panY ?? 0 });
+    if (p.tap) tapRipple(W * 0.3 + (p.tap[0] - 0.5) * ph * 0.45, H / 2 + (p.tap[1] - 0.5) * ph, prog(k, 0.35, 0.75));
+    const tx = W * 0.56;
+    const sk = easeOut(prog(k, 0.05, 0.2));
+    ctx.save();
+    ctx.translate((1 - sk) * W * 0.4, 0);
+    // 番号つきの案内板
+    signLogo(tx + 70 * U, H * 0.3, 110 * U, '', p.no);
+    text(p.head, tx, H * 0.47, { size: 96, align: 'left', color: '#fff', maxW: W * 0.42 });
+    p.sub.split('\n').forEach((s, j) => text(s, tx, H * 0.62 + j * 60 * U, { size: 42, weight: 700, align: 'left', color: '#cfd6e2', alpha: prog(k, 0.2 + j * 0.08, 0.35 + j * 0.08) }));
+    ctx.restore();
+  } else {
+    const ph = H * 0.6;
+    phone(p.shot, W / 2, lerp(H * 1.3, H * 0.62, enter), ph, { rot: lerp(0.2, 0.02, enter), zoom: pz, panY: p.panY ?? 0 });
+    if (p.tap) tapRipple(W / 2 + (p.tap[0] - 0.5) * ph * 0.45, H * 0.62 + (p.tap[1] - 0.5) * ph, prog(k, 0.35, 0.75));
+    const sk = easeOut(prog(k, 0.05, 0.2));
+    ctx.save();
+    ctx.translate((1 - sk) * W, 0);
+    signLogo(W / 2, H * 0.08, 100 * U, '', p.no);
+    text(p.head, W / 2, H * 0.165, { size: 92, color: '#fff', maxW: W * 0.92, stroke: '#000', strokeW: 10 });
+    p.sub.split('\n').forEach((s, j) => text(s, W / 2, H * 0.225 + j * 54 * U, { size: 40, weight: 700, color: '#e3e8f0', stroke: '#000', strokeW: 8, alpha: prog(k, 0.2 + j * 0.08, 0.35 + j * 0.08) }));
+    ctx.restore();
+  }
+  // 切り替わりの白フラッシュ
+  fill('#fff', 0.5 * (1 - prog(k, 0, 0.06)));
+}
+// 8b. タイムリミット
+function sceneClock(t, f) {
+  const lt = t - (T.play + PLAY.length * 1.6);
+  ctx.save();
+  ctx.filter = 'brightness(0.35)';
+  cover(img.bg_door, 0, 0, W, H, 1.1 + 0.05 * lt);
+  ctx.restore();
+  fill('#300', 0.35);
+  const blink = Math.floor(lt / 0.2) % 2 === 0;
+  const time = lt < 0.8 ? '00:59' : '01:00';
+  text('タイムリミット', W / 2, H * (LAND ? 0.25 : 0.32), { size: LAND ? 64 : 70, color: '#fff', stroke: '#000', strokeW: 10 });
+  ctx.save();
+  ctx.shadowColor = '#ff3b2f';
+  ctx.shadowBlur = 40 * U;
+  text(time, W / 2, H * 0.5, { size: LAND ? 300 : 280, font: SANS, color: blink || lt < 0.8 ? '#ff3b2f' : '#5a1410', spacing: 0.05 });
+  ctx.restore();
+  text('午前1時を過ぎたら、アウト。', W / 2, H * (LAND ? 0.76 : 0.68), { size: LAND ? 56 : 54, weight: 700, color: '#fff', stroke: '#000', strokeW: 10 });
+}
+
+// 9. キャラクター紹介のカットイン
+const CHARS = [
+  { im: 'hero', name: '夫', ruby: 'あなた', desc: '飲み会帰りのサラリーマン。\n今夜も、ちょっと飲みすぎた。', color: '#2f6fd6', fit: 'contain' },
+  { im: 'wife_smile', alt: 'wife_angry', name: '妻', ruby: 'つま', desc: '笑顔の裏に、\n鬼を飼っている。', color: '#d9412b' },
+  { im: 'wife_drunk_karami', name: '酔った妻', ruby: 'たまに', desc: 'からみ上戸。\n話が、通じない。', color: '#c0398a' },
+  { im: 'twoshot_edited', name: '鈴木', ruby: '同期', desc: '加工アプリの犠牲者。\nかわいい。', color: '#2aa36b' },
+];
+function sceneChars(t, f) {
+  const dur = 1.2;
+  const lt = t - T.chars;
+  const i = Math.min(CHARS.length - 1, Math.floor(lt / dur));
+  const c = CHARS[i];
+  const k = (lt - i * dur) / dur;
+  fill('#0b0d12');
+  // 斜めの帯
+  ctx.save();
+  ctx.fillStyle = c.color;
+  ctx.globalAlpha = 0.9;
+  const slide = easeOut(prog(k, 0, 0.15));
+  ctx.translate((1 - slide) * -W, 0);
+  ctx.beginPath();
+  if (LAND) {
+    ctx.moveTo(0, H * 0.12);
+    ctx.lineTo(W, H * 0.02);
+    ctx.lineTo(W, H * 0.88);
+    ctx.lineTo(0, H * 0.98);
+  } else {
+    ctx.moveTo(0, H * 0.05);
+    ctx.lineTo(W, 0);
+    ctx.lineTo(W, H * 0.62);
+    ctx.lineTo(0, H * 0.7);
+  }
+  ctx.fill();
+  ctx.restore();
+  speedLines(f, 'rgba(255,255,255,0.12)', 1);
+  // キャラクターの絵（後半は差し替え: 妻の笑顔 → 鬼）
+  const imName = c.alt && k > 0.55 ? c.alt : c.im;
+  const im = img[imName];
+  const [sx, sy] = c.alt && k > 0.55 ? shakeAt(f, 14 * (1 - prog(k, 0.55, 0.75))) : [0, 0];
+  const iz = 1 + 0.06 * k;
+  const ienter = easeOut(prog(k, 0.03, 0.18));
+  ctx.save();
+  ctx.translate(sx + (1 - ienter) * W * 0.5, sy);
+  if (LAND) {
+    const x = W * 0.06;
+    const w = W * 0.4;
+    const y = H * 0.08;
+    const h = H * 0.84;
+    if (c.fit === 'contain') contain(im, x + w / 2, y + h / 2, w * 0.9 * iz, h * 0.9 * iz);
+    else {
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(x + 60 * U, y);
+      ctx.lineTo(x + w, y);
+      ctx.lineTo(x + w - 60 * U, y + h);
+      ctx.lineTo(x, y + h);
+      ctx.closePath();
+      ctx.clip();
+      cover(im, x, y, w, h, iz, 0, 0.4);
+      ctx.restore();
+    }
+  } else {
+    const x = W * 0.08;
+    const w = W * 0.84;
+    const y = H * 0.07;
+    const h = H * 0.5;
+    if (c.fit === 'contain') contain(im, W / 2, y + h / 2, w * 0.8 * iz, h * 0.8 * iz);
+    else {
+      ctx.save();
+      roundRect(x, y, w, h, 30 * U);
+      ctx.clip();
+      cover(im, x, y, w, h, iz, 0, 0.4);
+      ctx.restore();
+    }
+  }
+  ctx.restore();
+  // 名前と説明
+  const tk = easeOut(prog(k, 0.1, 0.25));
+  ctx.save();
+  ctx.translate((1 - tk) * W * 0.3, 0);
+  if (LAND) {
+    const tx = W * 0.52;
+    text(c.ruby, tx, H * 0.27, { size: 44, weight: 700, align: 'left', color: 'rgba(255,255,255,0.85)' });
+    text(c.name, tx, H * 0.42, { size: 190, align: 'left', color: '#fff', stroke: '#111', strokeW: 16 });
+    c.desc.split('\n').forEach((s, j) => text(s, tx, H * 0.62 + j * 66 * U, { size: 50, weight: 700, align: 'left', color: '#fff', stroke: '#111', strokeW: 10 }));
+  } else {
+    text(c.ruby, W / 2, H * 0.64, { size: 42, weight: 700, color: 'rgba(255,255,255,0.85)' });
+    text(c.name, W / 2, H * 0.72, { size: 170, color: '#fff', stroke: '#111', strokeW: 16, maxW: W * 0.9 });
+    c.desc.split('\n').forEach((s, j) => text(s, W / 2, H * 0.82 + j * 66 * U, { size: 54, weight: 700, color: '#fff', stroke: '#111', strokeW: 10 }));
+  }
+  ctx.restore();
+  fill('#fff', 0.6 * (1 - prog(k, 0, 0.06)));
+}
+
+// 10. 異変 40種類（手がかりの絵が流れる）
+const GRID = ['clue_pudding_lid', 'clue_moldy_bento', 'clue_pink_blouse', 'clue_health_check', 'clue_tissue_laundry', 'clue_payment_slip', 'clue_tsuno_post', 'kouhai_notice', 'gravure_page', 'costume_dress', 'tv_capture', 'twoshot_original', 'yokyou_photo'];
+function sceneCount(t, f) {
+  const lt = t - T.count;
+  fill('#0b0d12');
+  const cols = LAND ? 6 : 3;
+  const tw = W / cols;
+  const th = tw * 0.75;
+  ctx.save();
+  ctx.filter = 'brightness(0.55)';
+  for (let r = -1; r < Math.ceil(H / th) + 2; r++) {
+    for (let c = 0; c < cols; c++) {
+      const dir = r % 2 === 0 ? 1 : -1;
+      const off = ((lt * 900 * U * dir) % tw + tw) % tw;
+      const x = c * tw + off - tw;
+      const im = img[GRID[(r * 5 + c * 3 + 100) % GRID.length]];
+      cover(im, x + 4, r * th + 4, tw - 8, th - 8);
+      const im2 = img[GRID[(r * 5 + (c + cols) * 3 + 100) % GRID.length]];
+      cover(im2, x + cols * tw + 4, r * th + 4, tw - 8, th - 8);
+    }
+  }
+  ctx.restore();
+  fill('#000', 0.35);
+  const n = Math.round(40 * easeOut(prog(lt, 0.05, 0.9)));
+  const pop = backOut(prog(lt, 0, 0.2));
+  ctx.save();
+  ctx.translate(W / 2, H / 2);
+  ctx.scale(pop, pop);
+  text('異変', 0, -(LAND ? 170 : 200) * U, { size: 100, color: '#fff', stroke: '#000', strokeW: 14 });
+  text(`${n}`, 0, 20 * U, { size: LAND ? 300 : 320, color: SIGN, stroke: '#000', strokeW: 20 });
+  text('種類以上', 0, (LAND ? 200 : 230) * U, { size: 80, color: '#fff', stroke: '#000', strokeW: 12 });
+  ctx.restore();
+}
+
+// 11. エンディングもいろいろ
+const ENDS = ['bg_court', 'hospital_wife', 'jail_cell', 'prank_police', 'drunk_party', 'robot_wife', 'koban_wife', 'clear'];
+function sceneEnds(t, f) {
+  const lt = t - T.ends;
+  fill('#0b0d12');
+  const cols = LAND ? 4 : 2;
+  const rows = LAND ? 2 : 4;
+  const gw = W * (LAND ? 0.94 : 0.92);
+  const gh = H * (LAND ? 0.78 : 0.7);
+  const cw = gw / cols;
+  const ch = gh / rows;
+  const ox = (W - gw) / 2;
+  const oy = LAND ? H * 0.17 : H * 0.2;
+  ENDS.forEach((e, i) => {
+    const appear = prog(lt, i * 0.1, i * 0.1 + 0.12);
+    if (appear <= 0) return;
+    const c = i % cols;
+    const r = Math.floor(i / cols);
+    ctx.save();
+    ctx.globalAlpha = appear;
+    const s = lerp(1.3, 1, easeOut(appear));
+    const x = ox + c * cw;
+    const y = oy + r * ch;
+    ctx.translate(x + cw / 2, y + ch / 2);
+    ctx.scale(s, s);
+    ctx.rotate((rnd(i, 3) - 0.5) * 0.06);
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(-cw / 2 + 6, -ch / 2 + 6, cw - 12, ch - 12);
+    cover(img[e], -cw / 2 + 14, -ch / 2 + 14, cw - 28, ch - 28, 1, 0, 0.2);
+    ctx.restore();
+  });
+  const k = prog(lt, 0.85, 1.0);
+  if (k > 0) {
+    fill('#000', 0.5 * k);
+    text('エンディング', W / 2, H / 2 - (LAND ? 80 : 110) * U, { size: 90, color: '#fff', stroke: '#000', strokeW: 12, alpha: k });
+    text('22 種類', W / 2, H / 2 + (LAND ? 70 : 60) * U, { size: LAND ? 170 : 180, color: SIGN, stroke: '#000', strokeW: 16, alpha: k });
+    text('裁判、留置場、病院、宴会……', W / 2, H / 2 + (LAND ? 210 : 220) * U, { size: 46, weight: 700, color: '#fff', stroke: '#000', strokeW: 8, alpha: k });
+  }
+}
+
+// 12. 静寂 →「ただし――」「言ってはいけない言葉が、4つある。」
+function sceneHush(t, f) {
+  fill('#000');
+  const a1 = prog(t, T.hush + 0.3, T.hush + 0.9) * (1 - prog(t, T.words - 0.3, T.words));
+  if (a1 > 0) horrorText('ただし――', W / 2, H / 2, f, { size: LAND ? 84 : 90, alpha: a1, weight: 500 });
+  const a2 = prog(t, T.words, T.words + 0.5) * (1 - prog(t, T.demon - 0.2, T.demon));
+  if (a2 > 0) {
+    horrorText('言ってはいけない言葉が、', W / 2, H / 2 - (LAND ? 50 : 70) * U, f, { size: LAND ? 80 : 74, alpha: a2, weight: 500 });
+    horrorText('4つ、ある。', W / 2, H / 2 + (LAND ? 70 : 80) * U, f + 1, { size: LAND ? 96 : 100, alpha: a2 * prog(t, T.words + 0.7, T.words + 1.1), color: '#ffb3b3' });
+  }
+  vignette(0.9);
+  letterbox();
+}
+
+// 13. 暴言のチャットがグリッチ → 魔王城の門に迫る（魔王の絵が一瞬ずつ挟まる）
+function sceneDemon(t, f) {
+  const lt = t - T.demon;
+  fill('#000');
+  if (lt < 0.8) {
+    const ph = LAND ? H * 0.9 : H * 0.7;
+    phone('chat_uwaki', W / 2, H / 2, ph, { zoom: 1.12 + lt * 0.3, panY: 0.35 });
+    fill('#200', 0.3);
+    glitchScreen(1.2, f);
+  } else {
+    const k = prog(lt, 0.8, 2.4);
+    ctx.save();
+    ctx.filter = `brightness(${0.8 + 0.35 * rnd(f, 4)}) saturate(1.5)`;
+    const gh = H * lerp(0.9, 2.2, easeIn(k));
+    contain(img.castle_gate, W / 2, H / 2 + gh * 0.05, gh * 0.75, gh);
+    ctx.restore();
+    fill('#20003a', 0.2);
+    // 魔王の絵を 2〜3 フレームだけ挟む
+    const flashes = [0.95, 1.35, 1.7, 2.0, 2.25];
+    const pics = ['wife_demon', 'wife_kishin', 'wife_demon_final', 'wife_kishin_final', 'wife_demon_final'];
+    flashes.forEach((at, i) => {
+      if (lt >= at && lt < at + 0.1) {
+        ctx.save();
+        ctx.filter = 'contrast(1.3)';
+        cover(img[pics[i]], 0, 0, W, H, 1.1, 0, 0.5);
+        ctx.restore();
+        glitchScreen(1, f);
+      }
+    });
+    const [sx, sy] = shakeAt(f, 8 * k);
+    ctx.drawImage(canvas, sx, sy);
+  }
+  vignette(0.9);
+  letterbox();
+}
+
+// 14.「妻が、魔王になる。」
+function sceneMaou(t, f) {
+  const lt = t - T.maou;
+  ctx.save();
+  const [sx, sy] = shakeAt(f, 18 * (1 - prog(lt, 0, 0.8)) + 2);
+  ctx.translate(sx, sy);
+  ctx.filter = 'brightness(0.55)';
+  cover(img.wife_demon_final, -20, -20, W + 40, H + 40, lerp(1.25, 1.1, easeOut(prog(lt, 0, 1.6))), 0, LAND ? 0.55 : 0.2);
+  ctx.restore();
+  fill('#000', 0.25);
+  fill('#ff2020', 0.4 * (1 - prog(lt, 0, 0.25)));
+  const pop = backOut(prog(lt, 0.05, 0.3));
+  ctx.save();
+  ctx.translate(W / 2, H * (LAND ? 0.5 : 0.55));
+  ctx.scale(pop, pop);
+  text('妻が、', 0, -(LAND ? 110 : 130) * U, { size: LAND ? 100 : 110, font: SERIF, color: '#fff', stroke: '#000', strokeW: 14 });
+  text('魔王になる。', 0, (LAND ? 50 : 60) * U, { size: LAND ? 170 : 160, font: SERIF, color: '#ff2a2a', stroke: '#000', strokeW: 18, shadow: '#f00', maxW: W * 0.92 });
+  ctx.restore();
+  vignette(0.8);
+  letterbox();
+}
+
+// 15. キャッチコピー
+function sceneTagline(t, f) {
+  fill('#000');
+  const a = prog(t, T.tagline + 0.15, T.tagline + 0.6) * (1 - prog(t, T.logo - 0.25, T.logo));
+  if (LAND) {
+    text('あなたは、8日間', W / 2, H / 2 - 60 * U, { size: 76, font: SERIF, weight: 500, color: '#eee', alpha: a, spacing: 0.08 });
+    text('無事に帰宅できるか。', W / 2, H / 2 + 60 * U, { size: 76, font: SERIF, weight: 500, color: '#eee', alpha: a * prog(t, T.tagline + 0.5, T.tagline + 0.9), spacing: 0.08 });
+  } else {
+    text('あなたは、', W / 2, H / 2 - 120 * U, { size: 76, font: SERIF, weight: 500, color: '#eee', alpha: a, spacing: 0.08 });
+    text('8日間', W / 2, H / 2, { size: 76, font: SERIF, weight: 500, color: '#eee', alpha: a, spacing: 0.08 });
+    text('無事に帰宅できるか。', W / 2, H / 2 + 120 * U, { size: 76, font: SERIF, weight: 500, color: '#eee', alpha: a * prog(t, T.tagline + 0.5, T.tagline + 0.9), spacing: 0.08 });
+  }
+  letterbox();
+}
+
+// 16. タイトルロゴ
+function sceneLogo(t, f) {
+  const lt = t - T.logo;
+  fill('#000');
+  // 背景にうっすら、夜のドア
+  ctx.save();
+  ctx.globalAlpha = 0.35 * prog(lt, 0.2, 1.2);
+  ctx.filter = 'brightness(0.5) saturate(0.4)';
+  cover(img.bg_door, 0, 0, W, H, 1.05 + 0.03 * lt);
+  ctx.restore();
+  vignette(0.95);
+  const pop = lt < 0.15 ? lerp(1.6, 1, easeOut(lt / 0.15)) : 1 + 0.015 * (lt - 0.15);
+  ctx.save();
+  ctx.translate(W / 2, H * (LAND ? 0.46 : 0.45));
+  ctx.scale(pop, pop);
+  ctx.translate(-W / 2, -H * (LAND ? 0.46 : 0.45));
+  signLogo(W / 2, H * (LAND ? 0.46 : 0.45), (LAND ? 210 : 190) * U);
+  ctx.restore();
+  fill('#fff', 0.85 * (1 - prog(lt, 0, 0.12)));
+  text('異変を見つけて、妻の怒りの火種をすべて消してからドアを開けろ。', W / 2, H * (LAND ? 0.66 : 0.58), { size: LAND ? 38 : 34, weight: 700, color: '#d8dde6', alpha: prog(lt, 0.8, 1.4), maxW: W * 0.92 });
+}
+
+// 17. おまけ（ボタン）: 暗闇で妻のひと言 → ガチャ
+function sceneStinger(t, f) {
+  const lt = t - T.stinger;
+  fill('#000');
+  const a = prog(lt, 0.2, 0.5) * (1 - prog(lt, 1.25, 1.3));
+  text('……で、私のプリン食べたの、誰？', W / 2, H / 2, { size: LAND ? 64 : 58, font: SERIF, weight: 500, color: '#fff', alpha: a, maxW: W * 0.9 });
+  if (lt > 1.3) {
+    // 最後にもう一度だけロゴ
+    signLogo(W / 2, H / 2, (LAND ? 120 : 110) * U);
+  }
+}
+
+// ------------------------------------------------------------------ 進行
+function renderFrame(fr) {
+  const t = fr / TL.fps;
+  ctx.save();
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.globalAlpha = 1;
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.filter = 'none';
+  fill('#000');
+  if (t < T.rules) sceneHall(t, fr);
+  else if (t < T.clues) sceneRules(t, fr);
+  else if (t < T.door) sceneClues(t, fr);
+  else if (t < T.gacha) sceneDoor(t, fr);
+  else if (t < T.scare) sceneOpen(t, fr);
+  else if (t < T.fast) sceneScare(t, fr);
+  else if (t < T.play) sceneFast(t, fr);
+  else if (t < T.chars) scenePlay(t, fr);
+  else if (t < T.count) sceneChars(t, fr);
+  else if (t < T.ends) sceneCount(t, fr);
+  else if (t < T.hush) sceneEnds(t, fr);
+  else if (t < T.demon) sceneHush(t, fr);
+  else if (t < T.maou) sceneDemon(t, fr);
+  else if (t < T.tagline) sceneMaou(t, fr);
+  else if (t < T.logo) sceneTagline(t, fr);
+  else if (t < T.stinger) sceneLogo(t, fr);
+  else sceneStinger(t, fr);
+  // ホラーの場面だけ粒子を強めに
+  const horror = t < T.fast || (t >= T.hush && t < T.logo);
+  grain(fr, horror ? 0.22 : 0.08);
+  // 最初と最後のフェード
+  fill('#000', 1 - prog(t, 0, 0.6));
+  fill('#000', prog(t, TL.duration - 0.25, TL.duration));
+  ctx.restore();
+}
+
+async function init() {
+  TL = await (await fetch('/promo/timeline.json')).json();
+  T = TL.t;
+  await Promise.all([
+    ...IMAGES.map((f) => loadImage(f.replace(/\.(jpg|png)$/, ''), IMG_DIR + f)),
+    ...SHOTS.map((s) => loadImage('shot_' + s, SHOT_DIR + s + '.png')),
+  ]);
+  // 使う文字のフォントを先に読み込む（unicode-range で分割されているので、文字を渡して読む）
+  const all = document.documentElement.innerHTML;
+  await Promise.all([
+    document.fonts.load(`900 40px "Noto Serif JP"`, all),
+    document.fonts.load(`500 40px "Noto Serif JP"`, all),
+    document.fonts.load(`900 40px "Noto Sans JP"`, all),
+    document.fonts.load(`700 40px "Noto Sans JP"`, all),
+  ]);
+  await document.fonts.ready;
+  makeGrains();
+  window.FRAMES = Math.round(TL.duration * TL.fps);
+  window.renderFrame = renderFrame;
+  window.ready = true;
+}
+init().catch((e) => { window.initError = String(e); });
+</script>
+</body>
+</html>

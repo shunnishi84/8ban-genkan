@@ -12,6 +12,8 @@
   },
   "devDependencies": {
     "@capacitor/cli": "^8.5.3",
+    "@fontsource/noto-sans-jp": "^5.1.0",
+    "@fontsource/noto-serif-jp": "^5.1.0",
     "typescript": "~5.9",
     "vite": "^8.3.2",
     "vitest": "^5.0.3"

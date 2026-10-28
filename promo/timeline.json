@@ -1,0 +1,31 @@
+{
+  "fps": 30,
+  "duration": 58,
+  "bpm": 150,
+  "t": {
+    "hall": 0,
+    "rules": 5.0,
+    "rule1": 5.8,
+    "rule2": 7.0,
+    "rule3": 8.2,
+    "rule4": 9.4,
+    "clues": 11.0,
+    "door": 15.5,
+    "gacha": 19.9,
+    "open": 20.4,
+    "scare": 22.0,
+    "fast": 22.8,
+    "play": 24.4,
+    "chars": 35.6,
+    "count": 40.4,
+    "ends": 42.0,
+    "hush": 43.6,
+    "words": 45.0,
+    "demon": 47.0,
+    "maou": 49.4,
+    "tagline": 51.0,
+    "logo": 52.8,
+    "stinger": 56.4,
+    "end": 58.0
+  }
+}

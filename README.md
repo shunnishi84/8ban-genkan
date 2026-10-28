@@ -124,6 +124,20 @@ cd android && ./gradlew assembleDebug   # → android/app/build/outputs/apk/debu
 * 最終日のいちばん遅い開始時刻から、3 つ重なった組み合わせでも時間内に解けるか
 * 8 日間、同じ周回でシナリオを重複させずに回せるか
 
+## 予告編（プロモーション映像）
+
+ホラー映画の予告風の約58秒の映像を、横（1920×1080）と縦（1080×1920、ショート動画用）で書き出せる。素材はゲームの画像と実際のゲーム画面で、音もすべてスクリプトで合成している。
+
+```bash
+promo/build.sh promo/out   # → promo/out/8ban-genkan_trailer_landscape.mp4 / _portrait.mp4
+```
+
+- 必要なもの: ffmpeg、python3 + numpy、Playwright の Chromium（`CHROME=実行ファイル` で指定できる）
+- `promo/timeline.json`: 場面の切り替わり時刻。映像（`trailer.html`）と音（`audio.py`）の両方がこれを読む
+- `promo/trailer.html`: 1フレームを時刻だけから描くキャンバス。ブラウザで `?orient=portrait` を付けて開き、`renderFrame(フレーム番号)` で確認できる
+- `promo/capture.mjs`: 予告編に使うゲーム画面を撮る（`promo/shots/`）
+- 一部の秒だけ確認したいとき: `node promo/render.mjs /tmp/stills both --stills 12.6,22.3,50`
+
 ## アセット一覧
 
 ファイル名は `src/assets/manifest.ts` で一元管理。置けば自動で使われ、無ければ代替表示になる。
