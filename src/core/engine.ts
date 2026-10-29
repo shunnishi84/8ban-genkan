@@ -672,8 +672,9 @@ const doorOutcome = (state: DayState): ActionResult => {
     : state.flags.has(`provoked:${KEY_ASKED}`)
       ? seen.filter((c) => c.id !== 'key_lost')
       : seen;
-  // 鬼のお面を持って帰ると、必ず鬼になる。ほかに火種が無ければ、いったん「おかえり」と迎えられてから
-  if (state.inventory.includes('oni_mask')) {
+  // 鬼のお面を持って帰ると、必ず鬼になる。ほかに火種が無ければ、いったん「おかえり」と迎えられてから。
+  // ただし妻が実家に帰っている日は、見る人がいないので何も起きない
+  if (state.inventory.includes('oni_mask') && !state.homeAlone) {
     return result(true, [], 0, { kind: 'angry', causes: [ONI_MASK, ...angry], fakeHome: angry.length ? undefined : state.successLines });
   }
   // 夫婦そろって酔っ払い: 火種はうやむやになって宴会

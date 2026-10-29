@@ -1032,6 +1032,15 @@ describe('鬼のお面', () => {
     if (o.kind === 'angry') expect(o.fakeHome).toBeUndefined();
   });
 
+  it('妻が実家に帰っている日は、持って帰っても誰にも見られないので帰宅できる', () => {
+    const s = day(['wife_away'], hm(23, 0));
+    expect(s.homeAlone).toBe(true);
+    s.location = 'konbini';
+    expect(perform(s, { type: 'buy', item: 'oni_mask' }).ok).toBe(true);
+    s.location = 'door';
+    expect(perform(s, { type: 'openDoor' }).outcome.kind).toBe('home');
+  });
+
   it('魔王が優先', () => {
     const s = withMask(['neighbor_curry']);
     perform(s, { type: 'sendChat', template: 'insult_oni' });

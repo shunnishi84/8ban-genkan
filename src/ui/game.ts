@@ -609,6 +609,8 @@ export class Game {
           { who: 'me', text: 'ただいま……' },
           { who: 'narr', text: 'シーン……。返事はない。' },
           ...say('narr', successLines),
+          // 妻がいないうちに、買ってしまった鬼のお面を隠す
+          ...(this.day!.inventory.includes('oni_mask') ? [{ who: 'narr' as const, text: '……鬼のお面は、妻が帰ってくる前に、押し入れの一番奥に封印した。' }] : []),
         ]
       : [
           { who: 'me', text: 'ただいま……' },
