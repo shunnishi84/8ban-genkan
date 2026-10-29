@@ -674,7 +674,9 @@ const doorOutcome = (state: DayState): ActionResult => {
       : seen;
   // 鬼のお面を持って帰ると、必ず鬼になる。ほかに火種が無ければ、いったん「おかえり」と迎えられてから。
   // ただし妻が実家に帰っている日は、見る人がいないので何も起きない
+  // 妻が先に寝ている日は、その夜は何も起きず、翌朝テーブルの上のお面が見つかる
   if (state.inventory.includes('oni_mask') && !state.homeAlone) {
+    if (angry.length === 0 && state.asleepLines.length > 0) return result(true, [], 0, { kind: 'angry', causes: [ONI_MASK_MORNING], fakeAsleep: state.asleepLines });
     return result(true, [], 0, { kind: 'angry', causes: [ONI_MASK, ...angry], fakeHome: angry.length ? undefined : state.successLines });
   }
   // 夫婦そろって酔っ払い: 火種はうやむやになって宴会
@@ -788,6 +790,14 @@ const ONI_MASK = angerCause('oni_mask', '鬼のお面', [
   '節分でもないのに？',
   '……私にかぶれってこと？',
   'いいわよ。お面なんか、いらないから。',
+]);
+
+/** 妻が寝ている日に持って帰ると、翌朝テーブルの上で見つかる（妻はもうかぶっている） */
+const ONI_MASK_MORNING = angerCause('oni_mask', '鬼のお面', [
+  'テーブルの上に置いてあったわよ。',
+  '夜中にこっそり、節分でもないのに、鬼のお面。',
+  '……私へのプレゼントってことよね？',
+  'ありがとう。今日は一日、これで過ごしてあげる。',
 ]);
 
 /** パンツ一丁で帰ると、もっと怒られる */

@@ -311,7 +311,8 @@ export type Outcome =
   | { kind: 'dawn' }
   /** morning: 酔って寝落ちした妻に、翌朝バレた */
   /** fakeHome: いったん普通に「おかえり」と迎えられてから怒られる（鬼のお面を持って帰った日など）。そのときの妻の一言 */
-  | { kind: 'angry'; causes: Cause[]; morning?: boolean; fakeHome?: string[] }
+  /** fakeAsleep: 妻が先に寝ていた日。その夜は何も起きず、翌朝に見つかって怒られる（鬼のお面など） */
+  | { kind: 'angry'; causes: Cause[]; morning?: boolean; fakeHome?: string[]; fakeAsleep?: string[] }
   /** 暴言を送っていた: 火種の有無に関係なく、魔王化した妻が待っている */
   | { kind: 'demon'; lines: string[]; reason?: string }
   /** 酔った勢いの悪ふざけを送っていた: 送った文面ごとの結末 */

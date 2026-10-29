@@ -1032,6 +1032,20 @@ describe('鬼のお面', () => {
     if (o.kind === 'angry') expect(o.fakeHome).toBeUndefined();
   });
 
+  it('妻が先に寝ている日は、その夜は何も起きず、翌朝見つかって怒られる', () => {
+    const s = day(['ramen_receipt'], hm(23, 0));
+    expect(s.asleepLines.length).toBeGreaterThan(0);
+    s.location = 'konbini';
+    perform(s, { type: 'buy', item: 'oni_mask' });
+    s.location = 'door';
+    const o = perform(s, { type: 'openDoor' }).outcome;
+    expect(o).toMatchObject({ kind: 'angry', causes: [{ id: 'oni_mask' }] });
+    if (o.kind === 'angry') {
+      expect(o.fakeAsleep).toEqual(s.asleepLines);
+      expect(o.fakeHome).toBeUndefined();
+    }
+  });
+
   it('妻が実家に帰っている日は、持って帰っても誰にも見られないので帰宅できる', () => {
     const s = day(['wife_away'], hm(23, 0));
     expect(s.homeAlone).toBe(true);
@@ -1123,6 +1137,17 @@ describe('洗濯・プリン・角・弁当箱・鍵', () => {
     t.location = 'door';
     expect(perform(t, { type: 'intercom' }).ok).toBe(false); // 鍵があればインターホンは要らない
     expect(perform(t, { type: 'openDoor' }).outcome.kind).toBe('home');
+  });
+});
+
+describe('「鬼すぎて滅！」', () => {
+  it('気が滅入る日だけ送れる。送ると、ほかを全部片付けても滅について怒られる', () => {
+    expect(perform(day(['ring_off']), { type: 'sendChat', template: 'meiru_metsu' }).ok).toBe(false);
+    const s = day(['sns_meiru']);
+    for (const a of solve(s)!) if (a.type !== 'openDoor') perform(s, a);
+    expect(perform(s, { type: 'sendChat', template: 'meiru_metsu' }).ok).toBe(true);
+    const o = perform(s, { type: 'openDoor' }).outcome;
+    expect(o).toMatchObject({ kind: 'angry', causes: [{ id: 'provoke:meiru_metsu', title: '鬼すぎて滅' }] });
   });
 });
 

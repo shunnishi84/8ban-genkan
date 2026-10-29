@@ -282,7 +282,8 @@ export class Game {
       case 'late':
       case 'dawn':
       case 'angry':
-        if (r.outcome.kind === 'angry' && r.outcome.fakeHome) this.fakeHome(r.outcome.fakeHome, r.outcome.causes);
+        if (r.outcome.kind === 'angry' && r.outcome.fakeAsleep) this.fakeAsleep(r.outcome.fakeAsleep, r.outcome.causes);
+        else if (r.outcome.kind === 'angry' && r.outcome.fakeHome) this.fakeHome(r.outcome.fakeHome, r.outcome.causes);
         else this.gameOver(r.outcome.kind, r.outcome.kind === 'angry' ? r.outcome.causes : [], r.outcome.kind === 'angry' && r.outcome.morning);
         return false;
       case 'demon':
@@ -328,6 +329,22 @@ export class Game {
       { who: 'narr', text: '鞄から、赤鬼のお面がはみ出していた。' },
     ];
     this.talk('home', lines, () => this.gameOver('angry', causes, false, true));
+  }
+
+  /** 妻が先に寝ていた日に鬼のお面を持って帰った: その夜は平穏、翌朝に見つかる */
+  private fakeAsleep(asleepLines: string[], causes: Cause[]) {
+    this.audio.playSe('se_door');
+    const lines: Line[] = [
+      { who: 'me', text: 'ただいま……（小声）' },
+      { who: 'narr', text: '……返事はない。妻は、もう寝ているようだ。' },
+      ...say('narr', asleepLines),
+      { who: 'narr', text: '鞄をテーブルに置いて、そのまま寝てしまった。' },
+      { who: 'narr', text: '──翌朝。' },
+      { who: 'wife', text: '……ねえ。起きて。' },
+      { who: 'narr', text: '目を開けると、赤鬼のお面をかぶった妻が、枕元に立っていた。' },
+      { who: 'wife', text: '……似合う？' },
+    ];
+    this.talk('home', lines, () => this.gameOver('angry', causes, false, true), { alone: true });
   }
 
   /** inside: もう玄関の中で迎えられたあと（ドアの音と「ガチャ……」を出さない） */
