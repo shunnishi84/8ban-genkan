@@ -1154,6 +1154,153 @@ export const SCENARIOS: Scenario[] = [
     ],
   },
 
+  // へそくりが見つかった。隠し場所のメモは家のタブレットと同期されている
+  {
+    id: 'hesokuri',
+    title: 'へそくりが見つかった',
+    chatReplies: {
+      '*': ['それより、『資本論』の3万円。'],
+      coming_home: ['『資本論』、読みながら待ってるね。', '3万円の説明を持って帰ってきて。'],
+      sorry_generic: ['何に謝ってるの？ へそくり？ それとも、ほかにもあるの？'],
+      love: ['3万円より？'],
+    },
+    causes: [
+      {
+        id: 'hesokuri',
+        title: 'へそくり',
+        resolution: { all: ['deleted:memo_hesokuri', 'ordered:wife_bag', 'chat:hesokuri_present'] },
+        angerLines: ['本棚の『資本論』。……あなた、一度も読んでないわよね。', '3万円、挟まってたわ。', 'お小遣い、来月から3万円減らしておくね。'],
+        successLine: '……このバッグ、ずっと欲しかったやつ。へそくりも、たまには役に立つのね。',
+        grudging: true,
+      },
+    ],
+    clues: [
+      { at: 'app:chat', cause: 'hesokuri', unread: true, text: '本棚の『資本論』の間から、1万円札が3枚出てきたんだけど。これ、何？（22:10）' },
+      {
+        at: 'app:memo',
+        cause: 'hesokuri',
+        id: 'memo_hesokuri',
+        deletable: true,
+        deleteLabel: 'メモを消す',
+        deleteMessages: ['へそくりの隠し場所のメモを消した。', '……家のタブレットからも、同期で消えたはずだ。'],
+        deletedText: '（メモは削除されました）',
+        text: 'へそくり: ①『資本論』のあいだ ②ゴルフバッグの外ポケット ③冬物スーツの内ポケット（妻に見つからないこと）',
+      },
+      { at: 'notice', cause: 'hesokuri', text: '📝 メモが「家族のタブレット」と同期されました（21:58）', hiddenWhen: 'deleted:memo_hesokuri' },
+      { at: 'app:shop', cause: 'hesokuri', text: '🛍 お気に入り: 妻がずっと見ていたバッグ ¥29,800（……へそくりと、ほぼ同じ額だ）' },
+    ],
+  },
+  // 部署の飲み会の帰り、部下の佐藤さんと二人でテレビの街頭インタビューに捕まった
+  {
+    id: 'tv_satou',
+    title: 'テレビで部下が「付き合ってます！」',
+    conflictsWith: ['tv_interview', 'kouhai_chat'],
+    chatReplies: {
+      '*': ['それより、テレビの「社内恋愛」の件は？'],
+      coming_home: ['佐藤さんのところじゃなくて、こっちに帰ってくるんだ？', '「社内恋愛」の続きは、うちで聞かせて。'],
+      sorry_generic: ['何に謝ってるの？ 付き合ってるってこと？', 'ごめんじゃなくて、説明して。全国放送だよ？'],
+      love: ['佐藤さんにも言ってる？', 'テレビで言ったら？ 佐藤さんみたいに。'],
+    },
+    visuals: ['window_tv'],
+    causes: [
+      {
+        id: 'tv_satou',
+        title: 'テレビで社内恋愛宣言',
+        resolution: { all: ['chat:satou_screenshot', 'chat:satou_explain'] },
+        angerLines: ['「付き合ってます！ 社内恋愛です！」……全国放送で。', '肩、組まれてたわね。まんざらでもない顔して。', '……で、私とはいつから「社外恋愛」になったの？'],
+        successLine: '……佐藤さん、今度うちに連れてきて。じっくり話を聞かせてもらうから。',
+        grudging: true,
+      },
+    ],
+    clues: [
+      { at: 'notice', cause: 'tv_satou', text: '📺 見逃し配信「街の声: 金曜夜の新橋 上司と部下、本当の関係は？」' },
+      { at: 'app:chat', cause: 'tv_satou', unread: true, text: '今テレビに出てたよね。「付き合ってます！ 社内恋愛です！」って、どういうこと？（22:35）' },
+      { at: 'notice', cause: 'tv_satou', text: '💬 佐藤（部下）: 先輩すみません！！ テレビのやつ、完全に酔ったノリです😭 奥さんにも謝らせてください！' },
+      { at: 'spot:window', cause: 'tv_satou', text: '窓の向こうでテレビの青い光がチラチラしている。……同じ場面で、何度も止まっているようだ。' },
+      { at: 'app:calendar', cause: 'tv_satou', text: '今日 18:30 部署の飲み会（帰りに佐藤さんと駅まで。テレビの取材に捕まった気がする）' },
+    ],
+  },
+  // 頼まれて買っていった整腸剤が、下剤だった
+  {
+    id: 'laxative',
+    title: '整腸剤のつもりで下剤を買っていった',
+    chatReplies: {
+      '*': ['それより、昨日の薬。'],
+      coming_home: ['……トイレの前で待ってる。', '帰ってきたら、薬の箱、一緒に読もうか。'],
+      sorry_generic: ['何に謝ってるの？ 薬のこと？', '謝るより先に、ちゃんとした薬。'],
+      love: ['愛してる人に下剤を渡すんだ。'],
+    },
+    causes: [
+      {
+        id: 'laxative',
+        title: '整腸剤と下剤',
+        resolution: { all: ['bought:seichozai', 'bought:sports_drink', 'chat:laxative_sorry'] },
+        angerLines: ['……昨日の薬。', '「整腸剤」って頼んだのよ。お腹を整えるほう。……「出す」ほうじゃなくて。', '今日一日、トイレが私の部屋だったんだから。'],
+        successLine: 'スポドリと、本物の整腸剤……。今日のところは許す。……箱、ちゃんと読んでよね。',
+      },
+    ],
+    clues: [
+      { at: 'app:chat', cause: 'laxative', unread: true, text: '昨日買ってきてくれた薬、これ下剤なんだけど……。一日中トイレから出られなかった（22:05）' },
+      { at: 'slot:wallet', cause: 'laxative', text: '昨日のドラッグストアのレシート: 「スルッとS錠（便秘薬）¥980」……頼まれたのは、整腸剤だったはず。' },
+      { at: 'app:memo', cause: 'laxative', text: '妻に頼まれた: お腹の薬（整腸剤のほう！ 便秘薬じゃない）' },
+    ],
+  },
+  // 頼まれていた映画の録画ができていなかった（妻の大好きな俳優の地上波初放送）
+  {
+    id: 'rokuga_fail',
+    title: '頼まれていた映画の録画ができていなかった',
+    chatReplies: {
+      '*': ['それより、蓮くんの録画。'],
+      coming_home: ['……蓮くんのいない家に、おかえり。', '帰ってきたら、空っぽの録画リストを一緒に見ようね。'],
+      sorry_generic: ['何に謝ってるの？ 録画？ それともゴルフ中継？', 'ごめんで蓮くんは戻ってこないの。'],
+      love: ['蓮くんより？ ……録画もできない人が？'],
+    },
+    causes: [
+      {
+        id: 'rokuga_fail',
+        title: '録画失敗',
+        resolution: { all: ['ordered:bluray_ren', 'chat:rokuga_sorry'] },
+        angerLines: ['……録画、できてなかった。', 'ハードディスクがいっぱい。……あなたのゴルフ中継12本で。', '蓮くんの地上波初放送より、去年の全英オープンが大事なのね。'],
+        successLine: 'ブルーレイ……しかも特典映像付き！？ ……蓮くんに免じて、許してあげる。',
+      },
+    ],
+    clues: [
+      { at: 'app:chat', cause: 'rokuga_fail', unread: true, text: '録画、できてないんだけど……。『真夜中のプロポーズ』予約しといてって言ったよね？ 蓮くんの地上波初放送……（22:15）' },
+      { at: 'notice', cause: 'rokuga_fail', text: '📺 録画失敗のお知らせ: 『真夜中のプロポーズ』（21:00〜）ハードディスクの空き容量が不足しています' },
+      { at: 'app:calendar', cause: 'rokuga_fail', text: '今日 21:00 映画『真夜中のプロポーズ』地上波初放送（主演: 神崎蓮）← 妻が1か月前から楽しみにしてる' },
+      { at: 'app:memo', cause: 'rokuga_fail', text: '録画リスト: ゴルフ中継 ×12（全部まだ見てない）' },
+    ],
+  },
+
+  // 先週末「休日出勤」と嘘をついて、推しのライブに行っていた。公式のライブレポに写り込んでいた
+  {
+    id: 'oshi_live',
+    title: '休日出勤と嘘をついて推しのライブに行っていた',
+    chatReplies: {
+      '*': ['それより、先週の「休日出勤」の話。'],
+      coming_home: ['お疲れさま。今日は本当に仕事だった？', 'ペンライト、持って帰ってきてね。'],
+      sorry_generic: ['何に謝ってるの？ 休日出勤のこと？', 'ごめんじゃなくて、本当のことを言って。'],
+      love: ['ひなのちゃんより？'],
+    },
+    causes: [
+      {
+        id: 'oshi_live',
+        title: '推しのライブ',
+        resolution: { all: ['ordered:ren_fanmeeting', 'chat:oshi_confess'] },
+        angerLines: ['先週の土曜。「休日出勤」だったわよね。', '公式のライブレポ。最前列でペンライト振ってるの、誰？', '……あなたの会社のペンライトって、ピンク色なのね。'],
+        successLine: '……蓮くんのファンミ、ペアで？ ……今回だけよ。推し活に嘘はつかないこと。',
+        grudging: true,
+      },
+    ],
+    clues: [
+      { at: 'app:chat', cause: 'oshi_live', unread: true, text: '先週の土曜って、休日出勤だったよね？ ……このライブレポの最前列でペンライト振ってるの、誰？（22:20）' },
+      { at: 'notice', cause: 'oshi_live', text: '📣 星屑シンフォニア公式: 全国ツアー東京公演ライブレポ公開！ 最前列のみなさん、熱い声援ありがとう✨' },
+      { at: 'slot:wallet', cause: 'oshi_live', text: 'チケットの半券: 「星屑シンフォニア 全国ツアー 東京公演 先週土曜 17:00 アリーナA1列」' },
+      { at: 'app:calendar', cause: 'oshi_live', text: '先週土曜: 休日出勤（ということにしてある）' },
+      { at: 'app:shop', cause: 'oshi_live', text: '🎫 おすすめ: 神崎蓮 ファンミーティング2026 ペア席（……妻の推しだ）' },
+    ],
+  },
+
   // ================================================================ 異変なし（ニセ異変入り）
   {
     id: 'ramen_receipt',

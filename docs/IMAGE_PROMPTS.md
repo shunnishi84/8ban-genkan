@@ -1277,6 +1277,98 @@ No text, no letters, no numbers, no watermark.
 ```
 → 順番に `item_lint_roller / item_strong_can / item_bill_payment` として切り出す。
 
+## 25. 異変5つ（へそくり・テレビの社内恋愛・下剤・録画失敗・推しのライブ）の手がかり ＋ 持ち物アイコン5種 — Gemini 用
+
+| ファイル | 場面 | 形 | 添付する見本 |
+|---|---|---|---|
+| `clue_hesokuri.jpg` | へそくり: 妻がチャットで送ってくる、『資本論』に挟まった1万円札3枚の写真 | 横 4:3 | `bg_door.jpg` |
+| `tv_satou_capture.jpg` | テレビ: 街頭インタビューで部下の女性が「付き合ってます！」と叫ぶ画面（通知） | 横 4:3 | `tv_capture.jpg` |
+| `clue_laxative.jpg` | 下剤: 妻がチャットで送ってくる、テーブルの上の便秘薬の箱とトイレットペーパーの写真 | 横 4:3 | `bg_door.jpg` |
+| `clue_rokuga_fail.jpg` | 録画失敗: 妻がチャットで送ってくる、「録画できませんでした」のテレビ画面の写真 | 横 4:3 | `bg_door.jpg` |
+| `clue_oshi_live.jpg` | 推しのライブ: 妻がチャットで送ってくる、公式ライブレポの最前列に写る夫 | 横 4:3 | `hero.png` |
+| 持ち物アイコン5種 | 妻のバッグ／整腸剤／スポーツドリンク／ブルーレイ／ファンミのペアチケット | 1枚に 3×2 | `item_beer.png` |
+
+### 25-1. clue_hesokuri.jpg（添付: bg_door.jpg）
+```
+Use the attached image as the style reference. Horizontal 4:3. A smartphone-photo-like
+close-up on a wooden bookshelf at night: a thick, untouched-looking hardcover book with a
+plain dark red cover is pulled halfway out and opened, and three generic Japanese
+10,000-yen-style banknotes (no real design, no faces) are tucked between its pages,
+neatly fanned. A woman's hand holds the book open as evidence. Slightly comedic
+"caught you" mood. Japanese manga-style digital illustration, clean bold black outlines,
+flat cel shading. No text, no letters, no numbers, no watermark.
+```
+
+### 25-2. tv_satou_capture.jpg（添付: tv_capture.jpg）
+```
+Use the attached image as the style reference (same TV street-interview framing).
+Horizontal 4:3. A night street interview in front of a busy Japanese train station.
+A tipsy young office woman in a beige trench coat, cheeks flushed, laughing and
+shouting happily into the microphone while hugging the arm of her tired middle-aged
+male boss in a dark suit (the attached husband character), who looks frozen in panic
+with sweat drops. A TV microphone reaches in from the side. Leave an empty dark band at
+the bottom of the frame for a caption. Japanese manga-style digital illustration, clean
+bold black outlines, flat cel shading. No text, no letters, no logos, no watermark.
+```
+
+### 25-3. clue_laxative.jpg（添付: bg_door.jpg）
+```
+Use the attached image as the style reference. Horizontal 4:3. A smartphone-photo-like
+view of a small kitchen table at night: an opened box of medicine with a cartoon
+lightning-bolt-shaped intestine icon on it and a blister pack with several pills
+missing, next to an empty glass of water. In the background, through a half-open door,
+the toilet with a nearly finished roll of toilet paper and two spare rolls stacked on
+the floor. Exhausted, comedic mood. Japanese manga-style digital illustration, clean bold
+black outlines, flat cel shading. No text, no letters, no numbers, no watermark.
+```
+
+### 25-4. clue_rokuga_fail.jpg（添付: bg_door.jpg）
+```
+Use the attached image as the style reference. Horizontal 4:3. A smartphone-photo-like
+shot of a living-room TV screen at night showing a recorder error screen: a big red
+round warning icon with an exclamation mark, a bar graph of hard disk space completely
+full in red, and a list of many identical thumbnail tiles of green golf courses filling
+the recording list. On the low table in front of the TV, a fan's merchandise: a small
+acrylic stand of a handsome young actor and a heart-shaped fan with a photo of him.
+Heartbroken but comedic mood. Japanese manga-style digital illustration, clean bold black
+outlines, flat cel shading. No text, no letters, no numbers, no logos, no watermark.
+```
+
+### 25-5. clue_oshi_live.jpg（添付: hero.png）
+```
+Use the attached image as the character reference for the husband (same face and hair).
+Horizontal 4:3. An official-looking concert report photo taken from the stage side of an
+idol concert: in the very front row of an arena, the husband in a casual T-shirt and a
+headband is shouting with joy, waving two bright pink glow sticks, with a homemade pink
+heart-shaped fan pinned to his chest. Around him, other fans with pink glow sticks,
+colorful stage lights and confetti in the air. Comedic, overjoyed expression. Japanese
+manga-style digital illustration, clean bold black outlines, flat cel shading.
+No text, no letters, no numbers, no logos, no watermark.
+```
+
+### 25-6. 持ち物アイコン5種（添付: item_beer.png）
+```
+A sprite sheet of 5 separate game item icons in the same art style as the attached icon,
+arranged in a neat 3 columns x 2 rows grid (the last cell empty) on a plain pure white
+background. Each icon is a single object, centered in its own cell, with plenty of white
+space between icons, nothing touching or overlapping, no labels, no numbers, no frames.
+Row 1, left to right:
+1. an elegant women's leather handbag in a soft beige color with a gold clasp, in an open
+   gift box with tissue paper
+2. a small box of probiotic tablets (white box with a cute green leaf and a smiling
+   intestine mascot) with a few white tablets beside it
+3. a 2-liter plastic bottle of light blue sports drink with water droplets
+Row 2, left to right:
+4. a Blu-ray deluxe edition case with a glossy silver sleeve, a moonlit night sky with a
+   small ring on the cover art (no faces), and a bonus disc peeking out
+5. two premium event tickets fanned out, pastel pink with a sparkle and a small heart
+   motif, held by a ribbon
+Japanese manga-style digital illustration, clean bold black outlines, flat cel shading,
+simple and readable at small size, consistent style across all icons.
+No text, no letters, no numbers, no watermark.
+```
+→ 順番に `item_wife_bag / item_seichozai / item_sports_drink / item_bluray_ren / item_ren_fanmeeting` として切り出す。
+
 ## 置いたあとの確認
 
 1. `npm run dev` で起動

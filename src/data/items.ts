@@ -92,6 +92,9 @@ export const ITEMS: ItemDef[] = [
   // コンビニのプリンでは一番高いやつ（お取り寄せの窯出しプリンには及ばない）。なめらかプリンとは別物
   { id: 'pudding_premium', name: '贅沢窯焼きプリン', desc: 'コンビニのプリンでは一番高いやつ。妻のお気に入り。', source: 'konbini', price: 480, slot: 'bag' },
   // 鍵をなくした日だけ。店員が預かっていた落とし物を受け取る
+  // 下剤を渡してしまった妻へ。本物の整腸剤と、脱水にならないためのスポーツドリンク
+  { id: 'seichozai', name: '整腸剤（乳酸菌の錠剤）', desc: '箱に大きく「整腸」。今度こそ間違いない。', source: 'konbini', price: 1080, slot: 'bag' },
+  { id: 'sports_drink', name: 'スポーツドリンク 2L', desc: 'お腹を壊した日の水分補給に。', source: 'konbini', price: 298, slot: 'bag' },
   // 洗濯物についたティッシュ片を取る
   { id: 'lint_roller', name: 'コロコロ（粘着クリーナー）', desc: '替えテープ3巻つき。今夜は長くなりそうだ。', source: 'konbini', price: 398, slot: 'bag' },
   // 妻に頼まれた通販の払込。払込用紙のある日だけ
@@ -171,6 +174,12 @@ export const ITEMS: ItemDef[] = [
   { id: 'blouse_same', name: '白いブラウス（同じもの・特急便）', desc: '妻のお気に入りと同じブランド、同じサイズ。', source: 'mail', price: 5900, slot: 'bag' },
   { id: 'headspa_ticket', name: 'ヘッドスパ＆マッサージ券（eチケット）', desc: '頭皮をほぐす90分コース。明朝メールで届く。', source: 'mail', price: 8800, slot: 'bag' },
   { id: 'bento_box', name: '曲げわっぱの弁当箱（特急便）', desc: '職人の手作り。……今度こそ毎日洗って持って帰る。', source: 'mail', price: 4200, slot: 'bag' },
+  // へそくりの日だけ。妻がずっと見ていたバッグ（へそくりとほぼ同額）
+  { id: 'wife_bag', name: '妻が欲しがっていたバッグ（特急便）', desc: 'お気に入りに入れっぱなしだったやつ。¥29,800。', source: 'mail', price: 29800, slot: 'bag', onlyWith: 'hesokuri' },
+  // 録画に失敗した日だけ。妻の推し・神崎蓮の主演映画
+  { id: 'bluray_ren', name: '『真夜中のプロポーズ』ブルーレイ 豪華版（特急便）', desc: '特典映像: 神崎蓮の未公開インタビュー60分。', source: 'mail', price: 6800, slot: 'bag', onlyWith: 'rokuga_fail' },
+  // 推しのライブがバレた日だけ。今度は妻の推し活に付き合う
+  { id: 'ren_fanmeeting', name: '神崎蓮 ファンミーティング ペアチケット（電子）', desc: '妻の推し。今度はこっちが付き添う番だ。', source: 'mail', price: 19800, slot: 'bag', onlyWith: 'oshi_live' },
   { id: 'onsen_ticket', name: '温泉ペア宿泊ギフト（eギフト）', desc: '箱根の老舗旅館。明朝メールで届く。', source: 'mail', price: 39800, slot: 'bag' },
   { id: 'spa_ticket', name: 'スパ＆マッサージ ペアチケット（eチケット）', desc: '都内ホテルのスパ。明朝メールで届く。', source: 'mail', price: 24000, slot: 'bag' },
   { id: 'kashiori', name: '老舗の菓子折り「千年最中」', desc: '義母が好きなやつ。', source: 'mail', price: 3240, slot: 'bag' },
