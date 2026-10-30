@@ -1289,14 +1289,31 @@ No text, no letters, no numbers, no watermark.
 | 持ち物アイコン5種 | 妻のバッグ／整腸剤／スポーツドリンク／ブルーレイ／ファンミのペアチケット | 1枚に 3×2 | `item_beer.png` |
 
 ### 25-1. clue_hesokuri.jpg（添付: bg_door.jpg）
+本棚・手・扇形の指示があると「閉じた本の横にお札」になりやすいので、テーブルに平置きした本で描かせる。
+A（開いた本の見開きにお札）:
 ```
-Use the attached image as the style reference. Horizontal 4:3. A smartphone-photo-like
-close-up on a wooden bookshelf at night: a thick, untouched-looking hardcover book with a
-plain dark red cover is pulled halfway out and opened, and three generic Japanese
-10,000-yen-style banknotes (no real design, no faces) are tucked between its pages,
-neatly fanned. A woman's hand holds the book open as evidence. Slightly comedic
-"caught you" mood. Japanese manga-style digital illustration, clean bold black outlines,
-flat cel shading. No text, no letters, no numbers, no watermark.
+Use the attached image only as the art style reference. Horizontal 4:3. Top-down view,
+looking straight down at a dining table at night. A thick hardcover book with a plain
+dark red cover lies flat and wide open on the table, showing two pages densely covered
+in tiny grey lines like printed text. Lying flat INSIDE the open book, in the center
+fold between the two pages, are three Japanese 10,000-yen banknotes stacked slightly
+offset, pressed between the pages so that the left page partly covers their left edges.
+The banknotes are inside the book, not beside it, and nobody is holding them.
+Nothing else on the table except a smartphone at the edge. A dramatic "discovered
+secret" spotlight on the book. Japanese manga-style digital illustration, clean bold
+black outlines, flat cel shading. No people, no hands, no readable text, no watermark.
+```
+B（閉じた本からお札の端がはみ出している）:
+```
+Use the attached image only as the art style reference. Horizontal 4:3. Close-up of a
+thick closed hardcover book with a plain dark red cover lying flat on a wooden table at
+night. Between its pages, three Japanese 10,000-yen banknotes are tucked deep inside the
+book like bookmarks: only their top corners and edges stick out from the page edges on
+the right side of the book, slightly fanned, clearly sandwiched between the pages.
+A small yellow sticky note is attached to the cover. A dramatic spotlight from above,
+suspicious and comedic mood with a few cartoon sparkle lines on the money.
+Japanese manga-style digital illustration, clean bold black outlines, flat cel shading.
+No people, no hands, no readable text, no watermark.
 ```
 
 ### 25-2. tv_satou_capture.jpg（添付: tv_capture.jpg）
