@@ -1213,7 +1213,7 @@ export const SCENARIOS: Scenario[] = [
       },
     ],
     clues: [
-      { at: 'notice', cause: 'tv_satou', text: '📺 見逃し配信「街の声: 金曜夜の新橋 上司と部下、本当の関係は？」' },
+      { at: 'notice', cause: 'tv_satou', image: 'tv_satou_capture', text: '📺 見逃し配信「街の声: 金曜夜の新橋 上司と部下、本当の関係は？」' },
       { at: 'app:chat', cause: 'tv_satou', unread: true, text: '今テレビに出てたよね。「付き合ってます！ 社内恋愛です！」って、どういうこと？（22:35）' },
       { at: 'notice', cause: 'tv_satou', text: '💬 佐藤（部下）: 先輩すみません！！ テレビのやつ、完全に酔ったノリです😭 奥さんにも謝らせてください！' },
       { at: 'spot:window', cause: 'tv_satou', text: '窓の向こうでテレビの青い光がチラチラしている。……同じ場面で、何度も止まっているようだ。' },
@@ -1240,7 +1240,7 @@ export const SCENARIOS: Scenario[] = [
       },
     ],
     clues: [
-      { at: 'app:chat', cause: 'laxative', unread: true, text: '昨日買ってきてくれた薬、これ下剤なんだけど……。一日中トイレから出られなかった（22:05）' },
+      { at: 'app:chat', cause: 'laxative', unread: true, image: 'clue_laxative', text: '昨日買ってきてくれた薬、これ下剤なんだけど……。一日中トイレから出られなかった（22:05）' },
       { at: 'slot:wallet', cause: 'laxative', text: '昨日のドラッグストアのレシート: 「スルッとS錠（便秘薬）¥980」……頼まれたのは、整腸剤だったはず。' },
       { at: 'app:memo', cause: 'laxative', text: '妻に頼まれた: お腹の薬（整腸剤のほう！ 便秘薬じゃない）' },
     ],
@@ -1265,7 +1265,7 @@ export const SCENARIOS: Scenario[] = [
       },
     ],
     clues: [
-      { at: 'app:chat', cause: 'rokuga_fail', unread: true, text: '録画、できてないんだけど……。『真夜中のプロポーズ』予約しといてって言ったよね？ 蓮くんの地上波初放送……（22:15）' },
+      { at: 'app:chat', cause: 'rokuga_fail', unread: true, image: 'clue_rokuga_fail', text: '録画、できてないんだけど……。『真夜中のプロポーズ』予約しといてって言ったよね？ 蓮くんの地上波初放送……（22:15）' },
       { at: 'notice', cause: 'rokuga_fail', text: '📺 録画失敗のお知らせ: 『真夜中のプロポーズ』（21:00〜）ハードディスクの空き容量が不足しています' },
       { at: 'app:calendar', cause: 'rokuga_fail', text: '今日 21:00 映画『真夜中のプロポーズ』地上波初放送（主演: 神崎蓮）← 妻が1か月前から楽しみにしてる' },
       { at: 'app:memo', cause: 'rokuga_fail', text: '録画リスト: ゴルフ中継 ×12（全部まだ見てない）' },
@@ -1293,7 +1293,7 @@ export const SCENARIOS: Scenario[] = [
       },
     ],
     clues: [
-      { at: 'app:chat', cause: 'oshi_live', unread: true, text: '先週の土曜って、休日出勤だったよね？ ……このライブレポの最前列でペンライト振ってるの、誰？（22:20）' },
+      { at: 'app:chat', cause: 'oshi_live', unread: true, image: 'clue_oshi_live', text: '先週の土曜って、休日出勤だったよね？ ……このライブレポの最前列でペンライト振ってるの、誰？（22:20）' },
       { at: 'notice', cause: 'oshi_live', text: '📣 星屑シンフォニア公式: 全国ツアー東京公演ライブレポ公開！ 最前列のみなさん、熱い声援ありがとう✨' },
       { at: 'slot:wallet', cause: 'oshi_live', text: 'チケットの半券: 「星屑シンフォニア 全国ツアー 東京公演 先週土曜 17:00 アリーナA1列」' },
       { at: 'app:calendar', cause: 'oshi_live', text: '先週土曜: 休日出勤（ということにしてある）' },
