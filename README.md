@@ -194,6 +194,7 @@ promo/build.sh promo/out   # → promo/out/8ban-genkan_trailer_landscape.mp4 / _
 | item_lint_roller.png / item_strong_can.png / item_bill_payment.png | コロコロ・ストロング缶・払込の受領証のアイコン（Gemini で生成） | ✅ |
 | tv_satou_capture.jpg / clue_laxative.jpg / clue_rokuga_fail.jpg / clue_oshi_live.jpg | テレビで部下が社内恋愛宣言（テロップは上から描き直し）・下剤の箱・録画失敗の画面（英語表記を日本語に描き直し）・推しのライブレポ（Gemini で生成） | ✅ |
 | item_wife_bag.png / item_seichozai.png / item_sports_drink.png / item_bluray_ren.png / item_ren_fanmeeting.png | 妻のバッグ・整腸剤（箱の文字は描き直し）・スポーツドリンク・ブルーレイ・ファンミのチケット（Gemini で生成） | ✅ |
+| wife_laxative.jpg | 下剤の日に怒る妻（お腹を押さえてげっそり。Gemini で生成） | ✅ |
 | police_patrol.jpg / ol_scream.jpg / koban_wife.jpg | 巡回中のお巡りさん・悲鳴をあげる OL・交番に迎えに来た妻（Gemini で生成） | ✅ |
 | costume_dress.jpg / yokyou_photo.jpg / twoshot_edited.jpg / twoshot_original.jpg | 余興のアイドル衣装・余興の練習写真・加工ツーショット（加工後 / 加工前）（Gemini で生成） | ✅ |
 | jail_cell.jpg / jail_visit.jpg / police_konbini.jpg | 留置場・面会室の妻・コンビニに来たお巡りさん（Gemini で生成） | ✅ |

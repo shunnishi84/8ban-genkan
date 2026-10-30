@@ -1237,6 +1237,7 @@ export const SCENARIOS: Scenario[] = [
         resolution: { all: ['bought:seichozai', 'bought:sports_drink', 'chat:laxative_sorry'] },
         angerLines: ['……昨日の薬。', '「整腸剤」って頼んだのよ。お腹を整えるほう。……「出す」ほうじゃなくて。', '今日一日、トイレが私の部屋だったんだから。'],
         successLine: 'スポドリと、本物の整腸剤……。今日のところは許す。……箱、ちゃんと読んでよね。',
+        angerImage: 'wife_laxative',
       },
     ],
     clues: [

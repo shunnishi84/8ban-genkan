@@ -52,6 +52,7 @@ export const IMAGES = {
   wife_drunk_sleep: { file: 'wife_drunk_sleep.webp', label: '玄関で寝落ちした妻', color: '#2b2b38', fit: 'cover' },
   drunk_party: { file: 'drunk_party.webp', label: '夫婦で宴会', color: '#c98a4a', fit: 'cover' },
   wife_drunk_pout: { file: 'wife_drunk_pout.webp', label: 'おねだりを忘れられて泣きべその妻', color: '#c98a8a', fit: 'cover' },
+  wife_laxative: { file: 'wife_laxative.webp', label: 'お腹を押さえてげっそりした妻', color: '#8a95a5', fit: 'cover' },
   /** 暴言を送った日の結末: 邪悪なオーラを放つ魔王化した妻（無ければ wife_angry を紫に染めて代用） */
   // 3:4 の一枚絵。隅の正座する夫まで見せるため、cover ではなく横幅いっぱいで描く（renderer.ts の drawDemon）
   wife_demon: { file: 'wife_demon.webp', label: '魔王化した妻', color: '#2a0640' },
