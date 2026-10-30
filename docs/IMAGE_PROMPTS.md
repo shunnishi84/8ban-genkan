@@ -1369,6 +1369,22 @@ No text, no letters, no numbers, no watermark.
 ```
 → 順番に `item_wife_bag / item_seichozai / item_sports_drink / item_bluray_ren / item_ren_fanmeeting` として切り出す。
 
+### 25-7. wife_laxative.jpg（添付: wife_smile.png）
+下剤の日に怒られるときの妻（鬼の形相の代わり）。お腹を押さえて、げっそり疲れた顔。縦 9:16。
+```
+Use the attached image as the strict reference: redraw the same woman (same face, short
+dark bob hair, cream long-sleeve top, floral apron) standing in the same Japanese
+apartment entrance hallway, same camera angle and vertical 9:16 composition.
+Change her pose and expression: she is hunched slightly forward, both hands pressed over
+her lower stomach, knees a little bent. Her face is pale and visibly worn out, slightly
+gaunt cheeks, faint dark circles under her eyes, a few strands of hair out of place,
+a cold sweat drop on her temple, and wavy cartoon lines of exhaustion around her.
+Her half-lidded eyes glare at the viewer with tired, quiet resentment, mouth in a
+trembling wavy line. Slightly dim, cooler lighting than the reference.
+Comedic, not gross. Japanese manga-style digital illustration, clean bold black outlines,
+flat cel shading, same art style as the reference. No text, no letters, no watermark.
+```
+
 ## 置いたあとの確認
 
 1. `npm run dev` で起動
