@@ -1151,6 +1151,61 @@ describe('「鬼すぎて滅！」', () => {
   });
 });
 
+describe('明日両親が来るのを伝え忘れていた', () => {
+  const shop = (s: ReturnType<typeof day>, items: string[]) => {
+    s.location = 'konbini';
+    for (const item of items) expect(perform(s, { type: 'buy', item }).ok).toBe(true);
+    s.location = 'door';
+  };
+
+  it('正直に謝ると買い物を頼まれる。頼まれた物とお詫びの品を買って帰れば無事', () => {
+    const s = day(['parents_visit']);
+    perform(s, { type: 'sendChat', template: 'parents_sorry' });
+    expect(s.chatLog.at(-1)?.text).toContain('どら焼き');
+    shop(s, ['dorayaki', 'green_tea', 'beer_pack', 'sweets']);
+    expect(perform(s, { type: 'openDoor' }).outcome.kind).toBe('home');
+  });
+
+  it('頼まれた物だけ買って帰ると怒られる', () => {
+    const s = day(['parents_visit']);
+    perform(s, { type: 'sendChat', template: 'parents_sorry' });
+    shop(s, ['dorayaki', 'green_tea', 'beer_pack']);
+    expect(perform(s, { type: 'openDoor' }).outcome).toMatchObject({ kind: 'angry', causes: [{ id: 'parents_visit' }] });
+  });
+
+  it('妻のせいにして両親に断ると、そのことで怒られる', () => {
+    const s = day(['parents_visit']);
+    perform(s, { type: 'sendChat', template: 'parents_cancel' });
+    expect(perform(s, { type: 'sendChat', template: 'parents_sorry' }).ok).toBe(false);
+    const o = perform(s, { type: 'openDoor' }).outcome;
+    expect(o).toMatchObject({ kind: 'angry', causes: [{ id: 'provoke:parents_cancel' }] });
+    if (o.kind === 'angry') expect(o.causes).toHaveLength(1);
+  });
+
+  it('「勘違い」とごまかすとその夜は帰れるが、翌日は本当に両親が来ていて、何をしても炎上する', () => {
+    const run = newRun();
+    run.day = 3;
+    const s = buildDay(3, [SCENARIO_MAP.parents_visit], hm(23, 0));
+    s.insultIds = [];
+    perform(s, { type: 'sendChat', template: 'parents_kanchigai' });
+    expect(perform(s, { type: 'openDoor' }).outcome.kind).toBe('home');
+    advanceRun(run, s);
+    expect(run.parentsDay).toBe(4);
+    const next = startDay(run, seeded(1));
+    expect(next.scenarioIds).toEqual(['parents_arrived']);
+    expect(solve(next)).toBeNull();
+    expect(perform(next, { type: 'openDoor' }).outcome).toMatchObject({ kind: 'angry', causes: [{ id: 'parents_arrived' }] });
+  });
+
+  it('最終日には出ない（ごまかして逃げ切れないように）', () => {
+    for (let seed = 0; seed < 200; seed++) {
+      const run = newRun();
+      run.day = GOAL_DAYS;
+      expect(chooseScenarios(run, seeded(seed)).map((x) => x.id)).not.toContain('parents_visit');
+    }
+  });
+});
+
 describe('鍵をなくした日のドア', () => {
   it('鍵が無いまま3回ガチャガチャやると、妻が飛び出してきて怒られる（ほかの火種も一緒に）', () => {
     const s = day(['key_lost', 'ring_off']);

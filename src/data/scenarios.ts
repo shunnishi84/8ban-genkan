@@ -1,6 +1,7 @@
 import type { Scenario } from '../core/types';
 import { DRUNK_WIFE_SCENARIOS } from './drunkWife';
 import { PC_SCENARIOS } from './pc';
+import { PARENTS_ARRIVED } from './parents';
 
 /**
  * シナリオ定義。新しいシナリオはこの配列に足すだけで抽選対象になる。
@@ -1302,6 +1303,46 @@ export const SCENARIOS: Scenario[] = [
     ],
   },
 
+  // 翌日に両親（妻からすると義両親）が遊びに来るのを、妻に伝え忘れていた
+  {
+    id: 'parents_visit',
+    title: '明日両親が来るのを妻に伝え忘れていた',
+    notOnLastDay: true,
+    chatReplies: {
+      '*': ['それより、明日のお義母さんたちの話。'],
+      coming_home: ['帰ってきたら、明日の段取りの話ね。', '……お義母さんたちが来る前の晩に、ずいぶんゆっくりなのね。'],
+      sorry_generic: ['何に謝ってるの？ 明日のこと？', 'ごめんの前に、何か言うことあるでしょ。'],
+      love: ['愛してるなら、大事なことは先に言って。'],
+    },
+    causes: [
+      {
+        id: 'parents_visit',
+        title: '両親の来訪',
+        resolution: {
+          any: [
+            // 正直に謝って、頼まれた買い物と、妻へのお詫びの品を買って帰る
+            { all: ['chat:parents_sorry', 'bought:dorayaki', 'bought:green_tea', 'bought:beer_pack', { any: ['bought:sweets', 'bought:cake', 'bought:pudding_premium'] }] },
+            // 「勘違い」とごまかす（その夜は帰れるが、翌日に本当に来る）
+            'chat:parents_kanchigai',
+            // 両親に断る（妻のせいにしたので、余計なひと言として怒られる）
+            'chat:parents_cancel',
+          ],
+        },
+        angerLines: [
+          'お義母さんたちが明日来るって、なんで私が一番最後に知るの？',
+          '明日の朝から大掃除。……私ひとりで？',
+          '買い物だけ頼まれて、それで終わり？ ……私には、何もないのね。',
+        ],
+        successLine: '……明日のこと、ちゃんと頼んだからね。',
+      },
+    ],
+    clues: [
+      { at: 'app:chat', cause: 'parents_visit', unread: true, text: 'さっき連絡あったんだけど、明日お義母さんたちいらっしゃるの！？ 聞いてないよ？ なんの準備もしてないんだけど（21:40）' },
+      { at: 'notice', cause: 'parents_visit', text: '📞 母: 明日11時ごろ行くからね〜 お父さんも楽しみにしてるよ（21:30）' },
+      { at: 'app:calendar', cause: 'parents_visit', text: '明日 11:00 両親が遊びに来る（先月、母から聞いた。……妻に言ったっけ？）' },
+    ],
+  },
+
   // ================================================================ 異変なし（ニセ異変入り）
   {
     id: 'ramen_receipt',
@@ -1366,4 +1407,4 @@ export const SCENARIOS: Scenario[] = [
 ];
 
 /** 通常のシナリオと、妻が酔っている日のシナリオ（?debug&scenario=wife_drunk_amae などでも固定できる） */
-export const SCENARIO_MAP: Record<string, Scenario> = Object.fromEntries([...SCENARIOS, ...DRUNK_WIFE_SCENARIOS, ...PC_SCENARIOS].map((s) => [s.id, s]));
+export const SCENARIO_MAP: Record<string, Scenario> = Object.fromEntries([...SCENARIOS, ...DRUNK_WIFE_SCENARIOS, ...PC_SCENARIOS, PARENTS_ARRIVED].map((s) => [s.id, s]));

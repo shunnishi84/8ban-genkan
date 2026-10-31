@@ -102,6 +102,8 @@ export interface Scenario {
   visuals?: string[];
   /** 同じ日に組み合わせない シナリオID */
   conflictsWith?: string[];
+  /** 最終日には出さない（翌日に続きがある異変。最終日に出すと続きが来ないまま逃げ切れてしまう） */
+  notOnLastDay?: boolean;
   /** 妻が不在の日（実家に帰省中など）。帰宅シーンが「ただいま…（返事なし）」になる */
   homeAlone?: boolean;
   /** ほかの異変に添えるだけの仕掛け（日をまたぐ異変の前振りなど）。帰宅のセリフや異変なし判定には数えない */
@@ -273,6 +275,8 @@ export interface RunState {
   pcHinted?: boolean;
   /** ノートパソコンを注文した: 届く日と、妻に相談して許してもらってから注文したか */
   pc?: { arriveDay: number; approved: boolean };
+  /** 両親の来訪を「勘違い」とごまかした: 本当に両親が来る日 */
+  parentsDay?: number;
 }
 
 export type Action =

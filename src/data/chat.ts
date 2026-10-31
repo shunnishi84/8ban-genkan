@@ -395,6 +395,38 @@ export const CHAT_TEMPLATES: ChatTemplate[] = [
     provokeTitle: '嘘の上塗り',
     provokeLines: ['たまたま会場の前を通って、たまたまアリーナA1列に座ったのね。', 'ペンライト、2本持ちで。', '……写真を拡大したら、うちわに「ひなの♡」って書いてあったわよ。'],
   },
+  // 明日両親が来るのを伝え忘れていた
+  {
+    id: 'parents_sorry',
+    text: 'ゴメン！ 伝え忘れてた。明日、うちの親が来る',
+    onlyWith: 'parents_visit',
+    blockedBy: ['chat:parents_kanchigai', 'chat:parents_cancel'],
+    replyRelevant: 'もう！ 急いで準備するから、帰りにコンビニで買ってきて。どら焼き（お茶菓子）・緑茶のティーバッグ・お義父さんの缶ビール。……で、ほかに言うことは？',
+    replyIrrelevant: 'もう！ 急いで準備するから、帰りにコンビニで買ってきて。',
+  },
+  {
+    id: 'parents_kanchigai',
+    text: 'お母さんたちの勘違いだよ、俺から伝えておく',
+    onlyWith: 'parents_visit',
+    blockedBy: ['chat:parents_sorry', 'chat:parents_cancel'],
+    replyRelevant: '……そうなの？ ならいいけど。ちゃんと伝えておいてね',
+    replyIrrelevant: '……そうなの？ ならいいけど。ちゃんと伝えておいてね',
+  },
+  {
+    id: 'parents_cancel',
+    text: '【母に送信】ごめん、嫁が準備できないから、明日は来ないで',
+    onlyWith: 'parents_visit',
+    blockedBy: ['chat:parents_sorry', 'chat:parents_kanchigai'],
+    disguised: true,
+    replyRelevant: 'ちょっと！！ 今お義母さんから電話あったんだけど！？',
+    replyIrrelevant: 'ちょっと！！ 今お義母さんから電話あったんだけど！？',
+    provokeTitle: '妻のせいにして断った',
+    provokeLines: [
+      '「嫁が準備できないから来ないで」？',
+      '私のせいにしたの！？ お義母さんたちに失礼じゃない！',
+      'それで私がどう思われると思ってるの！ ……「気の利かない嫁」よ！',
+    ],
+  },
   // カビだらけの弁当箱
   {
     id: 'bento_sorry',

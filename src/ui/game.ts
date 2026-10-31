@@ -239,7 +239,8 @@ export class Game {
 
   private beginDay() {
     // ?debug&scenario=a,b で その日のシナリオを固定できる（シナリオ追加時の動作確認用）
-    const forced = this.debug?.get('scenario');
+    // ただし前の日の続き（両親が本当に来る日）は、固定より優先する
+    const forced = this.run.parentsDay === this.run.day ? null : this.debug?.get('scenario');
     const scenarios = forced?.split(',').map((id) => SCENARIO_MAP[id]).filter(Boolean);
     this.day = scenarios?.length
       ? buildDay(this.run.day, scenarios, startTimeFor(this.run.day, Math.random()), Math.random())

@@ -1402,6 +1402,40 @@ Comedic, not gross. Japanese manga-style digital illustration, clean bold black 
 flat cel shading, same art style as the reference. No text, no letters, no watermark.
 ```
 
+## 26. 夫の両親の相手で困っている妻（wife_inlaws.jpg）— Gemini 用
+
+「勘違い」とごまかした翌日、本当に来ていた夫の両親の相手をさせられている妻。怒られる場面に出す。縦 9:16。
+妻の両親（家族会議・家庭裁判に出てくる、白髪にカーディガンの上品で静かな義母と、腕組みの厳格な義父）と
+見分けがつくように、夫の両親は「夫に似た、にぎやかで遠慮のない下町の両親」にする。
+
+| ファイル | 用途 | 添付する見本 |
+|---|---|---|
+| `wife_inlaws.jpg` | 夫の両親が来ていた日の怒りの場面 | `wife_smile.png`（妻）と `hero.png`（夫。両親を夫に似せる） |
+
+```
+Use the first attached image as the character reference for the wife (same face, short
+dark bob hair, cream long-sleeve top, floral apron) and the second attached image as the
+reference for the husband's face: his parents must clearly resemble him (same droopy,
+tired-looking eyes and nose). The husband himself is NOT in the picture.
+Vertical 9:16. A small Japanese apartment living room in the evening, slightly messy
+(a vacuum cleaner left in the corner, a pile of unfolded laundry pushed aside).
+The husband's parents have made themselves at home:
+- His father: a plump, cheerful man in his early 70s, mostly bald with a fringe of dark
+  gray hair, round black-framed glasses, a loud red-faced laugh, wearing a bright golf
+  polo shirt, sprawled at the low table with an open can of beer, holding up an empty
+  glass toward the wife for a refill.
+- His mother: a small, energetic woman in her late 60s with a tight curly perm dyed
+  reddish brown, wearing a loud purple floral blouse and a pearl necklace, standing by
+  the shelf and running one finger along it to check for dust, smiling and chattering.
+The wife stands between them holding a tray with a teapot and dorayaki, frozen in a
+forced polite smile: twitching eyebrow, an anger vein on her temple, a big sweat drop,
+eyes not smiling at all. Comedic "patience at its limit" mood.
+They must look clearly different from the wife's own parents (a quiet, gray-haired
+elegant mother in a cardigan and a stern father in a cardigan): loud, casual, chatty.
+Japanese manga-style digital illustration, clean bold black outlines, flat cel shading,
+same art style as the references. No text, no letters, no watermark.
+```
+
 ## 置いたあとの確認
 
 1. `npm run dev` で起動

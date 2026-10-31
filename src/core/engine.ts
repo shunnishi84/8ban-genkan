@@ -5,6 +5,7 @@ import { ITEM_MAP } from '../data/items';
 import { POSTS, POST_MAP } from '../data/posts';
 import { DRUNK_WIFE_SCENARIOS } from '../data/drunkWife';
 import { PC_APPROVED, PC_DELIVERY, PC_HINT, PC_SURPRISE } from '../data/pc';
+import { PARENTS_ARRIVED } from '../data/parents';
 import { SCENARIOS, SCENARIO_MAP } from '../data/scenarios';
 import {
   CANCEL_DEADLINE,
@@ -59,7 +60,7 @@ export const chooseScenarios = (
 ): Scenario[] => {
   const unused = (list: Scenario[]) => list.filter((s) => !run.used.includes(s.id));
   const normals = pool.filter(isNormal);
-  const abnormals = pool.filter((s) => !isNormal(s));
+  const abnormals = pool.filter((s) => !isNormal(s) && !(s.notOnLastDay && run.day >= GOAL_DAYS));
 
   if (run.day <= 5 && rng() < NO_ANOMALY_RATE && unused(normals).length > 0) {
     return [shuffle(rng, unused(normals))[0]];
@@ -114,6 +115,8 @@ export const buildDay = (day: number, scenarios: Scenario[], startTime: number, 
 };
 
 export const startDay = (run: RunState, rng: Rng, pool: readonly Scenario[] = SCENARIOS): DayState => {
+  // 前の日に両親の来訪を「勘違い」とごまかしていたら、今日は本当に両親が来ている（ほかの異変は起きない）
+  if (run.parentsDay === run.day) return buildDay(run.day, [PARENTS_ARRIVED], startTimeFor(run.day, rng()), rng());
   // ノートパソコンが届く日は、妻が家にいて起きている日にする
   const arriving = run.pc?.arriveDay === run.day;
   // 1/10 で妻が酔っている日（5日目まで）。チャットの話が噛み合わなくなるので、ほかの異変は起きない
@@ -143,6 +146,8 @@ export const advanceRun = (run: RunState, state?: DayState): boolean => {
   if (state && order && order !== 'canceled' && !run.pc) {
     run.pc = { arriveDay: state.day + PC_DELIVERY_DAYS, approved: state.flags.has('chat:pc_settoku_2') };
   }
+  // 両親の来訪を「勘違い」とごまかして帰ってきたら、翌日に本当に来る
+  if (state?.flags.has(`chat:${PARENTS_LIE}`)) run.parentsDay = state.day + 1;
   run.streak += 1;
   run.day += 1;
   return run.streak >= GOAL_DAYS;
@@ -641,6 +646,9 @@ const act = (state: DayState, action: Action): ActionResult => {
     }
   }
 };
+
+/** 両親の来訪を「勘違い」とごまかす定型文 */
+const PARENTS_LIE = 'parents_kanchigai';
 
 /** 鍵をなくした日で、まだ鍵を受け取っていない（チャットで頼んで開けてもらった日は開いている） */
 export const keyless = (state: DayState): boolean =>

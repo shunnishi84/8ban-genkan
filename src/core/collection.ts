@@ -1,6 +1,7 @@
 import { DRUNK_WIFE_SCENARIOS } from '../data/drunkWife';
 import { SCENARIOS } from '../data/scenarios';
 import { PC_DELIVERY, PC_SURPRISE } from '../data/pc';
+import { PARENTS_ARRIVED } from '../data/parents';
 import { CHAT_TEMPLATES } from '../data/chat';
 import { FINALES, FINALE_IDS } from '../data/finales';
 import { ITEMS } from '../data/items';
@@ -14,7 +15,7 @@ import type { Scenario } from './types';
 export const COLLECTION: { label: string; scenarios: Scenario[] }[] = [
   { label: '異変', scenarios: SCENARIOS.filter((s) => s.causes.length > 0) },
   { label: '妻が酔っている日', scenarios: DRUNK_WIFE_SCENARIOS },
-  { label: '日をまたぐ異変', scenarios: [PC_DELIVERY, PC_SURPRISE] },
+  { label: '日をまたぐ異変', scenarios: [PC_DELIVERY, PC_SURPRISE, PARENTS_ARRIVED] },
 ];
 
 const ALL_IDS = new Set(COLLECTION.flatMap((g) => g.scenarios.map((s) => s.id)));

@@ -92,6 +92,10 @@ export const ITEMS: ItemDef[] = [
   // コンビニのプリンでは一番高いやつ（お取り寄せの窯出しプリンには及ばない）。なめらかプリンとは別物
   { id: 'pudding_premium', name: '贅沢窯焼きプリン', desc: 'コンビニのプリンでは一番高いやつ。妻のお気に入り。', source: 'konbini', price: 480, slot: 'bag' },
   // 鍵をなくした日だけ。店員が預かっていた落とし物を受け取る
+  // 明日両親が来る日だけ。妻に頼まれる買い物
+  { id: 'dorayaki', name: 'どら焼き 6個入り（お茶菓子）', desc: '母の好物。妻の買い物メモの1つ目。', source: 'konbini', price: 780, slot: 'bag', onlyWith: 'parents_visit' },
+  { id: 'green_tea', name: '緑茶ティーバッグ 20袋', desc: '来客用。妻の買い物メモの2つ目。', source: 'konbini', price: 398, slot: 'bag', onlyWith: 'parents_visit' },
+  { id: 'beer_pack', name: '缶ビール 6缶パック（父用）', desc: '父の晩酌用。妻の買い物メモの3つ目。……今夜は飲まないこと。', source: 'konbini', price: 1380, slot: 'bag', onlyWith: 'parents_visit' },
   // 下剤を渡してしまった妻へ。本物の整腸剤と、脱水にならないためのスポーツドリンク
   { id: 'seichozai', name: '整腸剤（乳酸菌の錠剤）', desc: '箱に大きく「整腸」。今度こそ間違いない。', source: 'konbini', price: 1080, slot: 'bag' },
   { id: 'sports_drink', name: 'スポーツドリンク 2L', desc: 'お腹を壊した日の水分補給に。', source: 'konbini', price: 298, slot: 'bag' },
