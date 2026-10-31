@@ -1491,6 +1491,44 @@ Japanese manga-style digital illustration, clean bold black outlines, flat cel s
 same art style as the reference. No text, no letters, no watermark.
 ```
 
+## 28. 郵便受けのライブチケット（ドアの郵便受けに刺さった封筒・アイコン4種）— Gemini 用
+
+| ファイル | 用途 | 形 | 添付する見本 |
+|---|---|---|---|
+| `mail_envelope.png` | ドアの郵便受けから半分飛び出したA4封筒（玄関前の絵に重ねる。抜き取ると消える） | 約 3:2 | `garbage_bag.png` |
+| アイコン4種 | A4封筒（未開封）／ライブチケット／空のA4封筒／小さく畳んだ紙 | 1枚に 2×2 | `item_beer.png` |
+
+### 28-1. mail_envelope.png（添付: garbage_bag.png）
+```
+Use the attached image as the style reference. A large white A4-size paper envelope,
+seen from the front, sticking halfway out horizontally from a narrow metal door mail slot:
+only the slot's dark metal flap frame and the protruding half of the envelope are drawn.
+The envelope has a bold colorful printed logo block in the corner (abstract star and
+ticket shapes, no readable letters) and a red "important" stamp shape. The envelope bends
+slightly under its own weight. Japanese manga-style digital illustration, clean bold
+black outlines, flat cel shading, muted cool night colors. Isolated on a plain pure white
+background, nothing else in the image. No text, no letters, no watermark.
+```
+
+### 28-2. アイコン4種（添付: item_beer.png）
+```
+A sprite sheet of 4 separate game item icons in the same art style as the attached icon,
+arranged in a neat 2 x 2 grid on a plain pure white background. Each icon is a single
+object, centered in its own cell, with plenty of white space between icons, nothing
+touching or overlapping, no labels, no frames. Row 1, left to right:
+1. a sealed large white A4 envelope with a bold colorful logo block in the corner (star
+   and ticket shapes) and a red stamp shape
+2. a single concert ticket, sparkly pastel pink and purple with a star pattern and a
+   perforated stub edge
+Row 2, left to right:
+3. the same large white envelope, now torn open and empty, slightly crumpled
+4. a small, tightly folded square of white paper, folded many times
+Japanese manga-style digital illustration, clean bold black outlines, flat cel shading,
+simple and readable at small size, consistent style across all icons.
+No text, no letters, no numbers, no watermark.
+```
+→ 順番に `item_ticket_mail / item_live_ticket / item_empty_envelope / item_folded_envelope` として切り出す。
+
 ## 置いたあとの確認
 
 1. `npm run dev` で起動
