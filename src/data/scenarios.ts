@@ -1296,7 +1296,7 @@ export const SCENARIOS: Scenario[] = [
     ],
     clues: [
       { at: 'app:chat', cause: 'oshi_live', unread: true, image: 'clue_oshi_live', text: '先週の土曜って、休日出勤だったよね？ ……このライブレポの最前列でペンライト振ってるの、誰？（22:20）' },
-      { at: 'notice', cause: 'oshi_live', text: '📣 星屑シンフォニア公式: 全国ツアー東京公演ライブレポ公開！ 最前列のみなさん、熱い声援ありがとう✨' },
+      { at: 'notice', cause: 'oshi_live', image: 'clue_oshi_live', text: '📣 星屑シンフォニア公式: 全国ツアー東京公演ライブレポ公開！ 最前列のみなさん、熱い声援ありがとう✨' },
       { at: 'slot:wallet', cause: 'oshi_live', text: 'チケットの半券: 「星屑シンフォニア 全国ツアー 東京公演 先週土曜 17:00 アリーナA1列」' },
       { at: 'app:calendar', cause: 'oshi_live', text: '先週土曜: 休日出勤（ということにしてある）' },
       { at: 'app:shop', cause: 'oshi_live', text: '🎫 おすすめ: 神崎蓮 ファンミーティング2026 ペア席（……妻の推しだ）' },
