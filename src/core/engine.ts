@@ -712,6 +712,15 @@ const doorOutcome = (state: DayState): ActionResult => {
   // 悪ふざけを送っていたら、火種に関係なく最初に送ったものの結末
   const prank = flagsWith(state, 'prank:')[0];
   if (prank) return result(true, [], 0, { kind: 'prank', template: prank.slice('prank:'.length) });
+  // 口紅のついたワイシャツを脱いで手に持ったまま帰ると、格好を叱られたあと、隠そうとした口紅に気づかれて魔王になる
+  if (hidingLipstick(state)) {
+    return result(true, [], 0, {
+      kind: 'demon',
+      preLines: (state.flags.has('pantsless') ? PANTSLESS : UNDRESSED).angerLines,
+      lines: LIPSTICK_DEMON,
+      reason: '口紅を隠そうとした',
+    });
+  }
   // 帰宅した瞬間に目に入る・耳に入るもの（格好・余計なひと言・持ち物）から先に怒られる
   const seen = [
     ...(state.flags.has('pantsless') ? [PANTSLESS] : state.flags.has('undressed') ? [UNDRESSED] : []),
@@ -845,6 +854,16 @@ const UNDRESSED = angerCause('undressed', '肌着で帰宅', [
   'なんて格好で帰ってきてるの！',
   'ご近所に見られたらどうするのよ！ シャツはどこ！？',
 ]);
+
+/** 口紅の日に、ワイシャツを脱いで（捨てずに）手に持って帰ってきた */
+const hidingLipstick = (state: DayState): boolean =>
+  onDay(state, 'cabaret_lipstick') && state.flags.has('undressed') && !state.flags.has('shirt_discarded') && !state.flags.has('used:spare_shirt');
+const LIPSTICK_DEMON = [
+  '……口紅。',
+  'これを隠そうとして、脱いだのね！',
+  '夜道を肌着で歩いてまで、隠したかったのね。……「銀河の妖精」のこと。',
+  'その努力、もっと別のところに使ってほしかったわ。',
+];
 
 /** 鬼のお面を持って帰ると、それだけで鬼になる */
 const ONI_MASK = angerCause('oni_mask', '鬼のお面', [

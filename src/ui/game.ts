@@ -290,7 +290,7 @@ export class Game {
         else this.gameOver(r.outcome.kind, r.outcome.kind === 'angry' ? r.outcome.causes : [], r.outcome.kind === 'angry' && r.outcome.morning);
         return false;
       case 'demon':
-        this.demonEnding(r.outcome.lines, r.outcome.reason);
+        this.demonEnding(r.outcome.lines, r.outcome.reason, r.outcome.preLines);
         return false;
       case 'finale':
         this.playFinale(r.outcome.finale);
@@ -410,23 +410,30 @@ export class Game {
   }
 
   /** 暴言を送っていた日: 火種に関係なく、ドアの向こうに魔王 */
-  private demonEnding(demonLines: string[], reason = DEMON_REASON) {
+  /** preLines があれば、まずふつうに怒られてから魔王になる（脱いだワイシャツの口紅に気づかれるなど） */
+  private demonEnding(demonLines: string[], reason = DEMON_REASON, preLines?: string[]) {
     this.recordEnding(endingId('normal', 'demon'));
     this.audio.playSe('se_door');
-    this.playSeAt('se_demon', 300);
     const alone = this.day!.homeAlone;
-    const lines: Line[] = [
+    const door: Line[] = [
       ...(alone ? [{ who: 'narr' as const, text: '実家にいるはずの妻の靴が、玄関にある。' }] : []),
       ...(this.day!.flags.has(KEY_RATTLED)
         ? say('narr', ['ガチャガチャガチャ！', 'バンッ！ ……内側から、勢いよくドアが開いた。'])
         : this.day!.flags.has('rang')
           ? say('narr', ['ピンポーン……', 'ガチャ……と、内側からドアが開いた。'])
           : say('narr', ['ガチャ……'])),
-      { who: 'narr', text: '玄関の空気が、凍りついた。' },
-      ...say('wife', demonLines),
-      { who: 'narr', text: '妻は、人であることをやめた。' },
     ];
-    this.talk('demon', lines, this.toGameOver(reason, { demon: true }));
+    const demon = (lead: Line[]) => {
+      this.playSeAt('se_demon', 300);
+      this.talk(
+        'demon',
+        [...lead, { who: 'narr', text: '玄関の空気が、凍りついた。' }, ...say('wife', demonLines), { who: 'narr', text: '妻は、人であることをやめた。' }],
+        this.toGameOver(reason, { demon: true }),
+      );
+    };
+    if (!preLines) return demon(door);
+    this.playSeAt('se_angry', 250);
+    this.talk('angry', [...door, ...say('wife', preLines), { who: 'narr', text: '……妻の視線が、手に持ったワイシャツの襟で止まった。' }], () => demon([]));
   }
 
   /** 酔った勢いの悪ふざけを送っていた日: 送った文面ごとの結末 */

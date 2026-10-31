@@ -1206,6 +1206,30 @@ describe('明日両親が来るのを伝え忘れていた', () => {
   });
 });
 
+describe('口紅のワイシャツを脱いで帰る', () => {
+  it('脱いだシャツを持ったまま帰ると、格好を叱られたあと口紅に気づかれて魔王になる', () => {
+    const s = day(['cabaret_lipstick']);
+    expect(perform(s, { type: 'undress' }).ok).toBe(true);
+    const o = perform(s, { type: 'openDoor' }).outcome;
+    expect(o).toMatchObject({ kind: 'demon', reason: '口紅を隠そうとした' });
+    if (o.kind === 'demon') {
+      expect(o.preLines?.join('')).toContain('なんて格好');
+      expect(o.lines.join('')).toContain('隠そうとして');
+    }
+  });
+
+  it('シャツをゴミ捨て場に捨ててから帰れば、格好だけ叱られる（魔王にはならない）', () => {
+    const s = day(['cabaret_lipstick']);
+    perform(s, { type: 'undress' });
+    s.location = 'trash';
+    expect(perform(s, { type: 'discardShirt' }).ok).toBe(true);
+    s.location = 'door';
+    const o = perform(s, { type: 'openDoor' }).outcome;
+    expect(o.kind).toBe('angry');
+    if (o.kind === 'angry') expect(o.causes[0].id).toBe('undressed');
+  });
+});
+
 describe('夜間配達のゲームソフト', () => {
   it('拾わずに帰ると、その夜は普通に迎えられ、翌朝見つかって怒られる', () => {
     const o = perform(day(['game_delivery']), { type: 'openDoor' }).outcome;

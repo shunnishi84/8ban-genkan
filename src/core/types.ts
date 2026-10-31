@@ -331,7 +331,8 @@ export type Outcome =
   /** fakeReveal: fakeHome のあとに火がつくきっかけのセリフ（無ければ鬼のお面）。fakeMorning: その夜は普通に迎えられ、翌朝見つかって怒られる */
   | { kind: 'angry'; causes: Cause[]; morning?: boolean; fakeHome?: string[]; fakeAsleep?: string[]; fakeReveal?: string[]; fakeMorning?: string[] }
   /** 暴言を送っていた: 火種の有無に関係なく、魔王化した妻が待っている */
-  | { kind: 'demon'; lines: string[]; reason?: string }
+  /** preLines: 魔王になる前に、ふつうに怒られる（格好を叱られてから、隠した口紅に気づく） */
+  | { kind: 'demon'; lines: string[]; reason?: string; preLines?: string[] }
   /** 酔った勢いの悪ふざけを送っていた: 送った文面ごとの結末 */
   | { kind: 'prank'; template: string }
   /** 強すぎる酒で酔いつぶれた: その酒の結末（病院送りなど） */

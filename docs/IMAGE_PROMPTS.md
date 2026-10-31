@@ -1436,6 +1436,61 @@ Japanese manga-style digital illustration, clean bold black outlines, flat cel s
 same art style as the references. No text, no letters, no watermark.
 ```
 
+## 27. 夜間配達のゲームソフト（玄関前の段ボール・アイコン3種・ゲームソフトを突きつける妻）— Gemini 用
+
+| ファイル | 用途 | 形 | 添付する見本 |
+|---|---|---|---|
+| `game_parcel.png` | 玄関前の足元に置かれた段ボール箱（ゴミ袋と同じく玄関前の絵に重ねる。拾うと消える） | 約 5:4 | `garbage_bag.png` |
+| アイコン3種 | 段ボール箱（未開封）／ゲームソフト／空き箱 | 1枚に 3×1 | `item_beer.png` |
+| `wife_game.jpg` | ゲームソフトがバレたときの妻（怒られる場面。夜に持ち込んだときも、翌朝見つかったときも） | 縦 9:16 | `wife_angry.jpg` |
+
+### 27-1. game_parcel.png（添付: garbage_bag.png）
+```
+Use the attached image as the style reference. A single small cardboard delivery box,
+about the size of a shoebox cut in half, sealed with brown packing tape, sitting on the
+floor with a slight shadow under it. A white shipping label is stuck on top with a few
+gray lines and a barcode, and a small yellow "drop-off" sticker shape on the side
+(no readable letters). Seen from the front at eye level, slightly from above.
+Japanese manga-style digital illustration, clean bold black outlines, flat cel shading,
+muted cool night colors. Isolated object centered on a plain pure white background,
+nothing else in the image. No text, no letters, no watermark.
+```
+
+### 27-2. アイコン3種（添付: item_beer.png）
+```
+A sprite sheet of 3 separate game item icons in the same art style as the attached icon,
+arranged in a neat row of 3 on a plain pure white background. Each icon is a single object,
+centered in its own cell, with plenty of white space between icons, nothing touching or
+overlapping, no labels, no frames. Left to right:
+1. a small sealed cardboard delivery box with brown packing tape and a white shipping
+   label with a barcode
+2. a video game case for a handheld console: a slim red plastic case with exciting cover
+   art of a giant armored monster roaring at a tiny hunter with a big sword (no letters,
+   no logos)
+3. an opened, empty cardboard box with its flaps open, crumpled packing paper inside,
+   and the shipping label still stuck on the side
+Japanese manga-style digital illustration, clean bold black outlines, flat cel shading,
+simple and readable at small size, consistent style across all icons.
+No text, no letters, no numbers, no watermark.
+```
+→ 順番に `item_game_parcel / item_game_soft / item_empty_box` として切り出す。
+
+### 27-3. wife_game.jpg（添付: wife_angry.jpg）
+```
+Use the attached image as the strict reference: the same woman (same face, short dark bob
+hair, cream long-sleeve top, floral apron) in the same Japanese apartment entrance
+hallway, same vertical 9:16 composition and camera angle.
+Change the scene: she holds a slim red video game case right up toward the viewer at arm's
+length in one hand (cover art of a giant armored monster, no letters), and an opened
+cardboard delivery box with its shipping label tucked under her other arm. Instead of
+fire, a heavy dark gloomy aura and a few floating game-controller-shaped silhouettes
+behind her. Her face: a cold, flat glare with half-lidded eyes, one eyebrow raised,
+a forced calm smile with a twitching corner and an anger vein on her temple — the look of
+"we JUST talked about this." Comedic, menacing mood.
+Japanese manga-style digital illustration, clean bold black outlines, flat cel shading,
+same art style as the reference. No text, no letters, no watermark.
+```
+
 ## 置いたあとの確認
 
 1. `npm run dev` で起動
