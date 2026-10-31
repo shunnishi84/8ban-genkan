@@ -33,7 +33,7 @@ export const isObtainable = (state: DayState, flag: string, depth = 0): boolean 
       return !!item?.discardable && (inHand || item.source === 'konbini' || madeFromHand(state, id));
     case 'used':
       if (item?.useRequires && !state.inventory.includes(item.useRequires)) return false;
-      return !!item?.useLabel && (inHand || item.source === 'konbini');
+      return !!item?.useLabel && (inHand || item.source === 'konbini' || madeFromHand(state, id));
     case 'found':
       // スマホをなくした日は、どこかで見つけられる
       return id === 'phone' && state.flags.has('phone_lost');

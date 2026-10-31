@@ -1273,6 +1273,46 @@ describe('夜間配達のゲームソフト', () => {
   });
 });
 
+describe('郵便受けのライブチケット', () => {
+  const open = () => {
+    const s = day(['live_ticket_mail']);
+    perform(s, { type: 'pickup', item: 'ticket_mail' });
+    perform(s, { type: 'use', item: 'ticket_mail' });
+    expect(s.inventory).toEqual(expect.arrayContaining(['live_ticket', 'empty_envelope']));
+    return s;
+  };
+
+  it('抜かずに帰ると、翌朝郵便受けで見つかる', () => {
+    const o = perform(day(['live_ticket_mail']), { type: 'openDoor' }).outcome;
+    expect(o).toMatchObject({ kind: 'angry', causes: [{ id: 'live_ticket_mail' }] });
+    if (o.kind === 'angry') expect(o.fakeMorning).toBeDefined();
+  });
+
+  it('抜いただけ・開けただけ（空の封筒が残っている）だと「その封筒、何？」で怒られる', () => {
+    const a = day(['live_ticket_mail']);
+    perform(a, { type: 'pickup', item: 'ticket_mail' });
+    const b = open();
+    for (const s of [a, b]) {
+      const o = perform(s, { type: 'openDoor' }).outcome;
+      if (o.kind !== 'angry') throw new Error(o.kind);
+      expect(o.fakeReveal?.[0]).toContain('その封筒');
+      expect(o.causes[0].angerLines.join('')).toContain('休日研修');
+    }
+  });
+
+  it('空の封筒は、小さく畳んで鞄にしまっても、ゴミ捨て場に捨てても無事', () => {
+    const folded = open();
+    perform(folded, { type: 'use', item: 'empty_envelope' });
+    expect(folded.inventory).toContain('folded_envelope');
+    expect(perform(folded, { type: 'openDoor' }).outcome.kind).toBe('home');
+    const thrown = open();
+    thrown.location = 'trash';
+    expect(perform(thrown, { type: 'discard', item: 'empty_envelope' }).ok).toBe(true);
+    thrown.location = 'door';
+    expect(perform(thrown, { type: 'openDoor' }).outcome.kind).toBe('home');
+  });
+});
+
 describe('スマホをなくした日', () => {
   /** スマホがその場所にある日の seed を探す */
   const daySpot = (spot: string) => {

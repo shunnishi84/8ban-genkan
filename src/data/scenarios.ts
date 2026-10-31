@@ -1425,6 +1425,48 @@ export const SCENARIOS: Scenario[] = [
     ],
   },
 
+  // 郵便受けに、推しのライブチケットのA4封筒が刺さっている。ライブの日は、妻との買い物を「休日研修」と嘘をついて断った日
+  {
+    id: 'live_ticket_mail',
+    title: '郵便受けに推しのライブチケットが届いていた',
+    // どちらも推しのライブの話なので同じ日には出さない
+    conflictsWith: ['oshi_live'],
+    pickups: [{ at: 'door', item: 'ticket_mail', label: '封筒を抜き取る' }],
+    causes: [
+      {
+        id: 'live_ticket_mail',
+        title: 'ライブチケットの封筒',
+        // 封筒を抜いて、チケットだけ手帳に隠し、空の封筒は畳んで鞄の底へ（またはゴミ捨て場へ）
+        resolution: { all: ['picked:ticket_mail', 'used:ticket_mail', { any: ['used:empty_envelope', 'discarded:empty_envelope'] }] },
+        // 抜かずに帰ると、その夜は気づかれず、翌朝郵便受けで見つかる
+        foundNextMorningUnless: 'picked:ticket_mail',
+        revealLines: ['……あら？ その封筒、何？', '（封筒には「チケット発券センター」の大きなロゴ。'],
+        angerLines: [
+          '……郵便受けに、これが刺さってたんだけど。',
+          '「星屑シンフォニア 追加公演」。来月の13日。',
+          '……その日、私と買い物に行く約束だったわよね。「休日研修」って言ってた、あの日。',
+        ],
+        angerLinesIf: [
+          {
+            when: 'picked:ticket_mail',
+            lines: [
+              '……チケット？ 「星屑シンフォニア 追加公演」？',
+              '来月の13日。……私と買い物に行く約束だった日よね。',
+              '「その日は休日研修」って言ってたの、これのこと？',
+            ],
+          },
+        ],
+        successLine: '今日、郵便って何か来てた？ ……まあいいや、明日の朝見るね。',
+      },
+    ],
+    clues: [
+      { at: 'spot:door', cause: 'live_ticket_mail', text: 'ドアの郵便受けから、A4の大きな封筒が半分飛び出している。……差出人は「チケット発券センター」。', hiddenWhen: 'picked:ticket_mail' },
+      { at: 'notice', cause: 'live_ticket_mail', text: '🎫 チケット発券センター: ご当選チケットを発送しました（郵便受けに投函されます）' },
+      { at: 'app:calendar', cause: 'live_ticket_mail', text: '来月13日（土）: 妻と買い物（新しいソファ）→「休日研修」と言って断った ／ 星屑シンフォニア 追加公演（当選！）' },
+      { at: 'app:memo', cause: 'live_ticket_mail', text: '13日は「休日研修」。……妻には絶対にバレないこと。' },
+    ],
+  },
+
   // ================================================================ 異変なし（ニセ異変入り）
   {
     id: 'ramen_receipt',

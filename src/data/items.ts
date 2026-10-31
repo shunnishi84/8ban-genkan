@@ -193,6 +193,30 @@ export const ITEMS: ItemDef[] = [
   { id: 'cabaret_card', name: '店の名刺', desc: '『Club 銀河の妖精　あやね♡』ハートの手書き付き。', source: 'none', slot: 'cardcase', discardable: true },
   { id: 'cabaret_receipt', name: '店のレシート', desc: '『Club 銀河の妖精　セット ¥24,000／あやねドリンク ¥8,000』', source: 'none', slot: 'wallet', discardable: true },
   { id: 'strong_can', name: 'ストロング缶（9%・未開封）', desc: '帰り道のコンビニで、つい。……健診の紙には「節酒」の赤字。', source: 'none', slot: 'bag', discardable: true },
+  // 郵便受けに刺さっていたライブチケットの封筒。開けるとチケットは手帳に、空の封筒は手元に残る
+  {
+    id: 'ticket_mail',
+    name: 'A4の封筒（チケット発券センター）',
+    desc: '差出人のロゴが大きく印刷されている。中身は……当選したライブのチケットだ。',
+    source: 'none',
+    slot: 'bag',
+    useLabel: '封筒を開ける',
+    useMessage: 'チケットだけを取り出して、手帳のカバーの内側に挟んだ。……空の封筒が残った。',
+    useGives: ['live_ticket', 'empty_envelope'],
+  },
+  { id: 'live_ticket', name: 'ライブチケット（星屑シンフォニア 追加公演）', desc: '来月13日（土）アリーナ席。手帳のカバーの内側に隠してある。', source: 'none', slot: 'wallet' },
+  {
+    id: 'empty_envelope',
+    name: '空のA4封筒',
+    desc: '「チケット発券センター」のロゴ入り。これを見られたら一発でバレる。',
+    source: 'none',
+    slot: 'bag',
+    discardable: true,
+    useLabel: '小さく畳む',
+    useMessage: 'ロゴが見えないように小さく小さく畳んで、鞄の底に沈めた。',
+    useGives: ['folded_envelope'],
+  },
+  { id: 'folded_envelope', name: '小さく畳んだ紙', desc: 'もう何の封筒だったか、わからない。', source: 'none', slot: 'bag' },
   // 夜間配達で玄関前に届いたゲームソフト。開けると、ソフトは鞄の奥へ、空き箱は手元に残る
   {
     id: 'game_parcel',
