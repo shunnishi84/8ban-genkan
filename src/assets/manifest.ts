@@ -154,6 +154,7 @@ export const IMAGES = {
   clue_laxative: { file: 'clue_laxative.webp', label: '下剤の箱', color: '#5a6a7a' },
   clue_rokuga_fail: { file: 'clue_rokuga_fail.webp', label: '録画失敗の画面', color: '#dfe6ec' },
   clue_oshi_live: { file: 'clue_oshi_live.webp', label: 'ライブレポの写真', color: '#c03a9a' },
+  clue_hesokuri: { file: 'clue_hesokuri.webp', label: '本に挟まったへそくり', color: '#7a2a32' },
   // 酔った勢いの悪ふざけの結末（無ければ既存の絵で代用）
   prank_police: { file: 'prank_police.webp', label: '妻とおまわりさん', color: '#2b2b38', fit: 'cover' },
   prank_mummy: { file: 'prank_mummy.webp', label: '包帯ぐるぐる巻き', color: '#e8e0cc', fit: 'cover' },

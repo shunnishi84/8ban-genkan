@@ -197,6 +197,7 @@ promo/build.sh promo/out   # → promo/out/8ban-genkan_trailer_landscape.mp4 / _
 | wife_laxative.jpg | 下剤の日に怒る妻（お腹を押さえてげっそり。Gemini で生成） | ✅ |
 | wife_inlaws.jpg | 「勘違い」とごまかした翌日、夫の両親の相手で限界の妻（Gemini で生成） | ✅ |
 | wife_game.jpg / game_parcel.png | ゲームソフトを突きつける妻・玄関前の段ボール箱（拾うと消える。Gemini で生成） | ✅ |
+| clue_hesokuri.jpg | 本に挟まったへそくり（妻のチャットの写真。Gemini で生成） | ✅ |
 | item_game_parcel.png / item_game_soft.png / item_empty_box.png | 段ボール箱・ゲームソフト・空き箱のアイコン（Gemini で生成） | ✅ |
 | police_patrol.jpg / ol_scream.jpg / koban_wife.jpg | 巡回中のお巡りさん・悲鳴をあげる OL・交番に迎えに来た妻（Gemini で生成） | ✅ |
 | costume_dress.jpg / yokyou_photo.jpg / twoshot_edited.jpg / twoshot_original.jpg | 余興のアイドル衣装・余興の練習写真・加工ツーショット（加工後 / 加工前）（Gemini で生成） | ✅ |

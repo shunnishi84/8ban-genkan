@@ -179,7 +179,7 @@ export const ITEMS: ItemDef[] = [
   { id: 'headspa_ticket', name: 'ヘッドスパ＆マッサージ券（eチケット）', desc: '頭皮をほぐす90分コース。明朝メールで届く。', source: 'mail', price: 8800, slot: 'bag' },
   { id: 'bento_box', name: '曲げわっぱの弁当箱（特急便）', desc: '職人の手作り。……今度こそ毎日洗って持って帰る。', source: 'mail', price: 4200, slot: 'bag' },
   // へそくりの日だけ。妻がずっと見ていたバッグ（へそくりとほぼ同額）
-  { id: 'wife_bag', name: '妻が欲しがっていたバッグ（特急便）', desc: 'お気に入りに入れっぱなしだったやつ。¥29,800。', source: 'mail', price: 29800, slot: 'bag', onlyWith: 'hesokuri' },
+  { id: 'wife_bag', name: '妻が欲しがっていたバッグ（特急便）', desc: 'お気に入りに入れっぱなしだったやつ。¥39,800。', source: 'mail', price: 39800, slot: 'bag', onlyWith: 'hesokuri' },
   // 録画に失敗した日だけ。妻の推し・神崎蓮の主演映画
   { id: 'bluray_ren', name: '『真夜中のプロポーズ』ブルーレイ 豪華版（特急便）', desc: '特典映像: 神崎蓮の未公開インタビュー60分。', source: 'mail', price: 6800, slot: 'bag', onlyWith: 'rokuga_fail' },
   // 推しのライブがバレた日だけ。今度は妻の推し活に付き合う

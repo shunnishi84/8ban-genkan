@@ -1160,23 +1160,23 @@ export const SCENARIOS: Scenario[] = [
     id: 'hesokuri',
     title: 'へそくりが見つかった',
     chatReplies: {
-      '*': ['それより、『資本論』の3万円。'],
-      coming_home: ['『資本論』、読みながら待ってるね。', '3万円の説明を持って帰ってきて。'],
+      '*': ['それより、『資本論』の4万円。'],
+      coming_home: ['『資本論』、読みながら待ってるね。', '4万円の説明を持って帰ってきて。'],
       sorry_generic: ['何に謝ってるの？ へそくり？ それとも、ほかにもあるの？'],
-      love: ['3万円より？'],
+      love: ['4万円より？'],
     },
     causes: [
       {
         id: 'hesokuri',
         title: 'へそくり',
         resolution: { all: ['deleted:memo_hesokuri', 'ordered:wife_bag', 'chat:hesokuri_present'] },
-        angerLines: ['本棚の『資本論』。……あなた、一度も読んでないわよね。', '3万円、挟まってたわ。', 'お小遣い、来月から3万円減らしておくね。'],
+        angerLines: ['本棚の『資本論』。……あなた、一度も読んでないわよね。', '4万円、挟まってたわ。', 'お小遣い、来月から4万円減らしておくね。'],
         successLine: '……このバッグ、ずっと欲しかったやつ。へそくりも、たまには役に立つのね。',
         grudging: true,
       },
     ],
     clues: [
-      { at: 'app:chat', cause: 'hesokuri', unread: true, text: '本棚の『資本論』の間から、1万円札が3枚出てきたんだけど。これ、何？（22:10）' },
+      { at: 'app:chat', cause: 'hesokuri', unread: true, image: 'clue_hesokuri', text: '本棚の『資本論』の間から、1万円札が4枚出てきたんだけど。これ、何？（22:10）' },
       {
         at: 'app:memo',
         cause: 'hesokuri',
@@ -1188,7 +1188,7 @@ export const SCENARIOS: Scenario[] = [
         text: 'へそくり: ①『資本論』のあいだ ②ゴルフバッグの外ポケット ③冬物スーツの内ポケット（妻に見つからないこと）',
       },
       { at: 'notice', cause: 'hesokuri', text: '📝 メモが「家族のタブレット」と同期されました（21:58）', hiddenWhen: 'deleted:memo_hesokuri' },
-      { at: 'app:shop', cause: 'hesokuri', text: '🛍 お気に入り: 妻がずっと見ていたバッグ ¥29,800（……へそくりと、ほぼ同じ額だ）' },
+      { at: 'app:shop', cause: 'hesokuri', text: '🛍 お気に入り: 妻がずっと見ていたバッグ ¥39,800（……へそくりと、ほぼ同じ額だ）' },
     ],
   },
   // 部署の飲み会の帰り、部下の佐藤さんと二人でテレビの街頭インタビューに捕まった

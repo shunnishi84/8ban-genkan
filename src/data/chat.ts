@@ -302,7 +302,7 @@ export const CHAT_TEMPLATES: ChatTemplate[] = [
   // へそくり
   {
     id: 'hesokuri_present',
-    text: 'あの3万円、実はお前へのプレゼント用に貯めてたんだ。ずっと見てたバッグ、さっき注文した',
+    text: 'あの4万円、実はお前へのプレゼント用に貯めてたんだ。ずっと見てたバッグ、さっき注文した',
     requires: { all: ['deleted:memo_hesokuri', 'ordered:wife_bag'] },
     replyRelevant: '……ほんとに？ ……ほんとに、あのバッグ？',
     replyIrrelevant: 'プレゼント？ 何の話？ 電話するね',
@@ -315,7 +315,7 @@ export const CHAT_TEMPLATES: ChatTemplate[] = [
     replyRelevant: '……へえ。じゃあ誰の？',
     replyIrrelevant: '……へえ。じゃあ誰の？',
     provokeTitle: '俺のじゃない',
-    provokeLines: ['『資本論』に3万円はさむ人、この家にあなた以外いる？', '……ゴルフバッグの外ポケットと、冬物スーツの内ポケットも、見ておいたから。', '合計8万円。全部、家計に戻しておきました。'],
+    provokeLines: ['『資本論』に4万円はさむ人、この家にあなた以外いる？', '……ゴルフバッグの外ポケットと、冬物スーツの内ポケットも、見ておいたから。', '合計8万円。全部、家計に戻しておきました。'],
   },
   // テレビで部下の佐藤さんが「付き合ってます！」
   {
