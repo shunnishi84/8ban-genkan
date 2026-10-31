@@ -1206,6 +1206,55 @@ describe('明日両親が来るのを伝え忘れていた', () => {
   });
 });
 
+describe('スマホをなくした日', () => {
+  /** スマホがその場所にある日の seed を探す */
+  const daySpot = (spot: string) => {
+    for (let i = 0; i < 300; i++) {
+      const s = buildDay(1, [SCENARIO_MAP.phone_lost], hm(23, 0), i / 300);
+      if (s.flags.has(`phone_at:${spot}`)) return s;
+    }
+    throw new Error(spot);
+  };
+
+  it('スマホはコンビニ・ゴミ捨て場・ベンチのどれかにあり、日によって変わる。どの場所でも解ける', () => {
+    for (const spot of ['konbini', 'trash', 'bench']) {
+      const s = daySpot(spot);
+      const plan = solve(s)!;
+      expect(plan).toContainEqual({ type: 'findPhone' });
+      let o;
+      for (const a of plan) o = perform(s, a).outcome;
+      expect(o?.kind).toBe('home');
+    }
+  });
+
+  it('見つけるまでスマホは使えない（チャット・通販も）。違う場所を探しても見つからない', () => {
+    const s = daySpot('bench');
+    expect(perform(s, { type: 'openApp', app: 'chat' }).ok).toBe(false);
+    expect(perform(s, { type: 'sendChat', template: 'coming_home' }).messages.join('')).toContain('スマホがない');
+    expect(perform(s, { type: 'order', item: 'bouquet' }).ok).toBe(false);
+    s.location = 'konbini';
+    perform(s, { type: 'findPhone' });
+    expect(s.flags.has('found:phone')).toBe(false);
+    s.location = 'bench';
+    expect(perform(s, { type: 'findPhone' }).messages.join('')).toContain('取り戻した');
+    expect(perform(s, { type: 'openApp', app: 'chat' }).ok).toBe(true);
+  });
+
+  it('気づかずに帰ると「スマホなくした？」、見つけて牛乳を忘れると「既読ついてたわよね」', () => {
+    const a = daySpot('trash');
+    const o1 = perform(a, { type: 'openDoor' }).outcome;
+    if (o1.kind !== 'angry') throw new Error(o1.kind);
+    expect(o1.causes[0].angerLines.join('')).toContain('スマホなくした');
+    const b = daySpot('trash');
+    b.location = 'trash';
+    perform(b, { type: 'findPhone' });
+    b.location = 'door';
+    const o2 = perform(b, { type: 'openDoor' }).outcome;
+    if (o2.kind !== 'angry') throw new Error(o2.kind);
+    expect(o2.causes[0].angerLines.join('')).toContain('既読、ついてた');
+  });
+});
+
 describe('鍵をなくした日のドア', () => {
   it('鍵が無いまま3回ガチャガチャやると、妻が飛び出してきて怒られる（ほかの火種も一緒に）', () => {
     const s = day(['key_lost', 'ring_off']);

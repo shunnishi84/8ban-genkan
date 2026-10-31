@@ -55,6 +55,8 @@ export const COST = {
   discard: 1,
   use: 2,
   pickup: 1,
+  /** なくしたスマホを探す */
+  findPhone: 1,
   unsend: 2,
   deletePost: 2,
   /** つぶやきーに投稿する */

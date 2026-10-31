@@ -72,6 +72,8 @@ export interface Cause {
   grudging?: boolean;
   /** 怒られるときの妻の絵（無ければ鬼の形相の妻） */
   angerImage?: string;
+  /** 状況で怒られ方を変える（上から順に、条件を満たした最初のセリフ。どれも満たさなければ angerLines） */
+  angerLinesIf?: { when: Requirement; lines: string[] }[];
   /** ほかの火種で怒られているときも、このセリフを続けて言う（空気の読めないパソコンの相談など） */
   alwaysSay?: boolean;
 }
@@ -102,6 +104,8 @@ export interface Scenario {
   visuals?: string[];
   /** 同じ日に組み合わせない シナリオID */
   conflictsWith?: string[];
+  /** スマホをなくした日（コンビニ・ゴミ捨て場・ベンチのどこかにある。見つけるまでスマホが使えない） */
+  phoneLost?: boolean;
   /** 最終日には出さない（翌日に続きがある異変。最終日に出すと続きが来ないまま逃げ切れてしまう） */
   notOnLastDay?: boolean;
   /** 妻が不在の日（実家に帰省中など）。帰宅シーンが「ただいま…（返事なし）」になる */
@@ -290,6 +294,8 @@ export type Action =
   | { type: 'discard'; item: string }
   | { type: 'use'; item: string }
   | { type: 'pickup'; item: string }
+  /** スマホをなくした日: 今いる場所（コンビニ・ゴミ捨て場・ベンチ）でスマホを探す */
+  | { type: 'findPhone' }
   /** 着ているワイシャツを脱ぐ */
   | { type: 'undress' }
   /** 肌着でさらに酔い3のとき、ズボンも脱ぐ */

@@ -30,6 +30,7 @@ import {
   hasUnreadChat,
   keyless,
   KEY_RATTLED,
+  phoneMissing,
   onDay,
   newRun,
   perform,
@@ -1040,7 +1041,9 @@ export class Game {
                   ? h('button', { class: 'btn primary', onclick: () => this.act({ type: 'wait' }, 'se_tap') }, `時間をつぶす（${COST.wait / 60}時間）`)
                   : h('p', { class: 'desc' }, '空が白んできた。……家に戻ろう。'),
               ]
-            : this.viewShop(),
+            : phoneMissing(day)
+              ? [h('p', { class: 'desc' }, 'スマホがないと、通販もできない……。'), this.phoneSearch()]
+              : this.viewShop(),
           () => this.travel('town'),
           '街へ戻る',
         ),
@@ -1063,6 +1066,24 @@ export class Game {
     );
   }
 
+  /** スマホを開く（なくしている日は開けない） */
+  private openPhone() {
+    if (phoneMissing(this.day!)) {
+      this.audio.playSe('se_tap');
+      this.toast(['……ポケットにスマホがない！', 'どこかに置き忘れてきたらしい。'], 0);
+      return;
+    }
+    this.openModal({ kind: 'phone', app: null });
+  }
+
+  /** スマホをなくした日の「スマホを探す」ボタン（コンビニ・ゴミ捨て場・ベンチ） */
+  private phoneSearch(): Child {
+    const day = this.day!;
+    if (!phoneMissing(day)) return null;
+    if (day.flags.has(`searched:${day.location}`)) return h('p', { class: 'dim' }, 'ここには、スマホはなかった。');
+    return h('button', { class: 'btn primary', onclick: () => this.act({ type: 'findPhone' }, 'se_tap') }, `スマホを探す（${COST.findPhone}分）`);
+  }
+
   private viewBar(): HTMLElement {
     const day = this.day!;
     const btn = (label: string, sub: string | null, onclick: () => void, cls = '') =>
@@ -1071,9 +1092,11 @@ export class Game {
       btn('持ち物', null, () => this.openModal({ kind: 'items', slot: 'bag' }, { type: 'openSlot', slot: 'bag' })),
       day.flags.has('phone_broken')
         ? btn('スマホ', '故障', () => this.openModal({ kind: 'phone', app: null }), 'badge')
-        : hasUnreadChat(day)
-          ? btn('スマホ', '● 未読', () => this.openModal({ kind: 'phone', app: null }), 'badge')
-          : btn('スマホ', null, () => this.openModal({ kind: 'phone', app: null })),
+        : phoneMissing(day)
+          ? btn('スマホ', 'なし', () => this.openPhone(), 'badge')
+          : hasUnreadChat(day)
+            ? btn('スマホ', '● 未読', () => this.openPhone(), 'badge')
+            : btn('スマホ', null, () => this.openPhone()),
     ];
     const cost = (to: Location) => `${TRAVEL[day.location][to]}分`;
     if (day.location === 'door') {
@@ -1251,7 +1274,7 @@ export class Game {
     );
     const items = day.inventory.map((id) => ITEM_MAP[id]).filter((i) => i && i.slot === slot);
     return [
-      h('div', { class: 'tabs' }, tabs, h('button', { class: 'tab', onclick: () => this.openModal({ kind: 'phone', app: null }) }, 'スマホ')),
+      h('div', { class: 'tabs' }, tabs, h('button', { class: 'tab', onclick: () => this.openPhone() }, 'スマホ')),
       slot === 'shirt' && day.flags.has('undressed')
         ? h('p', { class: 'desc' }, this.undressedText(day))
         : this.clueTexts(`slot:${slot}`, SLOT_BASE[slot]),
@@ -1506,6 +1529,7 @@ export class Game {
       'コンビニ',
       [
         h('p', { class: 'dim' }, `いらっしゃいませー（1点 ${COST.buy}分）`),
+        this.phoneSearch(),
         itemsAt('konbini').filter((item) => !item.onlyWith || onDay(this.day!, item.onlyWith)).map((item) =>
           this.itemRow(
             item,
@@ -1527,6 +1551,7 @@ export class Game {
       'ゴミ捨て場',
       [
         h('p', { class: 'dim' }, `集積所とコンビニ前のゴミ箱。（1点 ${COST.discard}分）`),
+        this.phoneSearch(),
         // 脱いで手に持っているワイシャツも捨てられる
         shirtInHand
           ? this.itemRow(

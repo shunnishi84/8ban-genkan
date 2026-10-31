@@ -95,7 +95,8 @@ export const buildDay = (day: number, scenarios: Scenario[], startTime: number, 
     startTime,
     time: startTime,
     location: 'door',
-    flags: new Set(),
+    // スマホをなくした日は、どこに置き忘れたかを日ごとに決めておく
+    flags: new Set(scenarios.some((s) => s.phoneLost) ? [PHONE_LOST, `phone_at:${phoneSpot(seed)}`] : []),
     inventory: scenarios.flatMap((s) => s.startItems ?? []),
     orders,
     chatLog: [],
@@ -270,6 +271,7 @@ const act = (state: DayState, action: Action): ActionResult => {
   if (state.flags.has('phone_broken') && PHONE_ACTIONS.has(action.type)) {
     return result(false, ['スマホは割れていて、もう何も映らない。']);
   }
+  if (phoneMissing(state) && PHONE_ACTIONS.has(action.type)) return result(false, NO_PHONE);
   switch (action.type) {
     case 'inspect':
       if (state.location !== 'door') return result(false, ['家の前にいないと調べられない。']);
@@ -469,6 +471,16 @@ const act = (state: DayState, action: Action): ActionResult => {
       return result(true, [item.useMessage ?? `${item.name}を使った。`], COST.use);
     }
 
+    case 'findPhone': {
+      if (!phoneMissing(state)) return result(false, ['スマホは、もう手元にある。']);
+      const spot = state.location as PhoneSpot;
+      if (!PHONE_SPOTS.includes(spot)) return result(false, ['ここで探しても、見つかりそうにない。']);
+      state.flags.add(`searched:${spot}`);
+      if (!state.flags.has(`phone_at:${spot}`)) return result(true, PHONE_MISS[spot], COST.findPhone);
+      state.flags.add(FOUND_PHONE);
+      return result(true, [...PHONE_FOUND[spot], 'スマホを取り戻した。……通知が何件もたまっている。'], COST.findPhone);
+    }
+
     case 'pickup': {
       const p = state.pickups.find((x) => x.item === action.item);
       if (!p || state.location !== 'door') return result(false, ['ここには無い。']);
@@ -647,6 +659,33 @@ const act = (state: DayState, action: Action): ActionResult => {
   }
 };
 
+/** 状況に合わせた怒られ方（angerLinesIf）に差し替える */
+const withSituationalLines = (c: Cause, state: DayState): Cause => {
+  const hit = c.angerLinesIf?.find((v) => evaluate(v.when, state.flags));
+  return hit ? { ...c, angerLines: hit.lines } : c;
+};
+
+// ------------------------------------------------------------------ スマホをなくした日
+const PHONE_LOST = 'phone_lost';
+export const FOUND_PHONE = 'found:phone';
+export const PHONE_SPOTS = ['konbini', 'trash', 'bench'] as const;
+type PhoneSpot = (typeof PHONE_SPOTS)[number];
+/** その日の seed から、スマホを置き忘れた場所を決める */
+const phoneSpot = (seed: number): PhoneSpot => PHONE_SPOTS[Math.floor(((seed * 7919) % 1) * PHONE_SPOTS.length)];
+/** スマホをなくしていて、まだ見つけていない */
+export const phoneMissing = (state: DayState): boolean => state.flags.has(PHONE_LOST) && !state.flags.has(FOUND_PHONE);
+const NO_PHONE = ['……ポケットにスマホがない！', 'どこかに置き忘れてきたらしい。'];
+const PHONE_MISS: Record<PhoneSpot, string[]> = {
+  konbini: ['店員「スマホの忘れ物？ ……届いてないですねえ」'],
+  trash: ['ゴミ箱のまわりを探したが、スマホは見当たらない。'],
+  bench: ['ベンチのまわりを探したが、スマホはない。'],
+};
+const PHONE_FOUND: Record<PhoneSpot, string[]> = {
+  konbini: ['店員「あ、さっきのお客さん！ これ、レジに忘れてましたよ」'],
+  trash: ['ゴミ箱のふたの上に、スマホが置きっぱなしになっていた！', '……危うく、燃えるゴミに出されるところだった。'],
+  bench: ['ベンチの板の隙間に、スマホが挟まっていた！', '……一休みしたとき、ここで落としたらしい。'],
+};
+
 /** 両親の来訪を「勘違い」とごまかす定型文 */
 const PARENTS_LIE = 'parents_kanchigai';
 
@@ -673,7 +712,13 @@ const doorOutcome = (state: DayState): ActionResult => {
   const prank = flagsWith(state, 'prank:')[0];
   if (prank) return result(true, [], 0, { kind: 'prank', template: prank.slice('prank:'.length) });
   // 帰宅した瞬間に目に入る・耳に入るもの（格好・余計なひと言・持ち物）から先に怒られる
-  const seen = [...(state.flags.has('pantsless') ? [PANTSLESS] : state.flags.has('undressed') ? [UNDRESSED] : []), ...provokeCauses(state), ...carriedCauses(state), ...unresolvedCauses(state), ...pcTimingCauses(state)];
+  const seen = [
+    ...(state.flags.has('pantsless') ? [PANTSLESS] : state.flags.has('undressed') ? [UNDRESSED] : []),
+    ...provokeCauses(state),
+    ...carriedCauses(state),
+    ...unresolvedCauses(state).map((c) => withSituationalLines(c, state)),
+    ...pcTimingCauses(state),
+  ];
   // 鍵をなくした件は、どうやって家に入ったかで怒られ方が変わる（ガチャガチャで飛び出してきた・チャットで開けてもらった）
   const angry = state.flags.has(KEY_RATTLED)
     ? [KEY_RATTLE, ...seen.filter((c) => c.id !== 'key_lost')]

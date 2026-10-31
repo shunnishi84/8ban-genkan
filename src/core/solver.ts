@@ -2,7 +2,7 @@
 import { CHAT_MAP } from '../data/chat';
 import { ITEM_MAP } from '../data/items';
 import { pickSatisfyingFlags } from './requirement';
-import type { Action, DayState } from './types';
+import type { Action, DayState, Location } from './types';
 
 /** そのフラグを立てる手段が存在するか（時間は考えない静的チェック） */
 export const isObtainable = (state: DayState, flag: string, depth = 0): boolean => {
@@ -30,6 +30,9 @@ export const isObtainable = (state: DayState, flag: string, depth = 0): boolean 
     case 'used':
       if (item?.useRequires && !state.inventory.includes(item.useRequires)) return false;
       return !!item?.useLabel && (inHand || item.source === 'konbini');
+    case 'found':
+      // スマホをなくした日は、どこかで見つけられる
+      return id === 'phone' && state.flags.has('phone_lost');
     case 'chat': {
       const t = CHAT_MAP[id];
       if (!t) return false;
@@ -69,6 +72,12 @@ export const solve = (state: DayState): Action[] | null => {
   const of = (kind: string) => flags.filter((f) => f.startsWith(`${kind}:`)).map((f) => f.split(':')[1]);
 
   const plan: Action[] = [];
+  // スマホをなくした日は、まず置き忘れた場所まで取りに行く（スマホが無いと送信取消も注文もチャットもできない）
+  if (of('found').includes('phone')) {
+    const spot = [...state.flags].find((f) => f.startsWith('phone_at:'))?.split(':')[1] as Location | undefined;
+    if (!spot) return null;
+    plan.push({ type: 'travel', to: 'town' }, { type: 'travel', to: spot }, { type: 'findPhone' }, { type: 'travel', to: 'town' }, { type: 'travel', to: 'door' });
+  }
   const toUse = of('used');
   const toDiscard = of('discarded');
   const toBuy = new Set([...of('bought'), ...[...toUse, ...toDiscard].filter((id) => ITEM_MAP[id]?.source === 'konbini' && !state.inventory.includes(id) && !state.pickups.some((p) => p.item === id))]);
