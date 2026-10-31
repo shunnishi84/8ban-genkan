@@ -27,6 +27,7 @@ export const PARENTS_ARRIVED: Scenario = {
         '……お義父さんたちが帰ったら、覚えておきなさい。',
       ],
       successLine: '',
+      angerImage: 'wife_inlaws',
     },
   ],
   clues: [
