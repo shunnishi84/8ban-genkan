@@ -200,7 +200,7 @@ export const ITEMS: ItemDef[] = [
     desc: '伝票の品名欄に、大きく「ゲームソフト」。……このまま持って入るのはまずい。',
     source: 'none',
     slot: 'bag',
-    useLabel: '開けて、ソフトだけ鞄の奥へ',
+    useLabel: '箱を開ける',
     useMessage: 'ソフトだけを取り出して、鞄の一番奥、書類のあいだに隠した。……空き箱が残った。',
     useGives: ['game_soft', 'empty_box'],
   },

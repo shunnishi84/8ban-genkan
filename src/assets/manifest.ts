@@ -31,6 +31,7 @@ export const IMAGES = {
   window_dark: { file: 'window_dark.webp', label: '消灯', color: '#11151d' },
   window_tv: { file: 'window_tv.webp', label: 'テレビの光', color: '#5b8fd9' },
   garbage_bag: { file: 'garbage_bag.webp', label: 'ゴミ袋', color: '#9fb4c7' },
+  game_parcel: { file: 'game_parcel.webp', label: '玄関前の段ボール箱', color: '#b08a5a' },
   wet_floor: { file: 'wet_floor.webp', label: '水たまり', color: '#4a79a8' },
   /** フィナーレ「魔王城」: ドアに重ねる魔王城の門（ドアの位置に描く） */
   castle_gate: { file: 'castle_gate.webp', label: '魔王城の門', color: '#3a1458' },
@@ -54,6 +55,7 @@ export const IMAGES = {
   wife_drunk_pout: { file: 'wife_drunk_pout.webp', label: 'おねだりを忘れられて泣きべその妻', color: '#c98a8a', fit: 'cover' },
   wife_laxative: { file: 'wife_laxative.webp', label: 'お腹を押さえてげっそりした妻', color: '#8a95a5', fit: 'cover' },
   wife_inlaws: { file: 'wife_inlaws.webp', label: '夫の両親の相手で限界の妻', color: '#9a7a6a', fit: 'cover' },
+  wife_game: { file: 'wife_game.webp', label: 'ゲームソフトを突きつける妻', color: '#4a4a5a', fit: 'cover' },
   /** 暴言を送った日の結末: 邪悪なオーラを放つ魔王化した妻（無ければ wife_angry を紫に染めて代用） */
   // 3:4 の一枚絵。隅の正座する夫まで見せるため、cover ではなく横幅いっぱいで描く（renderer.ts の drawDemon）
   wife_demon: { file: 'wife_demon.webp', label: '魔王化した妻', color: '#2a0640' },
@@ -120,6 +122,9 @@ export const IMAGES = {
   item_sports_drink: { file: 'item_sports_drink.webp', label: 'スポーツドリンク', color: '#7ec4ea' },
   item_bluray_ren: { file: 'item_bluray_ren.webp', label: 'ブルーレイ', color: '#2b3a5e' },
   item_ren_fanmeeting: { file: 'item_ren_fanmeeting.webp', label: 'ファンミのチケット', color: '#f5c6d6' },
+  item_game_parcel: { file: 'item_game_parcel.webp', label: '段ボール箱', color: '#c49a6a' },
+  item_game_soft: { file: 'item_game_soft.webp', label: 'ゲームソフト', color: '#d8402f' },
+  item_empty_box: { file: 'item_empty_box.webp', label: '空き箱', color: '#c49a6a' },
   item_detergent_refill: { file: 'item_detergent_refill.webp', label: '洗剤（指定）', color: '#7ec8a0' },
   item_pair_glass: { file: 'item_pair_glass.webp', label: 'ペアグラス', color: '#cfe3f0' },
   item_umbrella_same: { file: 'item_umbrella_same.webp', label: '花柄傘', color: '#f2a7c3' },
@@ -221,6 +226,9 @@ export const ITEM_ICONS: Partial<Record<string, ImageKey>> = {
   sports_drink: 'item_sports_drink',
   bluray_ren: 'item_bluray_ren',
   ren_fanmeeting: 'item_ren_fanmeeting',
+  game_parcel: 'item_game_parcel',
+  game_soft: 'item_game_soft',
+  empty_box: 'item_empty_box',
   av_subscription: 'item_av_subscription',
   gravure_book: 'item_gravure_book',
   saru_recipe: 'item_saru_recipe',

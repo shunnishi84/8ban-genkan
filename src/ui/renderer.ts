@@ -46,6 +46,7 @@ const WINDOW_OVERLAYS = new Set(['window_garland', 'window_candle', 'window_dark
 /** オーバーレイの描画位置（窓の絵は WINDOW_GLASS） */
 const OVERLAY_RECTS: Record<string, Rect> = {
   garbage_bag: art(2, 270, 40, 48),
+  game_parcel: art(172, 294, 40, 28),
   wet_floor: art(48, 316, 136, 23),
   castle_gate: art(52, 80, 130, 228),
   // 玄関マットの上に置かれた写真集

@@ -1385,7 +1385,8 @@ export const SCENARIOS: Scenario[] = [
   {
     id: 'game_delivery',
     title: '夜間配達のゲームソフトが玄関前に届いていた',
-    pickups: [{ at: 'floor', item: 'game_parcel', label: '段ボール箱を持つ' }],
+    pickups: [{ at: 'floor', item: 'game_parcel', label: '段ボール箱を持つ', visual: 'game_parcel' }],
+    visuals: ['game_parcel'],
     causes: [
       {
         id: 'game_delivery',
@@ -1395,6 +1396,7 @@ export const SCENARIOS: Scenario[] = [
         // 拾わずに帰ると、その夜は気づかれず、翌朝見つかる
         foundNextMorningUnless: 'picked:game_parcel',
         revealLines: ['……あら？ その荷物、何？', '（伝票の品名欄に、大きく「ゲームソフト」。'],
+        angerImage: 'wife_game',
         // 翌朝、玄関前で見つかったとき
         angerLines: [
           '……ねえ。玄関の前に、これが置いてあったんだけど。',
