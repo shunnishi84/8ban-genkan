@@ -450,6 +450,7 @@ const act = (state: DayState, action: Action): ActionResult => {
         return result(false, [`${ITEM_MAP[item.useRequires]?.name ?? item.useRequires}が無いと使えない。`]);
       }
       state.inventory.splice(idx, 1);
+      state.inventory.push(...(item.useGives ?? []));
       if (item.useRequires && item.useResult) {
         state.inventory[state.inventory.indexOf(item.useRequires)] = item.useResult;
       }
@@ -720,11 +721,14 @@ const doorOutcome = (state: DayState): ActionResult => {
     ...pcTimingCauses(state),
   ];
   // 鍵をなくした件は、どうやって家に入ったかで怒られ方が変わる（ガチャガチャで飛び出してきた・チャットで開けてもらった）
-  const angry = state.flags.has(KEY_RATTLED)
+  const keyed = state.flags.has(KEY_RATTLED)
     ? [KEY_RATTLE, ...seen.filter((c) => c.id !== 'key_lost')]
     : state.flags.has(`provoked:${KEY_ASKED}`)
       ? seen.filter((c) => c.id !== 'key_lost')
       : seen;
+  // 玄関前に置きっぱなしの荷物などは、その夜は気づかれない（翌朝見つかる）
+  const hidden = keyed.filter((c) => c.foundNextMorningUnless && !evaluate(c.foundNextMorningUnless, state.flags));
+  const angry = keyed.filter((c) => !hidden.includes(c));
   // 鬼のお面を持って帰ると、必ず鬼になる。ほかに火種が無ければ、いったん「おかえり」と迎えられてから。
   // ただし妻が実家に帰っている日は、見る人がいないので何も起きない
   // 妻が先に寝ている日は、その夜は何も起きず、翌朝テーブルの上のお面が見つかる
@@ -749,7 +753,12 @@ const doorOutcome = (state: DayState): ActionResult => {
   }
   // インターホンで開けてもらったなら、まず鍵のことから
   if (state.flags.has('rang')) angry.sort((a, b) => Number(b.id === 'key_lost') - Number(a.id === 'key_lost'));
+  // 持ち帰った荷物などは、いったん普通に迎えられてから中身がバレる
+  if (angry.length === 1 && angry[0].revealLines) {
+    return result(true, [], 0, { kind: 'angry', causes: angry, fakeHome: state.successLines, fakeReveal: angry[0].revealLines });
+  }
   if (angry.length > 0) return result(true, [], 0, { kind: 'angry', causes: angry });
+  if (hidden.length > 0) return result(true, [], 0, { kind: 'angry', causes: hidden, fakeMorning: state.successLines });
   return result(true, [], 0, { kind: 'home', lines: state.successLines, special });
 };
 

@@ -285,7 +285,8 @@ export class Game {
       case 'dawn':
       case 'angry':
         if (r.outcome.kind === 'angry' && r.outcome.fakeAsleep) this.fakeAsleep(r.outcome.fakeAsleep, r.outcome.causes);
-        else if (r.outcome.kind === 'angry' && r.outcome.fakeHome) this.fakeHome(r.outcome.fakeHome, r.outcome.causes);
+        else if (r.outcome.kind === 'angry' && r.outcome.fakeMorning) this.fakeMorning(r.outcome.fakeMorning, r.outcome.causes);
+        else if (r.outcome.kind === 'angry' && r.outcome.fakeHome) this.fakeHome(r.outcome.fakeHome, r.outcome.causes, r.outcome.fakeReveal);
         else this.gameOver(r.outcome.kind, r.outcome.kind === 'angry' ? r.outcome.causes : [], r.outcome.kind === 'angry' && r.outcome.morning);
         return false;
       case 'demon':
@@ -320,15 +321,31 @@ export class Game {
   }
 
   /** いったん普通に迎えられて、帰宅成功かと思ったところで鬼になる（鬼のお面を持って帰った日） */
-  private fakeHome(successLines: string[], causes: Cause[]) {
+  private fakeHome(successLines: string[], causes: Cause[], reveal?: string[]) {
     this.audio.playSe('se_door');
     this.playSeAt('se_success', 300);
     const lines: Line[] = [
       { who: 'me', text: 'ただいま……' },
       { who: 'wife', text: 'おかえり。' },
       ...say('wife', successLines),
-      { who: 'wife', text: '……あら？ 何買ってきたの？' },
-      { who: 'narr', text: '鞄から、赤鬼のお面がはみ出していた。' },
+      // 火がつくきっかけ（無ければ鬼のお面）。「（」で始まる行はナレーション
+      ...(reveal ?? ['……あら？ 何買ってきたの？', '（鞄から、赤鬼のお面がはみ出していた。']).map((t): Line =>
+        t.startsWith('（') ? { who: 'narr', text: t.slice(1) } : { who: 'wife', text: t },
+      ),
+    ];
+    this.talk('home', lines, () => this.gameOver('angry', causes, false, true));
+  }
+
+  /** 玄関前に置きっぱなしの荷物など: その夜は普通に迎えられ、翌朝見つかって怒られる */
+  private fakeMorning(successLines: string[], causes: Cause[]) {
+    this.audio.playSe('se_door');
+    this.playSeAt('se_success', 300);
+    const lines: Line[] = [
+      { who: 'me', text: 'ただいま……' },
+      { who: 'wife', text: 'おかえり。' },
+      ...say('wife', successLines),
+      { who: 'narr', text: '……その夜は、何事もなく眠りについた。' },
+      { who: 'narr', text: '──翌朝。' },
     ];
     this.talk('home', lines, () => this.gameOver('angry', causes, false, true));
   }

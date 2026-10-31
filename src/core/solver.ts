@@ -4,6 +4,10 @@ import { ITEM_MAP } from '../data/items';
 import { pickSatisfyingFlags } from './requirement';
 import type { Action, DayState, Location } from './types';
 
+/** 手元（拾える物を含む）の何かを使うと出てくる物か（段ボール箱を開けると出る空き箱など） */
+const madeFromHand = (state: DayState, id: string): boolean =>
+  [...state.inventory, ...state.pickups.map((p) => p.item)].some((have) => ITEM_MAP[have]?.useGives?.includes(id));
+
 /** そのフラグを立てる手段が存在するか（時間は考えない静的チェック） */
 export const isObtainable = (state: DayState, flag: string, depth = 0): boolean => {
   if (depth > 8) return false;
@@ -26,7 +30,7 @@ export const isObtainable = (state: DayState, flag: string, depth = 0): boolean 
     case 'picked':
       return state.pickups.some((p) => p.item === id);
     case 'discarded':
-      return !!item?.discardable && (inHand || item.source === 'konbini');
+      return !!item?.discardable && (inHand || item.source === 'konbini' || madeFromHand(state, id));
     case 'used':
       if (item?.useRequires && !state.inventory.includes(item.useRequires)) return false;
       return !!item?.useLabel && (inHand || item.source === 'konbini');
@@ -84,6 +88,9 @@ export const solve = (state: DayState): Action[] | null => {
   const toPick = new Set([...of('picked'), ...toDiscard.filter((id) => state.pickups.some((p) => p.item === id))]);
 
   toPick.forEach((item) => plan.push({ type: 'pickup', item }));
+  // 中身を取り出す物（段ボール箱など）は、捨てに行く前にその場で開ける
+  const opened = toUse.filter((id) => ITEM_MAP[id]?.useGives);
+  opened.forEach((item) => plan.push({ type: 'use', item }));
   of('unsent').forEach((clue) => plan.push({ type: 'unsend', clue }));
   of('deleted').forEach((clue) => plan.push({ type: 'deletePost', clue }));
   if (of('ordered').length || of('canceled').length) plan.push({ type: 'openApp', app: 'shop' });
@@ -104,7 +111,7 @@ export const solve = (state: DayState): Action[] | null => {
     }
     plan.push({ type: 'travel', to: 'door' });
   }
-  toUse.forEach((item) => plan.push({ type: 'use', item }));
+  toUse.filter((id) => !opened.includes(id)).forEach((item) => plan.push({ type: 'use', item }));
   of('chat').forEach((template) => plan.push({ type: 'sendChat', template }));
   plan.push({ type: 'openDoor' });
   return plan;

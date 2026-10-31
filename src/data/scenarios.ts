@@ -1381,6 +1381,48 @@ export const SCENARIOS: Scenario[] = [
     ],
   },
 
+  // 「休みの日にゴロゴロゲームばっかり」と怒られる前の日に予約していたゲームソフトが、夜間配達で玄関前に届いている
+  {
+    id: 'game_delivery',
+    title: '夜間配達のゲームソフトが玄関前に届いていた',
+    pickups: [{ at: 'floor', item: 'game_parcel', label: '段ボール箱を持つ' }],
+    causes: [
+      {
+        id: 'game_delivery',
+        title: 'ゲームソフトの夜間配達',
+        // 箱を拾って、ソフトだけ鞄に隠し、空き箱をゴミ捨て場に捨てる
+        resolution: { all: ['picked:game_parcel', 'used:game_parcel', 'discarded:empty_box'] },
+        // 拾わずに帰ると、その夜は気づかれず、翌朝見つかる
+        foundNextMorningUnless: 'picked:game_parcel',
+        revealLines: ['……あら？ その荷物、何？', '（伝票の品名欄に、大きく「ゲームソフト」。'],
+        // 翌朝、玄関前で見つかったとき
+        angerLines: [
+          '……ねえ。玄関の前に、これが置いてあったんだけど。',
+          '「休みの日に一日中ゴロゴロ、ゲームばっかり」って話、先週したばっかりよね？',
+          '注文日……その話をした、前の日。反省する前から、もう買ってあったのね。',
+        ],
+        // 持って入ってきたとき
+        angerLinesIf: [
+          {
+            when: 'picked:game_parcel',
+            lines: [
+              '……ゲームソフト？',
+              '「休みの日に一日中ゴロゴロ、ゲームばっかり」って話、先週したばっかりよね？',
+              '注文日……その話をした、前の日。反省する前から、もう買ってあったのね。',
+            ],
+          },
+        ],
+        successLine: '……夜間配達の通知が来てた気がするけど、気のせいかな。',
+      },
+    ],
+    clues: [
+      { at: 'spot:floor', cause: 'game_delivery', text: '玄関前に、小さな段ボール箱が置いてある。「夜間配達・置き配」……品名欄に「ゲームソフト」。', hiddenWhen: 'picked:game_parcel' },
+      { at: 'notice', cause: 'game_delivery', text: '📦 ポチッとマート: ご注文の商品を玄関前にお届けしました（夜間配達 21:00〜24:00）' },
+      { at: 'app:memo', cause: 'game_delivery', text: '先週の日曜: 妻に「休みの日に一日中ゴロゴロ、ゲームばっかり」と怒られた。……反省。' },
+      { at: 'app:calendar', cause: 'game_delivery', text: '先週の土曜: 『ギガント・ハンター2』予約注文（夜間配達）← 怒られる前の日' },
+    ],
+  },
+
   // ================================================================ 異変なし（ニセ異変入り）
   {
     id: 'ramen_receipt',

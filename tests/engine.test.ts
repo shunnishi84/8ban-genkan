@@ -1206,6 +1206,49 @@ describe('明日両親が来るのを伝え忘れていた', () => {
   });
 });
 
+describe('夜間配達のゲームソフト', () => {
+  it('拾わずに帰ると、その夜は普通に迎えられ、翌朝見つかって怒られる', () => {
+    const o = perform(day(['game_delivery']), { type: 'openDoor' }).outcome;
+    expect(o).toMatchObject({ kind: 'angry', causes: [{ id: 'game_delivery' }] });
+    if (o.kind === 'angry') {
+      expect(o.fakeMorning).toBeDefined();
+      expect(o.causes[0].angerLines[0]).toContain('玄関の前に');
+    }
+  });
+
+  it('拾っただけ（開けただけ）だと、いったん迎えられてから「その荷物、何？」で怒られる', () => {
+    for (const steps of [['pickup'], ['pickup', 'use']]) {
+      const s = day(['game_delivery']);
+      if (steps.includes('pickup')) perform(s, { type: 'pickup', item: 'game_parcel' });
+      if (steps.includes('use')) {
+        perform(s, { type: 'use', item: 'game_parcel' });
+        expect(s.inventory).toEqual(expect.arrayContaining(['game_soft', 'empty_box']));
+      }
+      const o = perform(s, { type: 'openDoor' }).outcome;
+      if (o.kind !== 'angry') throw new Error(o.kind);
+      expect(o.fakeReveal?.[0]).toContain('その荷物');
+      expect(o.fakeMorning).toBeUndefined();
+      expect(o.causes[0].angerLines[0]).toContain('ゲームソフト？');
+    }
+  });
+
+  it('拾って、ソフトだけ鞄に入れ、空き箱を捨てれば無事（自動解答もこの順番）', () => {
+    const s = day(['game_delivery']);
+    const plan = solve(s)!;
+    expect(plan.slice(0, 2)).toEqual([{ type: 'pickup', item: 'game_parcel' }, { type: 'use', item: 'game_parcel' }]);
+    expect(plan).toContainEqual({ type: 'discard', item: 'empty_box' });
+    let o;
+    for (const a of plan) o = perform(s, a).outcome;
+    expect(o?.kind).toBe('home');
+  });
+
+  it('ほかの火種で怒られる日は、玄関前の箱はその場では数えない', () => {
+    const o = perform(day(['game_delivery', 'ring_off']), { type: 'openDoor' }).outcome;
+    expect(o).toMatchObject({ kind: 'angry', causes: [{ id: 'ring_off' }] });
+    if (o.kind === 'angry') expect(o.causes).toHaveLength(1);
+  });
+});
+
 describe('スマホをなくした日', () => {
   /** スマホがその場所にある日の seed を探す */
   const daySpot = (spot: string) => {

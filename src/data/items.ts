@@ -193,6 +193,19 @@ export const ITEMS: ItemDef[] = [
   { id: 'cabaret_card', name: '店の名刺', desc: '『Club 銀河の妖精　あやね♡』ハートの手書き付き。', source: 'none', slot: 'cardcase', discardable: true },
   { id: 'cabaret_receipt', name: '店のレシート', desc: '『Club 銀河の妖精　セット ¥24,000／あやねドリンク ¥8,000』', source: 'none', slot: 'wallet', discardable: true },
   { id: 'strong_can', name: 'ストロング缶（9%・未開封）', desc: '帰り道のコンビニで、つい。……健診の紙には「節酒」の赤字。', source: 'none', slot: 'bag', discardable: true },
+  // 夜間配達で玄関前に届いたゲームソフト。開けると、ソフトは鞄の奥へ、空き箱は手元に残る
+  {
+    id: 'game_parcel',
+    name: '段ボール箱（夜間配達）',
+    desc: '伝票の品名欄に、大きく「ゲームソフト」。……このまま持って入るのはまずい。',
+    source: 'none',
+    slot: 'bag',
+    useLabel: '開けて、ソフトだけ鞄の奥へ',
+    useMessage: 'ソフトだけを取り出して、鞄の一番奥、書類のあいだに隠した。……空き箱が残った。',
+    useGives: ['game_soft', 'empty_box'],
+  },
+  { id: 'game_soft', name: 'ゲームソフト『ギガント・ハンター2』', desc: '先週の土曜に予約していた。……ほとぼりが冷めるまで、鞄の奥で眠ってもらう。', source: 'none', slot: 'bag' },
+  { id: 'empty_box', name: '空の段ボール箱', desc: '伝票に「ゲームソフト」と書いてある。中身より、こっちのほうが危ない。', source: 'none', slot: 'bag', discardable: true },
   { id: 'empty_can', name: '空き缶（ハイボール）', desc: '帰り道で飲んだらしい。カラカラ鳴る。', source: 'none', slot: 'bag', discardable: true },
   { id: 'garbage_bag', name: '燃えるゴミの袋', desc: 'パンパン。ずっしり重い。', source: 'none', slot: 'bag', discardable: true },
   {

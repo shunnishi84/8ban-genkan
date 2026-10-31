@@ -74,6 +74,10 @@ export interface Cause {
   angerImage?: string;
   /** 状況で怒られ方を変える（上から順に、条件を満たした最初のセリフ。どれも満たさなければ angerLines） */
   angerLinesIf?: { when: Requirement; lines: string[] }[];
+  /** これだけが残っていると、いったん普通に迎えられてから、このセリフで火がつく（持ち帰った荷物の中身がバレるなど） */
+  revealLines?: string[];
+  /** 見えないところに残した火種（玄関前に置きっぱなしの荷物など）。その夜は気づかれず、翌朝見つかって怒られる。条件を満たしたら「持ち込んだ」扱い */
+  foundNextMorningUnless?: Requirement;
   /** ほかの火種で怒られているときも、このセリフを続けて言う（空気の読めないパソコンの相談など） */
   alwaysSay?: boolean;
 }
@@ -160,6 +164,8 @@ export interface ItemDef {
   useRequires?: string;
   /** 使ったあと useRequires のアイテムをこれに置き換える（割れたマグカップ → 直したマグカップ） */
   useResult?: string;
+  /** 使うとこのアイテムは消えて、代わりにこれらが手元に残る（段ボール箱を開ける → 中身と空き箱） */
+  useGives?: string[];
   /** 通販の注文履歴でキャンセル期限の代わりに出す説明（既定は「0:00 発送処理」） */
   cancelNote?: string;
   useMessage?: string;
@@ -322,7 +328,8 @@ export type Outcome =
   /** morning: 酔って寝落ちした妻に、翌朝バレた */
   /** fakeHome: いったん普通に「おかえり」と迎えられてから怒られる（鬼のお面を持って帰った日など）。そのときの妻の一言 */
   /** fakeAsleep: 妻が先に寝ていた日。その夜は何も起きず、翌朝に見つかって怒られる（鬼のお面など） */
-  | { kind: 'angry'; causes: Cause[]; morning?: boolean; fakeHome?: string[]; fakeAsleep?: string[] }
+  /** fakeReveal: fakeHome のあとに火がつくきっかけのセリフ（無ければ鬼のお面）。fakeMorning: その夜は普通に迎えられ、翌朝見つかって怒られる */
+  | { kind: 'angry'; causes: Cause[]; morning?: boolean; fakeHome?: string[]; fakeAsleep?: string[]; fakeReveal?: string[]; fakeMorning?: string[] }
   /** 暴言を送っていた: 火種の有無に関係なく、魔王化した妻が待っている */
   | { kind: 'demon'; lines: string[]; reason?: string }
   /** 酔った勢いの悪ふざけを送っていた: 送った文面ごとの結末 */
