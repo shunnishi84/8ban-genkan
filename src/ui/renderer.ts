@@ -43,6 +43,9 @@ const WINDOW_GLASS = art(186, 107, 36, 67);
 const WINDOW_ART_GLASS = { x: 7 / 43, y: 12 / 93, w: 33 / 43, h: 72 / 93 };
 const WINDOW_OVERLAYS = new Set(['window_garland', 'window_candle', 'window_dark', 'window_tv']);
 
+/** タップするとその場所を調べたことになるオーバーレイ（玄関マットの脇に置いた段ボール箱 → 足元） */
+const OVERLAY_SPOTS: Record<string, SpotId> = { game_parcel: 'floor' };
+
 /** オーバーレイの描画位置（窓の絵は WINDOW_GLASS） */
 const OVERLAY_RECTS: Record<string, Rect> = {
   garbage_bag: art(2, 270, 40, 48),
@@ -114,6 +117,9 @@ export class Renderer {
     const r = this.canvas.getBoundingClientRect();
     const x = ((e.clientX - r.left) / r.width) * W;
     const y = ((e.clientY - r.top) / r.height) * H;
+    // 置いてある物の絵（玄関前の段ボール箱など）は、その物を拾える場所として先に判定
+    const overlay = this.scene.visuals.find((v) => OVERLAY_SPOTS[v] && OVERLAY_RECTS[v] && inside(OVERLAY_RECTS[v], x, y));
+    if (overlay) return this.onSpot(OVERLAY_SPOTS[overlay]);
     // 小さいもの（表札）を優先して判定
     const order: SpotId[] = ['nameplate', 'window', 'floor', 'door', 'hallway'];
     const hit = order.find((s) => inside(SPOT_RECTS[s], x, y));
