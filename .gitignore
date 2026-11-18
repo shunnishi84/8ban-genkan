@@ -1,3 +1,5 @@
 node_modules/
 dist/
 snes/build/
+__pycache__/
+!snes/dist/
