@@ -138,6 +138,17 @@ promo/build.sh promo/out   # → promo/out/8ban-genkan_trailer_landscape.mp4 / _
 - `promo/capture.mjs`: 予告編に使うゲーム画面を撮る（`promo/shots/`）
 - 一部の秒だけ確認したいとき: `node promo/render.mjs /tmp/stills both --stills 12.6,22.3,50`
 
+## スーパーファミコン版（試作品）
+
+異変ひとつ（結婚指輪を外したまま）・1日目だけの試作 ROM。スマホのスーファミエミュレータ（John NESS など）で遊べる。
+
+- ROM: `snes/dist/8ban-genkan.sfc`（LoROM 512KB、音なし）
+- 操作: 十字キーで選ぶ、A（または START）で決める、B で戻る
+- 作り直し: `npm run snes:build`（ca65 / ld65、Pillow、numpy、IPAゴシックが必要）。中身は `snes/build.py` の `story()`
+- 動作確認: `python3 snes/test_rom.py`（snes9x の libretro コアで画面なしで遊び、`snes/build/shots/` にスクショ）
+
+詳しくは [snes/README.md](snes/README.md)。
+
 ## アセット一覧
 
 ファイル名は `src/assets/manifest.ts` で一元管理。置けば自動で使われ、無ければ代替表示になる。

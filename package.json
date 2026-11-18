@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "images:webp": "scripts/webp.sh"
+    "images:webp": "scripts/webp.sh",
+    "snes:build": "python3 snes/build.py && cp snes/build/8ban-genkan.sfc snes/dist/"
   },
   "devDependencies": {
     "@capacitor/cli": "^8.5.3",
